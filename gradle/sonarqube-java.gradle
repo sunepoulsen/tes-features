@@ -1,0 +1,9 @@
+apply plugin: 'jacoco'
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+    }
+}
+
+tasks.jacocoTestReport.dependsOn tasks.test

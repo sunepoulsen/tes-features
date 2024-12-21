@@ -1,0 +1,47 @@
+{
+  "repositories": [
+    {
+      "key": "local",
+      "type": "LOCAL",
+      "artifact_types": [
+        "DEPENDENCY",
+        "PLUGIN"
+      ]
+    },
+    {
+      "key": "nexus-local",
+      "type": "REMOTE",
+      "url": "http://localhost:21081/repository/maven-public",
+      "artifact_types": [
+        "DEPENDENCY",
+        "PLUGIN"
+      ]
+    },
+    {
+      "key": "gradle-plugin-contral",
+      "type": "REMOTE",
+      "url": "https://plugins.gradle.org/m2",
+      "artifact_types": [
+        "DEPENDENCY",
+        "PLUGIN"
+      ]
+    }
+  ],
+  "versioning": {
+    "types": [
+      ".RELEASE"
+    ],
+    "groups": [
+      {
+        "name": "org.apache.groovy",
+        "limit_version": "5.0.0"
+      },
+      {
+        "name": "org.spockframework",
+        "types": [
+          "-groovy-4.0"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,262 @@
+package dk.sunepoulsen.tes.features.service.domains.persistence
+
+import dk.sunepoulsen.tes.data.generators.DataGenerator
+import dk.sunepoulsen.tes.data.generators.Generators
+import dk.sunepoulsen.tes.data.generators.NumberGenerators
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
+import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.transaction.annotation.Transactional
+import spock.lang.Specification
+
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import([FeatureGroupPersistenceTestService])
+@ActiveProfiles(['ut'])
+@Transactional
+class FeaturePersistenceSpec extends Specification {
+
+    @Autowired
+    private FeatureGroupRepository featureGroupRepository
+
+    @Autowired
+    private FeatureRepository featureRepository
+
+    @Autowired
+    private FeatureActivationRepository featureActivationRepository
+
+    @Autowired
+    private FeatureGroupPersistenceTestService featureGroupPersistenceTestService
+
+    @Autowired
+    private FeaturePersistence sut
+
+    private DataGenerator<String> textGenerator
+
+    void setup() {
+        this.textGenerator = Generators.textGenerator(NumberGenerators.integerGenerator(10, 50))
+        this.featureGroupPersistenceTestService.deleteAll()
+    }
+
+    void "Tests register of feature with no feature group"() {
+        when:
+            this.sut.registerFeature(FeatureEntity.builder()
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            IllegalArgumentException ex = thrown(IllegalArgumentException)
+            ex.message == 'Feature group must not be null'
+
+            featureGroupRepository.count() == 0
+            featureRepository.count() == 0
+            featureActivationRepository.count() == 0
+    }
+
+    void "Tests register of feature with feature group with no id"() {
+        when:
+            this.sut.registerFeature(FeatureEntity.builder()
+                .featureGroup(FeatureGroupEntity.builder().build())
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            IllegalArgumentException ex = thrown(IllegalArgumentException)
+            ex.message == 'Feature group id must not be null'
+
+            featureGroupRepository.count() == 0
+            featureRepository.count() == 0
+            featureActivationRepository.count() == 0
+    }
+
+    void "Tests register of feature with feature group that does not exist"() {
+        when:
+            this.sut.registerFeature(FeatureEntity.builder()
+                .featureGroup(FeatureGroupEntity.builder()
+                    .id(27L)
+                    .key(textGenerator.generate())
+                    .build()
+                )
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            ResourceNotFoundException ex = thrown(ResourceNotFoundException)
+            ex.param == 'featureGroup'
+            ex.message == 'Feature group 27 does not exist'
+
+            featureGroupRepository.count() == 0
+            featureRepository.count() == 0
+            featureActivationRepository.count() == 0
+    }
+
+    void "Tests register of feature successfully with feature that does not exist"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .key(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity feature = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            feature.setActivations([
+                new FeatureActivationEntity(
+                    feature: feature,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+        when:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(feature).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            createdFeature.id > 0
+            createdFeature.featureGroup == featureGroupEntity
+            createdFeature.key == feature.key
+            createdFeature.name == feature.name
+            createdFeature.description == feature.description
+
+            featureGroupRepository.count() == 1
+            featureRepository.count() == 1
+            featureActivationRepository.count() == 1
+
+            List<FeatureActivationEntity> featureActivations = featureActivationRepository.findAllByFeatureId(createdFeature.id)
+            featureActivations.size() == 1
+
+            FeatureActivationEntity featureActivation = featureActivations.first
+            featureActivation.id > 0
+            featureActivation.feature.id == createdFeature.id
+            featureActivation.enabled == feature.activations.first.enabled
+            featureActivation.dateTime == feature.activations.first.dateTime
+    }
+
+    void "Tests register of feature successfully with feature that does exist"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = FeatureGroupEntity.builder()
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .key(textGenerator.generate())
+                .build()
+
+            FeatureEntity existingFeature = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            existingFeature.setActivations([
+                new FeatureActivationEntity(
+                    feature: existingFeature,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+            featureGroupEntity.setFeatures([existingFeature])
+            featureGroupEntity = featureGroupRepository.save(featureGroupEntity)
+
+        and: 'verify feature group and feature in database'
+            featureGroupEntity = featureGroupRepository.findById(featureGroupEntity.id).get()
+            featureGroupEntity.id > 0
+            featureGroupEntity.features.size() == 1
+            featureGroupEntity.features.first.id > 0
+            featureGroupEntity.features.first.activations.size() == 1
+            featureGroupEntity.features.first.activations.first.id > 0
+
+            existingFeature = featureGroupEntity.features.first
+
+        and: 'setup new feature'
+            FeatureEntity newFeature = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(existingFeature.key)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            newFeature.setActivations([
+                new FeatureActivationEntity(
+                    feature: existingFeature,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2023, 2, 9, 1, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+        when:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(newFeature).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            createdFeature == existingFeature
+
+            featureGroupRepository.count() == 1
+            featureRepository.count() == 1
+            featureActivationRepository.count() == 1
+
+            List<FeatureActivationEntity> featureActivations = featureActivationRepository.findAllByFeatureId(createdFeature.id)
+            featureActivations.size() == 1
+
+            FeatureActivationEntity featureActivation = featureActivations.first
+            featureActivation.id > 0
+            featureActivation.feature.id == createdFeature.id
+            featureActivation.enabled == existingFeature.activations.first.enabled
+            featureActivation.dateTime == existingFeature.activations.first.dateTime
+    }
+
+    void "Tests register of feature with missing field"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .key(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity feature = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .build()
+            feature.setActivations(
+                List.of(new FeatureActivationEntity(
+                    feature: feature,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                ))
+            )
+
+        when:
+            this.sut.registerFeature(feature)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            DataIntegrityViolationException ex = thrown(DataIntegrityViolationException)
+            ex.message.contains('NULL not allowed for column "DESCRIPTION";')
+    }
+
+}

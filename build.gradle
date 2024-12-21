@@ -1,0 +1,97 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'org.jetbrains.changelog'
+    id 'net.researchgate.release'
+    id 'jacoco'
+    id 'org.sonarqube'
+}
+
+tasks.register('allWrappers', Wrapper) {
+    gradleVersion = "${project.property('gradle.version')}"
+}
+
+apply from: "${rootProject.projectDir}/gradle/changelog.gradle"
+
+release {
+    tagTemplate = 'v${version}'
+    git {
+        requireBranch.set('main')
+    }
+}
+tasks.afterReleaseBuild.dependsOn tasks.patchChangelog
+
+subprojects {
+    group 'dk.sunepoulsen.tes'
+    version "${project.property('version')}"
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+
+        maven {
+            url "$mavenRepositoryBaseUrl/$mavenRepositorySnapshots"
+            allowInsecureProtocol = true
+        }
+        maven {
+            url "$mavenRepositoryBaseUrl/$mavenRepositoryReleases"
+            allowInsecureProtocol = true
+        }
+    }
+
+    apply plugin: 'java'
+    apply plugin: 'groovy'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(project.property('java.version').toString())
+        }
+    }
+
+    dependencies {
+        // Lombok
+        compileOnly 'org.projectlombok:lombok:1.18.38'
+        annotationProcessor 'org.projectlombok:lombok:1.18.38'
+
+        // Logging
+        implementation 'ch.qos.logback:logback-core:1.5.18'
+        implementation 'ch.qos.logback:logback-classic:1.5.18'
+        implementation 'org.slf4j:log4j-over-slf4j:2.0.17'
+
+        // Spock
+        testImplementation 'org.apache.groovy:groovy-all:4.0.28'
+        testImplementation 'org.spockframework:spock-core:2.4-M1-groovy-4.0'
+        testImplementation 'net.bytebuddy:byte-buddy:1.17.7'
+        testImplementation 'org.objenesis:objenesis:3.4'
+    }
+
+    apply from: "${rootProject.projectDir}/gradle/resources.gradle"
+
+    test {
+        useJUnitPlatform()
+    }
+
+    apply from: "${rootProject.projectDir}/gradle/sonarqube-java.gradle"
+}
+
+tasks.register('makeSecrets', Exec) {
+    commandLine "${rootDir.absolutePath}/scripts/make-tes-service-certificate-secrets.sh", "${project.rootDir.absolutePath}/build/secrets", "${project.property('service.tls.certificate.alias')}", "${project.property('service.password.length')}", "${project.property('service.tls.certificate.password.filename')}"
+    commandLine "${rootDir.absolutePath}/scripts/create-database-super-user-secrets.sh", "${project.rootDir.absolutePath}/build/secrets", "${project.property('service.password.length')}"
+    commandLine "${rootDir.absolutePath}/scripts/create-tes-service-database-secrets.sh", "${project.rootDir.absolutePath}/build/secrets", "${project.property('service.name')}", "${project.property('service.password.length')}"
+}
+
+sonar {
+    properties {
+        property "sonar.projectName", "TES Features"
+        property "sonar.projectKey", "tes-features"
+
+        property 'sonar.dependencyCheck.severity.blocker', '9.0'
+        property 'sonar.dependencyCheck.severity.critical', '7.0'
+        property 'sonar.dependencyCheck.severity.major', '4.0'
+        property 'sonar.dependencyCheck.severity.minor', '0.0'
+    }
+}

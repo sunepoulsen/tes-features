@@ -1,0 +1,24 @@
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            url = "$mavenRepositoryBaseUrl/" + (
+                version ==~ /^\d+\.\d+\.\d+$/ ?
+                    "$mavenRepositoryReleases" :
+                    "$mavenRepositorySnapshots"
+            )
+            allowInsecureProtocol = true
+            credentials {
+                username = "$mavenRepositoryUsername"
+                password = "$mavenRepositoryPassword"
+            }
+        }
+    }
+}
