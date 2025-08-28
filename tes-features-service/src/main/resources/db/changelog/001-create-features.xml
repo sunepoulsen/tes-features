@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd">
+
+    <changeSet id="1" author="stp">
+        <createSequence cycle="false"
+                        incrementBy="1"
+                        sequenceName="feature_groups_id_seq"
+                        startValue="1"/>
+
+        <createTable tableName="feature_groups">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="group_key" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="description" type="varchar(8192)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="create_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="update_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="feature_groups" indexName="idx_feature_groups_group_key">
+            <column name="group_key"/>
+        </createIndex>
+
+        <createSequence cycle="false"
+                        incrementBy="1"
+                        sequenceName="feature_group_activation_id_seq"
+                        startValue="1"/>
+
+        <createTable tableName="feature_groups_activations">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="feature_group_id" type="bigint"/>
+
+            <column name="enabled" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="datetime" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="create_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="update_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="feature_groups_activations" indexName="idx_feature_groups_activations_feature_group_id">
+            <column name="feature_group_id"/>
+        </createIndex>
+
+        <addForeignKeyConstraint constraintName="fk_feature_groups_activations_feature_group_id"
+                                 baseTableName="feature_groups_activations" baseColumnNames="feature_group_id"
+                                 referencedTableName="feature_groups" referencedColumnNames="id"/>
+
+        <createSequence cycle="false"
+                        incrementBy="1"
+                        sequenceName="feature_id_seq"
+                        startValue="1"/>
+
+        <createTable tableName="features">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="feature_group_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="feature_key" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="description" type="varchar(8192)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="create_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="update_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="features" indexName="idx_features_feature_group_id">
+            <column name="feature_group_id"/>
+        </createIndex>
+
+        <createIndex tableName="features" indexName="idx_features_feature_key">
+            <column name="feature_key"/>
+        </createIndex>
+
+        <addForeignKeyConstraint constraintName="fk_features_feature_group_id"
+                                 baseTableName="features" baseColumnNames="feature_group_id"
+                                 referencedTableName="feature_groups" referencedColumnNames="id"/>
+
+        <createSequence cycle="false"
+                        incrementBy="1"
+                        sequenceName="feature_activation_id_seq"
+                        startValue="1"/>
+
+        <createTable tableName="feature_activations">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="feature_id" type="bigint"/>
+
+            <column name="enabled" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="datetime" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="create_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="update_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="feature_activations" indexName="idx_feature_activations_feature_id">
+            <column name="feature_id"/>
+        </createIndex>
+
+        <addForeignKeyConstraint constraintName="fk_feature_activations_feature_group_id"
+                                 baseTableName="feature_activations" baseColumnNames="feature_id"
+                                 referencedTableName="features" referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,13 @@
+apply from: "${rootProject.projectDir}/gradle/publish.gradle"
+
+dependencies {
+    // Tech Easy Solutions
+    implementation 'dk.sunepoulsen.tes-foundation:tes-rest-models:2.0.0-SNAPSHOT'
+
+    testImplementation 'dk.sunepoulsen.tes-foundation:tes-data-generators:2.0.0-SNAPSHOT'
+    testImplementation 'dk.sunepoulsen.tes-foundation:tes-validation-tests:2.0.0-SNAPSHOT'
+
+    // Hibernate Validation
+    testImplementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
+    testImplementation 'org.apache.tomcat.embed:tomcat-embed-el:11.0.10'
+}

@@ -1,0 +1,34 @@
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+changelog {
+    path = "${project.projectDir}/CHANGELOG.md"
+    header = "${-> version.get()} - ${LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)}"
+    headerParserRegex = ~/(\d+\.\d+\.\d+)/
+    introduction.set(
+        """
+        All notable changes to this project will be documented in this file. The target-audience for this document 
+        is developers and operations.
+        
+        The changelog-format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project 
+        adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+        
+        Developers should add an entry to "Unreleased work" under the appropriate subsection, describing their work 
+        _prior_ to merging to master. The entry should contain a link to the Jira-story. 
+        
+        Adhere to the following format:
+        ```
+        - [Name of Jira-story or subtask](link to Jira-story): Description of the completed work`
+        ```
+        Example-entry:
+        
+        - [TESFOUND-146](https://sunepoulsen.atlassian.net/browse/TESFOUND-146): Create new feature
+        
+        For release-dates, use date-format: YYYY-MM-DD
+        """.stripIndent()
+    )
+    itemPrefix = "-"
+    keepUnreleasedSection = true
+    unreleasedTerm = "Unreleased work"
+    groups = ["Features", "Fixed", "Security", "DevOps"]
+}

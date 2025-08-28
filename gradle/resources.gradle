@@ -1,0 +1,80 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+/**
+ * Reads a password from a file in the build/secrets directory.
+ *
+ * @param filename File to read the password from
+ *
+ * @return The read password or 'null' if the file does not exist.
+ */
+String readPasswordFromFile(String filename) {
+    def file = new File("${project.rootDir.absolutePath}/build/secrets/${filename}")
+    if (file.exists()) {
+        String password = file.text.trim()
+        if (password.endsWith('\n')) {
+            password = password.substring(0, password.length()-1)
+        }
+
+        return password
+    }
+
+    // Return null password
+    return 'null'
+}
+
+/**
+ * Reads a password from a system property or a file
+ *
+ * @param passwordSystemProperty System property to read the password from
+ * @param filename File to read the password from
+ *
+ * @return The read password or 'null' if either the system property or the file exist.
+ */
+String readPasswordFromSystemPropertyOrFile(String passwordSystemProperty, String filename) {
+    // Read password from system property and return it
+    if (System.properties.containsKey(passwordSystemProperty)) {
+        return System.properties[passwordSystemProperty]
+    }
+
+    return readPasswordFromFile(filename)
+}
+
+def resourceProperties = [
+    // Project properties
+    projectName: project.name.toString(),
+    projectBuildDir: "${project.projectDir.absolutePath}/build".toString(),
+    version: project.property('version').toString(),
+
+    // Service properties
+    serviceName: project.property('service.name').toString(),
+
+    // Docker Image properties
+    databaseImage: project.property('database.image.name').toString(),
+    databaseTag: project.property('database.image.tag').toString(),
+
+    // HTTPS Certificate properties
+    certificateDirectory: "${project.rootDir.absolutePath}/build/secrets".toString(),
+    certificateAlias: "${project.property('service.tls.certificate.alias')}".toString(),
+    certificateFile: "${project.rootDir.absolutePath}/build/secrets/${project.property('service.tls.certificate.alias')}.p12".toString(),
+    certificateFilename: "${project.property('service.tls.certificate.alias')}.p12".toString(),
+    certificatePemFilename: "${project.property('service.tls.certificate.alias')}.pem".toString(),
+    certificateKeyFilename: "${project.property('service.tls.certificate.alias')}.key".toString(),
+    certificatePasswordFilename: project.property('service.tls.certificate.password.filename').toString(),
+    certificatePassword: readPasswordFromFile("${project.property('service.tls.certificate.password.filename')}".toString()),
+
+    // Properties for databases
+    databaseSuperUserPassword: readPasswordFromSystemPropertyOrFile('tes.database.super.user.password', 'database-super-user-password.txt'),
+    tesServiceDatabase: 'tes_features',
+    tesServiceAdminUsername: 'tes_features_adm',
+    tesServiceAdminPassword: readPasswordFromSystemPropertyOrFile('tes.database.admin.password', 'tes-features-admin-password.txt'),
+    tesServiceApplicationUsername: 'tes_features_app',
+    tesServiceApplicationPassword: readPasswordFromSystemPropertyOrFile('tes.database.application.password', 'tes-features-application-password.txt'),
+]
+
+processResources {
+    filter(ReplaceTokens, tokens: resourceProperties)
+}
+
+processTestResources {
+    filter(ReplaceTokens, tokens: resourceProperties)
+}

@@ -1,0 +1,75 @@
+pipeline {
+    agent any
+
+    options {
+        timeout(time: 120, unit: 'MINUTES')
+    }
+
+    environment{
+        // Project properties for Nexus
+        ORG_GRADLE_PROJECT_mavenRepositoryBaseUrl='http://cibar-nexus:8081/repository'
+
+        NEXUS = credentials('svc-nexus')
+        ORG_GRADLE_PROJECT_mavenRepositoryUsername = "$NEXUS_USR"
+        ORG_GRADLE_PROJECT_mavenRepositoryPassword = "$NEXUS_PSW"
+
+        // Set owaspDependencyCheckApiKey Project property for Gradle.
+        // owaspDependencyCheckApiKey is the Api get that is used by
+        // `org.owasp:dependency-check-gradle` to check for vulnerabilities.
+        ORG_GRADLE_PROJECT_owaspDependencyCheckApiKey = credentials('svc-nvd-api-key')
+
+        SONAR_URL = 'http://cibar-sonarqube:9000'
+        SONAR_LOGIN = credentials('svc-sonarqube-token')
+
+        // Give Gradle extra resources to execute the tasks.
+        GRADLE_OPTS = "-Dorg.gradle.jvmargs='-Xmx2g -Xms512m -XX:+HeapDumpOnOutOfMemoryError' -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN"
+    }
+
+    tools {
+        jdk 'jdk-21'
+    }
+
+    triggers{
+        // Run pipeline daily on a project determined time between midnight and 7am (only main)
+        cron(env.branch_name == "main" ? 'H H(0-6) * * *' : '')
+    }
+
+    stages {
+        stage('Clean') {
+            steps {
+                sh './pipelines/pipeline-clean.py'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh './pipelines/pipeline-build.py'
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: '**/build/docs/javadoc/**', fingerprint: true, onlyIfSuccessful: false
+                    junit '**/build/test-results/**/*.xml'
+                }
+            }
+        }
+        stage('Publish & Analysis') {
+            parallel {
+                stage('Publish') {
+                    steps {
+                        sh './pipelines/pipeline-publish.py --remote'
+                    }
+                }
+                stage('Analyze') {
+                    steps {
+                        sh './pipelines/pipeline-analyze.py --remote'
+                    }
+                    post {
+                        always {
+                            archiveArtifacts artifacts: '**/build/reports/jacoco/**', fingerprint: true, onlyIfSuccessful: false
+                            archiveArtifacts artifacts: 'build/reports/**', fingerprint: true, onlyIfSuccessful: false
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
