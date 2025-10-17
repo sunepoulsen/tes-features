@@ -33,23 +33,23 @@ class FeatureGroupTransformationsSpec extends Specification {
     @Unroll
     void "Transform FeatureGroupEntity to model with no associations: #_testcase"() {
         given:
-            FeatureGroupEntity featureGroupEntity = FeatureGroupEntity.builder()
-                .id(1L)
-                .key(textGenerator.generate())
-                .name(textGenerator.generate())
-                .description(textGenerator.generate())
-                .features(_features)
-                .activations(_activations)
-                .build()
+            FeatureGroupEntity featureGroupEntity = new FeatureGroupEntity(
+                id: 1L,
+                key: textGenerator.generate(),
+                name: textGenerator.generate(),
+                description: textGenerator.generate(),
+                features: _features,
+                activations: _activations
+            )
 
         expect:
-            this.sut.toModel(featureGroupEntity) == FeatureGroup.builder()
-                .key(featureGroupEntity.key)
-                .name(featureGroupEntity.name)
-                .description(featureGroupEntity.description)
-                .features(_modelFeatures)
-                .activations(_modelActivations)
-                .build()
+            this.sut.toModel(featureGroupEntity) == new FeatureGroup(
+                key: featureGroupEntity.key,
+                name: featureGroupEntity.name,
+                description: featureGroupEntity.description,
+                features: _modelFeatures,
+                activations: _modelActivations
+            )
 
         where:
             _testcase                            | _features | _modelFeatures | _activations | _modelActivations
@@ -94,45 +94,45 @@ class FeatureGroupTransformationsSpec extends Specification {
             ]
 
         expect:
-            this.sut.toModel(featureGroupEntity) == FeatureGroup.builder()
-                .key(featureGroupEntity.key)
-                .name(featureGroupEntity.name)
-                .description(featureGroupEntity.description)
-                .features([
-                    Feature.builder()
-                        .key(featureGroupEntity.features[0].key)
-                        .name(featureGroupEntity.features[0].name)
-                        .description(featureGroupEntity.features[0].description)
-                        .activations([])
-                        .build()
-                ])
-                .activations([
-                    FeatureActivation.builder()
-                        .id(featureGroupEntity.activations[0].id)
-                        .enabled(featureGroupEntity.activations[0].enabled)
-                        .datetime(featureGroupEntity.activations[0].dateTime)
-                        .build(),
-                    FeatureActivation.builder()
-                        .id(featureGroupEntity.activations[1].id)
-                        .enabled(featureGroupEntity.activations[1].enabled)
-                        .datetime(featureGroupEntity.activations[1].dateTime)
-                        .build()
+            this.sut.toModel(featureGroupEntity) == new FeatureGroup(
+                key: featureGroupEntity.key,
+                name: featureGroupEntity.name,
+                description: featureGroupEntity.description,
+                features: [
+                    new Feature(
+                        key: featureGroupEntity.features[0].key,
+                        name: featureGroupEntity.features[0].name,
+                        description: featureGroupEntity.features[0].description,
+                        activations: []
+                    )
+                ],
+                activations: [
+                    new FeatureActivation(
+                        id: featureGroupEntity.activations[0].id,
+                        enabled: featureGroupEntity.activations[0].enabled,
+                        datetime: featureGroupEntity.activations[0].dateTime
+                    ),
+                    new FeatureActivation(
+                        id: featureGroupEntity.activations[1].id,
+                        enabled: featureGroupEntity.activations[1].enabled,
+                        datetime: featureGroupEntity.activations[1].dateTime
+                    )
 
-                ])
-                .build()
+                ]
+            )
 
     }
 
     @Unroll
     void "Transform FeatureGroup to entity with no associations: #_testcase"() {
         given:
-            FeatureGroup featureGroup = FeatureGroup.builder()
-                .key(textGenerator.generate())
-                .name(textGenerator.generate())
-                .description(textGenerator.generate())
-                .features(_features)
-                .activations(_activations)
-                .build()
+            FeatureGroup featureGroup = new FeatureGroup(
+                key: textGenerator.generate(),
+                name: textGenerator.generate(),
+                description: textGenerator.generate(),
+                features: _features,
+                activations: _activations
+            )
 
         expect:
             this.sut.toEntity(featureGroup) == FeatureGroupEntity.builder()
@@ -153,56 +153,56 @@ class FeatureGroupTransformationsSpec extends Specification {
 
     void "Transform FeatureGroup to entity with 2 features and 2 activations"() {
         given:
-            FeatureGroup featureGroup = FeatureGroup.builder()
-                .key(textGenerator.generate())
-                .name(textGenerator.generate())
-                .description(textGenerator.generate())
-                .features([
-                    Feature.builder()
-                        .key(textGenerator.generate())
-                        .name(textGenerator.generate())
-                        .description(textGenerator.generate())
-                        .activations([
-                            FeatureActivation.builder()
-                                .id(1L)
-                                .enabled(true)
-                                .build(),
-                            FeatureActivation.builder()
-                                .id(2L)
-                                .enabled(false)
-                                .datetime(ZonedDateTime.now().plusWeeks(1))
-                                .build()
-                        ])
-                        .build(),
-                    Feature.builder()
-                        .key(textGenerator.generate())
-                        .name(textGenerator.generate())
-                        .description(textGenerator.generate())
-                        .activations([
-                            FeatureActivation.builder()
-                                .id(3L)
-                                .enabled(true)
-                                .build(),
-                            FeatureActivation.builder()
-                                .id(4L)
-                                .enabled(false)
-                                .datetime(ZonedDateTime.now().plusWeeks(1))
-                                .build()
-                        ])
-                        .build()
-                ])
-                .activations([
-                    FeatureActivation.builder()
-                        .id(5L)
-                        .enabled(true)
-                        .build(),
-                    FeatureActivation.builder()
-                        .id(6L)
-                        .enabled(false)
-                        .datetime(ZonedDateTime.now().plusWeeks(1))
-                        .build()
-                ])
-                .build()
+            FeatureGroup featureGroup = new FeatureGroup(
+                key: textGenerator.generate(),
+                name: textGenerator.generate(),
+                description: textGenerator.generate(),
+                features: [
+                    new Feature(
+                        key: textGenerator.generate(),
+                        name: textGenerator.generate(),
+                        description: textGenerator.generate(),
+                        activations: [
+                            new FeatureActivation(
+                                id: 1L,
+                                enabled: true,
+                            ),
+                            new FeatureActivation(
+                                id: 2L,
+                                enabled: true,
+                                datetime: ZonedDateTime.now().plusWeeks(1)
+                            )
+                        ]
+                    ),
+                    new Feature(
+                        key: textGenerator.generate(),
+                        name: textGenerator.generate(),
+                        description: textGenerator.generate(),
+                        activations: [
+                            new FeatureActivation(
+                                id: 3L,
+                                enabled: true,
+                            ),
+                            new FeatureActivation(
+                                id: 4L,
+                                enabled: true,
+                                datetime: ZonedDateTime.now().plusWeeks(1)
+                            )
+                        ]
+                    )
+                ],
+                activations: [
+                    new FeatureActivation(
+                        id: 5L,
+                        enabled: true,
+                    ),
+                    new FeatureActivation(
+                        id: 6L,
+                        enabled: true,
+                        datetime: ZonedDateTime.now().plusWeeks(1)
+                    )
+                ]
+            )
 
         when:
             FeatureGroupEntity result = this.sut.toEntity(featureGroup)

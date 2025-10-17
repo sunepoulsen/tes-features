@@ -34,12 +34,12 @@ class FeatureTransformationsSpec extends Specification {
                 .build()
 
         expect:
-            this.sut.toModel(featureEntity) == Feature.builder()
-                .key(featureEntity.key)
-                .name(featureEntity.name)
-                .description(featureEntity.description)
-                .activations(_modelActivations)
-                .build()
+            this.sut.toModel(featureEntity) == new Feature(
+                key: featureEntity.key,
+                name: featureEntity.name,
+                description: featureEntity.description,
+                activations: _modelActivations
+            )
 
         where:
             _testcase           | _activations | _modelActivations
@@ -71,34 +71,33 @@ class FeatureTransformationsSpec extends Specification {
             ]
 
         expect:
-            this.sut.toModel(featureEntity) == Feature.builder()
-                .key(featureEntity.key)
-                .name(featureEntity.name)
-                .description(featureEntity.description)
-                .activations([
-                    FeatureActivation.builder()
-                        .id(featureEntity.activations[0].id)
-                        .enabled(featureEntity.activations[0].enabled)
-                        .datetime(featureEntity.activations[0].dateTime)
-                        .build(),
-                    FeatureActivation.builder()
-                        .id(featureEntity.activations[1].id)
-                        .enabled(featureEntity.activations[1].enabled)
-                        .datetime(featureEntity.activations[1].dateTime)
-                        .build()
+            this.sut.toModel(featureEntity) == new Feature(
+                key: featureEntity.key,
+                name: featureEntity.name,
+                description: featureEntity.description,
+                activations: [
+                    new FeatureActivation(
+                        id: featureEntity.activations[0].id,
+                        enabled: featureEntity.activations[0].enabled,
+                        datetime: featureEntity.activations[0].dateTime
+                    ),
+                    new FeatureActivation(
+                        id: featureEntity.activations[1].id,
+                        enabled: featureEntity.activations[1].enabled,
+                        datetime: featureEntity.activations[1].dateTime
+                    )
                 ])
-                .build()
     }
 
     @Unroll
     void "Transform Feature to entity with no associations: #_testcase"() {
         given:
-            Feature feature = Feature.builder()
-                .key(textGenerator.generate())
-                .name(textGenerator.generate())
-                .description(textGenerator.generate())
-                .activations(_activations)
-                .build()
+            Feature feature = new Feature(
+                key: textGenerator.generate(),
+                name: textGenerator.generate(),
+                description: textGenerator.generate(),
+                activations: _activations
+            )
 
         expect:
             this.sut.toEntity(feature) == FeatureEntity.builder()
@@ -116,22 +115,22 @@ class FeatureTransformationsSpec extends Specification {
 
     void "Transform Feature to entity with 2 of activations"() {
         given:
-            Feature feature = Feature.builder()
-                .key(textGenerator.generate())
-                .name(textGenerator.generate())
-                .description(textGenerator.generate())
-                .activations([
-                    FeatureActivation.builder()
-                        .id(1L)
-                        .enabled(true)
-                        .build(),
-                    FeatureActivation.builder()
-                        .id(2L)
-                        .enabled(false)
-                        .datetime(ZonedDateTime.now().plusWeeks(1))
-                        .build(),
-                ])
-                .build()
+            Feature feature = new Feature(
+                key: textGenerator.generate(),
+                name: textGenerator.generate(),
+                description: textGenerator.generate(),
+                activations: [
+                    new FeatureActivation(
+                        id: 1L,
+                        enabled: true,
+                    ),
+                    new FeatureActivation(
+                        id: 2L,
+                        enabled: true,
+                        datetime: ZonedDateTime.now().plusWeeks(1)
+                    )
+                ]
+            )
 
         when:
             FeatureEntity result = this.sut.toEntity(feature)

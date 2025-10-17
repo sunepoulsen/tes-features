@@ -1,0 +1,30 @@
+# ===================================================================
+#                   Logging configuration
+# ===================================================================
+
+logging:
+  level:
+    dk.sunepoulsen.tes: DEBUG
+  file:
+    name: @projectBuildDir@/logs/@projectName@.log
+
+# ===================================================================
+#                   SSL Configuration
+# ===================================================================
+
+server:
+  ssl:
+    enabled: false
+
+# ===================================================================
+#                   Spring JPA Configuration
+# ===================================================================
+
+spring:
+  jpa:
+    show-sql: true
+  datasource:
+    url: jdbc:h2:mem:test-db;INIT=CREATE SCHEMA IF NOT EXISTS features;DB_CLOSE_DELAY=-1
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver

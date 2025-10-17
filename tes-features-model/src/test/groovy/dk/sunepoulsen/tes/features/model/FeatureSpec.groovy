@@ -1,9 +1,9 @@
 package dk.sunepoulsen.tes.features.model
 
-import dk.sunepoulsen.tes.rest.models.validation.DefaultValidator
-import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead
 import dk.sunepoulsen.tes.data.generators.DataGenerator
 import dk.sunepoulsen.tes.data.generators.TimeGenerators
+import dk.sunepoulsen.tes.rest.models.validation.DefaultValidator
+import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead
 import dk.sunepoulsen.tes.validation.tests.ConstraintViolationAssertions
 import dk.sunepoulsen.tes.validation.tests.ExpectedConstraintViolation
 import jakarta.validation.ConstraintViolationException
@@ -25,10 +25,10 @@ class FeatureSpec extends Specification {
 
     void "Validate feature that is valid"() {
         given:
-            Feature model = Feature.builder()
-                .key('key')
-                .name('name')
-                .build()
+            Feature model = new Feature(
+                key: 'key',
+                name: 'name'
+            )
 
         when:
             this.validator.validate(model)
@@ -40,10 +40,10 @@ class FeatureSpec extends Specification {
     @Unroll
     void "Validate feature that is invalid: #_testcase"() {
         given:
-            Feature model = Feature.builder()
-                .key(_key)
-                .name(_name)
-                .build()
+            Feature model = new Feature(
+                key: _key,
+                name: _name
+            )
 
         when:
             this.validator.validate(model)
@@ -60,15 +60,15 @@ class FeatureSpec extends Specification {
 
     void "Validate feature with invalid activations"() {
         given:
-            Feature model = Feature.builder()
-                .key('key')
-                .name('name')
-                .activations(List.of(FeatureActivation.builder()
-                    .id(10L)
-                    .enabled(null)
-                    .build()
-                ))
-                .build()
+            Feature model = new Feature(
+                key: 'key',
+                name: 'name',
+                activations: [
+                    new FeatureActivation(
+                        id: 10L
+                    )
+                ]
+            )
 
         when:
             this.validator.validate(model, Default, OnCrudRead)

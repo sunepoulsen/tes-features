@@ -1,0 +1,20 @@
+dependencies {
+    implementation project(':tes-features-deployment')
+
+    implementation 'dk.sunepoulsen.tes-foundation:tes-deployment-core:2.1.0-SNAPSHOT'
+    implementation 'dk.sunepoulsen.tes-foundation:tes-flows:2.1.0-SNAPSHOT'
+    implementation 'dk.sunepoulsen.tes-foundation:tes-io:2.1.0-SNAPSHOT'
+    implementation 'dk.sunepoulsen.tes-foundation:tes-sut-engine:2.1.0-SNAPSHOT'
+
+    testImplementation project(':tes-features-data-generators')
+    testImplementation 'dk.sunepoulsen.tes-foundation:tes-data-generators:2.1.0-SNAPSHOT'
+    testImplementation 'dk.sunepoulsen.tes-foundation:tes-rest-integrations:2.1.0-SNAPSHOT'
+}
+
+test {
+    useJUnitPlatform()
+
+    onlyIf {
+        project.hasProperty('component-tests')
+    }
+}

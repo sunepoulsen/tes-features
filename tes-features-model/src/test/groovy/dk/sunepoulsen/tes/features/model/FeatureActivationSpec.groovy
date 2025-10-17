@@ -1,11 +1,11 @@
 package dk.sunepoulsen.tes.features.model
 
+import dk.sunepoulsen.tes.data.generators.DataGenerator
+import dk.sunepoulsen.tes.data.generators.TimeGenerators
 import dk.sunepoulsen.tes.rest.models.validation.DefaultValidator
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudCreate
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudUpdate
-import dk.sunepoulsen.tes.data.generators.DataGenerator
-import dk.sunepoulsen.tes.data.generators.TimeGenerators
 import dk.sunepoulsen.tes.validation.tests.ConstraintViolationAssertions
 import dk.sunepoulsen.tes.validation.tests.ExpectedConstraintViolation
 import jakarta.validation.ConstraintViolationException
@@ -27,11 +27,11 @@ class FeatureActivationSpec extends Specification {
     @Unroll
     void "Validate with group #_testcase is valid"() {
         given:
-            FeatureActivation model = FeatureActivation.builder()
-                .id(_id)
-                .enabled(_enabled)
-                .datetime(this.datetimeGenerator.generate())
-                .build()
+            FeatureActivation model = new FeatureActivation(
+                id: _id,
+                enabled: _enabled,
+                datetime: this.datetimeGenerator.generate()
+            )
 
         when:
             this.validator.validate(model, _group)
@@ -48,11 +48,11 @@ class FeatureActivationSpec extends Specification {
     @Unroll
     void "Validate with group OnCrudCreate is invalid: #_testcase"() {
         given:
-            FeatureActivation model = FeatureActivation.builder()
-                .id(_id)
-                .enabled(_enabled)
-                .datetime(this.datetimeGenerator.generate())
-                .build()
+            FeatureActivation model = new FeatureActivation(
+                id: _id,
+                enabled: _enabled,
+                datetime: this.datetimeGenerator.generate()
+            )
 
         when:
             this.validator.validate(model, OnCrudCreate)
@@ -70,11 +70,11 @@ class FeatureActivationSpec extends Specification {
     @Unroll
     void "Validate with group OnCrudRead is invalid: #_testcase"() {
         given:
-            FeatureActivation model = FeatureActivation.builder()
-                .id(_id)
-                .enabled(_enabled)
-                .datetime(this.datetimeGenerator.generate())
-                .build()
+            FeatureActivation model = new FeatureActivation(
+                id: _id,
+                enabled: _enabled,
+                datetime: this.datetimeGenerator.generate()
+            )
 
         when:
             this.validator.validate(model, OnCrudRead)
@@ -92,11 +92,10 @@ class FeatureActivationSpec extends Specification {
     @Unroll
     void "Validate with group OnCrudUpdate is valid: #_testcase"() {
         given:
-            FeatureActivation model = FeatureActivation.builder()
-                .id(null)
-                .enabled(_enabled)
-                .datetime(this.datetimeGenerator.generate())
-                .build()
+            FeatureActivation model = new FeatureActivation(
+                enabled: _enabled,
+                datetime: this.datetimeGenerator.generate()
+            )
 
         when:
             this.validator.validate(model, OnCrudUpdate)
@@ -112,11 +111,9 @@ class FeatureActivationSpec extends Specification {
 
     void "Validate with group OnCrudUpdate is invalid"() {
         given:
-            FeatureActivation model = FeatureActivation.builder()
-                .id(10L)
-                .enabled(null)
-                .datetime(null)
-                .build()
+            FeatureActivation model = new FeatureActivation(
+                id: 10L
+            )
 
         when:
             this.validator.validate(model, OnCrudUpdate)

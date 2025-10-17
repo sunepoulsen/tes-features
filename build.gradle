@@ -54,18 +54,18 @@ subprojects {
 
     dependencies {
         // Lombok
-        compileOnly 'org.projectlombok:lombok:1.18.38'
-        annotationProcessor 'org.projectlombok:lombok:1.18.38'
+        compileOnly 'org.projectlombok:lombok:1.18.42'
+        annotationProcessor 'org.projectlombok:lombok:1.18.42'
 
         // Logging
-        implementation 'ch.qos.logback:logback-core:1.5.18'
-        implementation 'ch.qos.logback:logback-classic:1.5.18'
+        implementation 'ch.qos.logback:logback-core:1.5.19'
+        implementation 'ch.qos.logback:logback-classic:1.5.19'
         implementation 'org.slf4j:log4j-over-slf4j:2.0.17'
 
         // Spock
         testImplementation 'org.apache.groovy:groovy-all:4.0.28'
         testImplementation 'org.spockframework:spock-core:2.4-M1-groovy-4.0'
-        testImplementation 'net.bytebuddy:byte-buddy:1.17.7'
+        testImplementation 'net.bytebuddy:byte-buddy:1.17.8'
         testImplementation 'org.objenesis:objenesis:3.4'
     }
 
@@ -76,12 +76,6 @@ subprojects {
     }
 
     apply from: "${rootProject.projectDir}/gradle/sonarqube-java.gradle"
-}
-
-tasks.register('makeSecrets', Exec) {
-    commandLine "${rootDir.absolutePath}/scripts/make-tes-service-certificate-secrets.sh", "${project.rootDir.absolutePath}/build/secrets", "${project.property('service.tls.certificate.alias')}", "${project.property('service.password.length')}", "${project.property('service.tls.certificate.password.filename')}"
-    commandLine "${rootDir.absolutePath}/scripts/create-database-super-user-secrets.sh", "${project.rootDir.absolutePath}/build/secrets", "${project.property('service.password.length')}"
-    commandLine "${rootDir.absolutePath}/scripts/create-tes-service-database-secrets.sh", "${project.rootDir.absolutePath}/build/secrets", "${project.property('service.name')}", "${project.property('service.password.length')}"
 }
 
 sonar {

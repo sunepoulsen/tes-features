@@ -1,0 +1,12 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(':tes-features-integrator')
+    implementation 'dk.sunepoulsen.tes-foundation:tes-deployment-core:2.1.0-SNAPSHOT'
+    implementation 'dk.sunepoulsen.tes-foundation:tes-io:2.1.0-SNAPSHOT'
+    implementation 'dk.sunepoulsen.tes-foundation:tes-sut-engine:2.1.0-SNAPSHOT'
+    implementation 'dk.sunepoulsen.tes-foundation:tes-rest-integrations:2.1.0-SNAPSHOT'
+    implementation 'org.apache.groovy:groovy-all:4.0.28'
+}

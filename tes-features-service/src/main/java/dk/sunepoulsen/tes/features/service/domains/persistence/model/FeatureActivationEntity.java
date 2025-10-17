@@ -9,17 +9,17 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "feature_activations")
+@Table(schema = "features", name = "feature_activations")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class FeatureActivationEntity extends ActivationEntity {
 
-    private static final String SEQUENCE_NAME = "feature_group_activation_id_seq";
+    private static final String SEQUENCE_NAME = "feature_activation_id_seq";
 
     /**
      * Primary key.
      */
     @Id
-    @SequenceGenerator(name = SEQUENCE_NAME, sequenceName = SEQUENCE_NAME, allocationSize = 1)
+    @SequenceGenerator(schema = "features", name = SEQUENCE_NAME, sequenceName = SEQUENCE_NAME, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQUENCE_NAME)
     @Column(name = "id")
     private Long id;

@@ -5,10 +5,12 @@ import dk.sunepoulsen.tes.features.service.domains.persistence.model.ActivationE
 
 class ActivationTransformations {
 
-    protected FeatureActivation.FeatureActivationBuilder toModelBuilder(ActivationEntity activationEntity) {
-        return FeatureActivation.builder()
-            .enabled(activationEntity.getEnabled())
-            .datetime(activationEntity.getDateTime());
+    protected FeatureActivation toModel(ActivationEntity activationEntity) {
+        FeatureActivation result = new FeatureActivation();
+        result.setEnabled(activationEntity.getEnabled());
+        result.setDatetime(activationEntity.getDateTime());
+
+        return result;
     }
 
     protected void assignActivationEntity(ActivationEntity activationEntity, FeatureActivation featureActivation) {
