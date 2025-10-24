@@ -1,0 +1,57 @@
+# ===================================================================
+#                   Logging configuration
+# ===================================================================
+
+logging:
+  level:
+    dk.sunepoulsen.tes: DEBUG
+  file:
+    name: @projectBuildDir@/logs/@projectName@.log
+
+# ===================================================================
+#                   Actuator configuration
+# ===================================================================
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,metrics
+  endpoint:
+    health:
+      show-details: ALWAYS
+    env:
+      show-values: ALWAYS
+  health:
+    db:
+      enabled: true
+
+# ===================================================================
+#                   Security Configuration
+# ===================================================================
+
+test:
+  endpoints:
+    enabled: false
+
+# ===================================================================
+#                   SSL configuration
+# ===================================================================
+
+server:
+  port: 19080
+  ssl:
+    enabled: false
+
+# ===================================================================
+#                   Spring JPA Configuration
+# ===================================================================
+
+spring:
+  jpa:
+    show-sql: true
+  datasource:
+    url: jdbc:h2:file:./tes-features-service/build/test-data/test-db;INIT=CREATE SCHEMA IF NOT EXISTS features;DB_CLOSE_DELAY=-1
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver

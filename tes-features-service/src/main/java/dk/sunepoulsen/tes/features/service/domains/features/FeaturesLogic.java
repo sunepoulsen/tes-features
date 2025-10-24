@@ -6,6 +6,7 @@ import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGrou
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -17,6 +18,7 @@ class FeaturesLogic {
     private final FeatureGroupPersistence featureGroupPersistence;
 
     @Async
+    @Transactional
     CompletableFuture<FeatureGroup> registerFeatures(FeatureGroup featureGroup) {
         FeatureGroupEntity entity = featureGroupTransformations.toEntity(featureGroup);
         entity = featureGroupPersistence.registerFeatureGroup(entity);

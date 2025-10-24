@@ -13,19 +13,20 @@ class FeatureTransformations {
     private final FeatureActivationTransformations featureActivationTransformations;
 
     Feature toModel(FeatureEntity featureEntity) {
-        Feature.FeatureBuilder builder = Feature.builder()
-            .key(featureEntity.getKey())
-            .name(featureEntity.getName())
-            .description(featureEntity.getDescription());
+        Feature result = new Feature();
+
+        result.setKey(featureEntity.getKey());
+        result.setName(featureEntity.getName());
+        result.setDescription(featureEntity.getDescription());
 
         if (featureEntity.getActivations() != null) {
-            builder.activations(featureEntity.getActivations().stream()
+            result.setActivations(featureEntity.getActivations().stream()
                 .map(featureActivationTransformations::toModel)
                 .toList()
             );
         }
 
-        return builder.build();
+        return result;
     }
 
     FeatureEntity toEntity(Feature feature) {

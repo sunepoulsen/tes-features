@@ -47,28 +47,10 @@ def resourceProperties = [
 
     // Service properties
     serviceName: project.property('service.name').toString(),
-
-    // Docker Image properties
-    databaseImage: project.property('database.image.name').toString(),
-    databaseTag: project.property('database.image.tag').toString(),
+    serviceDockerImageName: project.property('service.docker.image.name').toString(),
 
     // HTTPS Certificate properties
-    certificateDirectory: "${project.rootDir.absolutePath}/build/secrets".toString(),
     certificateAlias: "${project.property('service.tls.certificate.alias')}".toString(),
-    certificateFile: "${project.rootDir.absolutePath}/build/secrets/${project.property('service.tls.certificate.alias')}.p12".toString(),
-    certificateFilename: "${project.property('service.tls.certificate.alias')}.p12".toString(),
-    certificatePemFilename: "${project.property('service.tls.certificate.alias')}.pem".toString(),
-    certificateKeyFilename: "${project.property('service.tls.certificate.alias')}.key".toString(),
-    certificatePasswordFilename: project.property('service.tls.certificate.password.filename').toString(),
-    certificatePassword: readPasswordFromFile("${project.property('service.tls.certificate.password.filename')}".toString()),
-
-    // Properties for databases
-    databaseSuperUserPassword: readPasswordFromSystemPropertyOrFile('tes.database.super.user.password', 'database-super-user-password.txt'),
-    tesServiceDatabase: 'tes_features',
-    tesServiceAdminUsername: 'tes_features_adm',
-    tesServiceAdminPassword: readPasswordFromSystemPropertyOrFile('tes.database.admin.password', 'tes-features-admin-password.txt'),
-    tesServiceApplicationUsername: 'tes_features_app',
-    tesServiceApplicationPassword: readPasswordFromSystemPropertyOrFile('tes.database.application.password', 'tes-features-application-password.txt'),
 ]
 
 processResources {

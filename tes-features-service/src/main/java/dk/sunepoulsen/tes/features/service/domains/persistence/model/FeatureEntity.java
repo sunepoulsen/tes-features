@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "features")
+@Table(schema = "features", name = "features")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class FeatureEntity extends TimestampEntity {
 
@@ -23,7 +23,7 @@ public class FeatureEntity extends TimestampEntity {
      * Primary key.
      */
     @Id
-    @SequenceGenerator(name = SEQUENCE_NAME, sequenceName = SEQUENCE_NAME, allocationSize = 1)
+    @SequenceGenerator(schema = "features", name = SEQUENCE_NAME, sequenceName = SEQUENCE_NAME, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQUENCE_NAME)
     @Column(name = "id")
     private Long id;

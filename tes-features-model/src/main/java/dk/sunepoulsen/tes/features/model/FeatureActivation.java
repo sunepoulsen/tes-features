@@ -7,17 +7,11 @@ import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudUpdate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.time.ZonedDateTime;
 
-@Builder
-@Getter
-@EqualsAndHashCode
-@ToString
+@Data
 @Schema(name = "Feature activation", description = "Defines an activation of a feature group or feature")
 public class FeatureActivation implements BaseModel {
     @Schema(

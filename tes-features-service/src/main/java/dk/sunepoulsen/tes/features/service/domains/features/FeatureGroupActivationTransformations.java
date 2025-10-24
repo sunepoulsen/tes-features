@@ -8,9 +8,10 @@ import org.springframework.stereotype.Service;
 class FeatureGroupActivationTransformations extends ActivationTransformations {
 
     FeatureActivation toModel(FeatureGroupActivationEntity entity) {
-        return super.toModelBuilder(entity)
-            .id(entity.getId())
-            .build();
+        FeatureActivation result = super.toModel(entity);
+        result.setId(entity.getId());
+
+        return result;
     }
 
     FeatureGroupActivationEntity toEntity(FeatureActivation featureActivation) {

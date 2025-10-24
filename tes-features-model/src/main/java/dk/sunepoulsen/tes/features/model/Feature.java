@@ -4,17 +4,11 @@ import dk.sunepoulsen.tes.rest.models.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.util.List;
 
-@Builder
-@Getter
-@EqualsAndHashCode
-@ToString
+@Data
 @Schema(name = "Feature", description = "Defines a feature")
 public class Feature implements BaseModel {
     @Schema(

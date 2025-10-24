@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "feature_groups")
+@Table(schema = "features", name = "feature_groups")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class FeatureGroupEntity extends TimestampEntity {
 
@@ -23,7 +23,7 @@ public class FeatureGroupEntity extends TimestampEntity {
      * Primary key.
      */
     @Id
-    @SequenceGenerator(name = SEQUENCE_NAME, sequenceName = SEQUENCE_NAME, allocationSize = 1)
+    @SequenceGenerator(schema = "features", name = SEQUENCE_NAME, sequenceName = SEQUENCE_NAME, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQUENCE_NAME)
     @Column(name = "id")
     private Long id;
@@ -40,7 +40,7 @@ public class FeatureGroupEntity extends TimestampEntity {
     @OneToMany(mappedBy = "featureGroup", cascade = CascadeType.ALL)
     private List<FeatureEntity> features;
 
-    @OneToMany(mappedBy = "featureGroup", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "featureGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeatureGroupActivationEntity> activations;
 
 }

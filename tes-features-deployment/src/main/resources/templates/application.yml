@@ -1,0 +1,58 @@
+# ===================================================================
+#                   Logging configuration
+# ===================================================================
+
+logging:
+  level:
+    dk.sunepoulsen.tes: DEBUG
+  file:
+    name: $serviceLogFile
+
+# ===================================================================
+#                   Request logging
+# ===================================================================
+
+requests:
+  logging:
+    include-query-string: true
+    include-headers: true
+    include-payload: true
+    max-payload-length: 10000
+
+# ===================================================================
+#                   Security Configuration
+# ===================================================================
+
+test:
+  endpoints:
+    enabled: true
+
+# ===================================================================
+#                   SSL configuration
+# ===================================================================
+
+server:
+  ssl:
+    enabled: true
+
+    # The path to the keystore containing the certificate
+    key-store: $certificateFile
+
+    # The password used to generate the certificate
+    key-store-password: '$certificatePassword'
+
+# ===================================================================
+#                   Spring JPA Configuration
+# ===================================================================
+
+spring:
+  liquibase:
+    user: $databaseAdminUser.username
+    password: '$databaseAdminUser.password'
+  jpa:
+    show-sql: true
+  datasource:
+    url: jdbc:postgresql://$databaseHost:5432/$databaseName
+    username: $databaseApplicationUser.username
+    password: '$databaseApplicationUser.password'
+    driver-class-name: org.postgresql.Driver

@@ -1,9 +1,9 @@
 package dk.sunepoulsen.tes.features.model
 
-import dk.sunepoulsen.tes.rest.models.validation.DefaultValidator
-import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead
 import dk.sunepoulsen.tes.data.generators.DataGenerator
 import dk.sunepoulsen.tes.data.generators.TimeGenerators
+import dk.sunepoulsen.tes.rest.models.validation.DefaultValidator
+import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead
 import dk.sunepoulsen.tes.validation.tests.ConstraintViolationAssertions
 import dk.sunepoulsen.tes.validation.tests.ExpectedConstraintViolation
 import jakarta.validation.ConstraintViolationException
@@ -25,10 +25,10 @@ class FeatureGroupSpec extends Specification {
 
     void "Validate feature group that is valid"() {
         given:
-            FeatureGroup model = FeatureGroup.builder()
-                .key('key')
-                .name('name')
-                .build()
+            FeatureGroup model = new FeatureGroup(
+                key: 'key',
+                name: 'name'
+            )
 
         when:
             this.validator.validate(model)
@@ -40,10 +40,10 @@ class FeatureGroupSpec extends Specification {
     @Unroll
     void "Validate feature group that is invalid: #_testcase"() {
         given:
-            FeatureGroup model = FeatureGroup.builder()
-                .key(_key)
-                .name(_name)
-                .build()
+            FeatureGroup model = new FeatureGroup(
+                key: _key,
+                name: _name
+            )
 
         when:
             this.validator.validate(model)
@@ -60,14 +60,15 @@ class FeatureGroupSpec extends Specification {
 
     void "Validate feature group with invalid features"() {
         given:
-            FeatureGroup model = FeatureGroup.builder()
-                .key('key')
-                .name('name')
-                .features(List.of(Feature.builder()
-                    .key('key')
-                    .build()
-                ))
-                .build()
+            FeatureGroup model = new FeatureGroup(
+                key: 'key',
+                name: 'name',
+                features: [
+                    new Feature(
+                        key: 'key'
+                    )
+                ]
+            )
 
         when:
             this.validator.validate(model, Default, OnCrudRead)
@@ -81,15 +82,15 @@ class FeatureGroupSpec extends Specification {
 
     void "Validate feature group with invalid activations"() {
         given:
-            FeatureGroup model = FeatureGroup.builder()
-                .key('key')
-                .name('name')
-                .activations(List.of(FeatureActivation.builder()
-                    .id(10L)
-                    .enabled(null)
-                    .build()
-                ))
-                .build()
+            FeatureGroup model = new FeatureGroup(
+                key: 'key',
+                name: 'name',
+                activations: [
+                    new FeatureActivation(
+                        id: 10L
+                    )
+                ]
+            )
 
         when:
             this.validator.validate(model, Default, OnCrudRead)

@@ -1,0 +1,73 @@
+# ===================================================================
+#                   Logging configuration
+# ===================================================================
+
+logging:
+  level:
+    dk.sunepoulsen.tes: INFO
+
+# ===================================================================
+#                   Actuator configuration
+# ===================================================================
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: @serviceName@
+    version: @version@
+    service:
+      name: @projectName@
+
+# ===================================================================
+#                   Swagger configuration
+# ===================================================================
+
+springdoc:
+  show-actuator: true
+  default-produces-media-type: application/json
+  model-converters:
+    pageable-converter:
+      enabled: true
+
+# ===================================================================
+#                   Security Configuration
+# ===================================================================
+
+test:
+  endpoints:
+    enabled: false
+
+# ===================================================================
+#                   SSL configuration
+# ===================================================================
+
+server:
+  ssl:
+    enabled: true
+
+    # The alias mapped to the certificate
+    key-alias: @certificateAlias@
+
+    # The format used for the keystore. It could be set to JKS in case it is a JKS file
+    key-store-type: PKCS12
+
+# ===================================================================
+#                   Spring JPA Configuration
+# ===================================================================
+
+spring:
+  liquibase:
+    change-log: classpath:/db/changelog/changelog.xml
+    default-schema: features
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false

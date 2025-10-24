@@ -15,26 +15,27 @@ class FeatureGroupTransformations {
     private final FeatureTransformations featureTransformations;
 
     FeatureGroup toModel(FeatureGroupEntity featureGroupEntity) {
-        FeatureGroup.FeatureGroupBuilder builder = FeatureGroup.builder()
-            .key(featureGroupEntity.getKey())
-            .name(featureGroupEntity.getName())
-            .description(featureGroupEntity.getDescription());
+        FeatureGroup result = new FeatureGroup();
+
+        result.setKey(featureGroupEntity.getKey());
+        result.setName(featureGroupEntity.getName());
+        result.setDescription(featureGroupEntity.getDescription());
 
         if (featureGroupEntity.getActivations() != null) {
-            builder.activations(featureGroupEntity.getActivations().stream()
+            result.setActivations(featureGroupEntity.getActivations().stream()
                 .map(featureGroupActivationTransformations::toModel)
                 .toList()
             );
         }
 
         if (featureGroupEntity.getFeatures() != null) {
-            builder.features(featureGroupEntity.getFeatures().stream()
+            result.setFeatures(featureGroupEntity.getFeatures().stream()
                 .map(featureTransformations::toModel)
                 .toList()
             );
         }
 
-        return builder.build();
+        return result;
     }
 
     FeatureGroupEntity toEntity(FeatureGroup featureGroup) {

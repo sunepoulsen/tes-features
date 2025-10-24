@@ -21,7 +21,7 @@ class FeaturesControllerSpec extends Specification {
 
     void "Test register new features successfully"() {
         given:
-            FeatureGroup model = FeatureGroup.builder().build()
+            FeatureGroup model = new FeatureGroup()
 
         when:
             DeferredResult<FeatureGroup> deferredResult = sut.registerFeatures(model)
@@ -31,15 +31,15 @@ class FeaturesControllerSpec extends Specification {
             FeatureGroup group = deferredResult.result as FeatureGroup
             group.key == 'group-key'
 
-            1 * featuresLogic.registerFeatures(model) >> CompletableFuture.completedFuture(FeatureGroup.builder()
-                .key('group-key')
-                .build())
+            1 * featuresLogic.registerFeatures(model) >> CompletableFuture.completedFuture(new FeatureGroup(
+                key: 'group-key'
+            ))
 
     }
 
     void "Test register new features throws LogicException"() {
         given:
-            FeatureGroup model = FeatureGroup.builder().build()
+            FeatureGroup model = new FeatureGroup()
 
         when:
             sut.registerFeatures(model)
