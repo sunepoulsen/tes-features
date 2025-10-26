@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,10 @@ public class FeatureGroupPersistence {
 
         entity.setFeatures(featureRepository.findByFeatureGroup(entity));
         return entity;
+    }
+
+    public Optional<FeatureGroupEntity> getFeatureGroup(String featureGroupKey) throws PersistenceException {
+        return featureGroupRepository.findByKey(featureGroupKey);
     }
 
     private void verifyFeatures(FeatureGroupEntity featureGroup) throws PersistenceException {

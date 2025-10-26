@@ -53,9 +53,10 @@ class FeatureSpec extends Specification {
             ConstraintViolationAssertions.verifyViolations(exception.constraintViolations, _errors)
 
         where:
-            _testcase      | _key  | _name  | _errors
-            'key is null'  | null  | 'name' | [new ExpectedConstraintViolation('key', 'must not be null')]
-            'name is null' | 'key' | null   | [new ExpectedConstraintViolation('name', 'must not be null')]
+            _testcase                        | _key  | _name  | _errors
+            'key is null'                    | null  | 'name' | [new ExpectedConstraintViolation('key', 'must not be null')]
+            'key contains invalid character' | ';'   | 'name' | [new ExpectedConstraintViolation('key', 'must match "^[^; ]+$"')]
+            'name is null'                   | 'key' | null   | [new ExpectedConstraintViolation('name', 'must not be null')]
     }
 
     void "Validate feature with invalid activations"() {

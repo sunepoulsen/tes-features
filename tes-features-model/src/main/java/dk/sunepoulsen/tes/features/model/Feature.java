@@ -1,6 +1,7 @@
 package dk.sunepoulsen.tes.features.model;
 
 import dk.sunepoulsen.tes.rest.models.BaseModel;
+import dk.sunepoulsen.tes.rest.models.validation.constraints.UriPathPattern;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ public class Feature implements BaseModel {
         accessMode = Schema.AccessMode.READ_ONLY
     )
     @NotNull
+    @UriPathPattern
     private String key;
 
     @Schema(

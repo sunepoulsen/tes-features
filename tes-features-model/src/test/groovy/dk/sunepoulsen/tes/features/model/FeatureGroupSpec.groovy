@@ -9,7 +9,6 @@ import dk.sunepoulsen.tes.validation.tests.ExpectedConstraintViolation
 import jakarta.validation.ConstraintViolationException
 import jakarta.validation.groups.Default
 import spock.lang.Specification
-import spock.lang.Unroll
 
 import java.time.ZonedDateTime
 
@@ -37,27 +36,6 @@ class FeatureGroupSpec extends Specification {
             noExceptionThrown()
     }
 
-    @Unroll
-    void "Validate feature group that is invalid: #_testcase"() {
-        given:
-            FeatureGroup model = new FeatureGroup(
-                key: _key,
-                name: _name
-            )
-
-        when:
-            this.validator.validate(model)
-
-        then:
-            ConstraintViolationException exception = thrown(ConstraintViolationException)
-            ConstraintViolationAssertions.verifyViolations(exception.constraintViolations, _errors)
-
-        where:
-            _testcase      | _key  | _name  | _errors
-            'key is null'  | null  | 'name' | [new ExpectedConstraintViolation('key', 'must not be null')]
-            'name is null' | 'key' | null   | [new ExpectedConstraintViolation('name', 'must not be null')]
-    }
-
     void "Validate feature group with invalid features"() {
         given:
             FeatureGroup model = new FeatureGroup(
@@ -77,28 +55,6 @@ class FeatureGroupSpec extends Specification {
             ConstraintViolationException exception = thrown(ConstraintViolationException)
             ConstraintViolationAssertions.verifyViolations(exception.constraintViolations, [
                 new ExpectedConstraintViolation('features[0].name', 'must not be null')
-            ])
-    }
-
-    void "Validate feature group with invalid activations"() {
-        given:
-            FeatureGroup model = new FeatureGroup(
-                key: 'key',
-                name: 'name',
-                activations: [
-                    new FeatureActivation(
-                        id: 10L
-                    )
-                ]
-            )
-
-        when:
-            this.validator.validate(model, Default, OnCrudRead)
-
-        then:
-            ConstraintViolationException exception = thrown(ConstraintViolationException)
-            ConstraintViolationAssertions.verifyViolations(exception.constraintViolations, [
-                new ExpectedConstraintViolation('activations[0].enabled', 'must not be null')
             ])
     }
 

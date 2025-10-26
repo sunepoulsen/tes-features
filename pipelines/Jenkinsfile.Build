@@ -51,6 +51,16 @@ pipeline {
                 }
             }
         }
+        stage('Component Tests') {
+            steps {
+                sh './pipelines/pipeline-component-tests.py'
+            }
+            post {
+                always {
+                    junit '**/tes-features-component-tests/build/test-results/**/*.xml'
+                }
+            }
+        }
         stage('Publish & Analysis') {
             parallel {
                 stage('Publish') {

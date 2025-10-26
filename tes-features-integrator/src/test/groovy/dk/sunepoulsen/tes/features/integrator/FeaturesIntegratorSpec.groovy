@@ -31,7 +31,7 @@ class FeaturesIntegratorSpec extends Specification {
         then:
             result.blockingGet().key == 'group-key'
 
-            1 * httpClient.put('/features', model, FeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.put(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, model, FeatureGroup) >> CompletableFuture.supplyAsync {
                 new FeatureGroup(
                     key: 'group-key'
                 )
@@ -51,7 +51,41 @@ class FeaturesIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.put('/features', model, FeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.put(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, model, FeatureGroup) >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
+    }
+
+    void "Get feature group with OK"() {
+        when:
+            Single<FeatureGroup> result = sut.getFeatureGroup('group-key')
+
+        then:
+            result.blockingGet().key == 'group-key'
+
+            1 * httpClient.get("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", FeatureGroup) >> CompletableFuture.supplyAsync {
+                new FeatureGroup(
+                    key: 'group-key'
+                )
+            }
+            0 * _
+    }
+
+    void "Get feature group Internal Server Error"() {
+        when:
+            sut.getFeatureGroup('group-key').blockingGet()
+
+        then:
+            ClientInternalServerException ex = thrown(ClientInternalServerException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.get("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", FeatureGroup) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',

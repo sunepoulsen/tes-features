@@ -27,7 +27,7 @@ public class FeatureGroupDataGenerator implements DataGenerator<FeatureGroup> {
         result.setDescription(textGenerator.generate());
         result.setFeatures(new DataListGenerator<>(
             NumberGenerators.integerGenerator(1, 5),
-            integer -> new FeatureDataGenerator().generate()
+            integer -> new FeatureDataGenerator(textGenerator).generate()
         ).generate());
         result.setActivations(new DataListGenerator<>(
             NumberGenerators.integerGenerator(1, 5),

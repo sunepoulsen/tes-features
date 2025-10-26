@@ -1,37 +1,45 @@
 package dk.sunepoulsen.tes.features.service.domains.security;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
+@Slf4j
 @Configuration
 public class SecurityConfig {
     @Value("${test.endpoints.enabled}")
     private Boolean testEndpointsEnabled;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
-        MvcRequestMatcher.Builder mvcMatcherBuilder = new MvcRequestMatcher.Builder(introspector);
+    @Value("${test.csrf.disabled:false}")
+    private Boolean testCsrfDisabled;
 
-        http.authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(auth -> {
             if (!Boolean.TRUE.equals(testEndpointsEnabled)) {
-                authorizationManagerRequestMatcherRegistry
-                    .requestMatchers(mvcMatcherBuilder.pattern("/tests/**"))
+                log.info("Denying access to test endpoints: /tests/**");
+
+                auth
+                    .requestMatchers("/tests/**")
                     .denyAll();
+            } else {
+                log.info("Activating access to test endpoints: /tests/**");
             }
 
-            authorizationManagerRequestMatcherRegistry
-                .requestMatchers(mvcMatcherBuilder.pattern("/**"))
+            auth
+                .requestMatchers("/**")
                 .permitAll();
             }
         );
 
-        http.csrf(AbstractHttpConfigurer::disable);
+        if (Boolean.TRUE.equals(testCsrfDisabled)) {
+            log.info("Disabling CSRF!");
+            http.csrf(AbstractHttpConfigurer::disable);
+        }
 
         return http.build();
     }

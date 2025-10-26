@@ -5,6 +5,7 @@ import dk.sunepoulsen.tes.data.generators.TimeGenerators;
 import dk.sunepoulsen.tes.features.model.FeatureActivation;
 
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 public class FeatureActivationDataGenerator implements DataGenerator<FeatureActivation> {
 
@@ -23,7 +24,7 @@ public class FeatureActivationDataGenerator implements DataGenerator<FeatureActi
         FeatureActivation result = new FeatureActivation();
 
         result.setEnabled(true);
-        result.setDatetime(dateTimeDataGenerator.generate());
+        result.setDatetime(dateTimeDataGenerator.generate().truncatedTo(ChronoUnit.MICROS));
 
         return result;
     }
