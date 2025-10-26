@@ -42,6 +42,8 @@ requests:
 test:
   endpoints:
     enabled: true
+  csrf:
+    disabled: true
 
 # ===================================================================
 #                   SSL configuration

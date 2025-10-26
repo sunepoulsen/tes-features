@@ -18,6 +18,7 @@ if __name__ == '__main__':
     scripts = [
         ["./pipeline-clean.py"],
         ["./pipeline-build.py"],
+        ["./pipeline-component-tests.py"],
         ["./pipeline-publish.py"],
         ["./pipeline-analyze.py"],
     ]
