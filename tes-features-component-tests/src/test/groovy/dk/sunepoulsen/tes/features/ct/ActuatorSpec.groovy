@@ -46,7 +46,7 @@ class ActuatorSpec extends Specification implements FeaturesIntegratorProvider {
             Map result = featuresIntegrator().env().blockingGet()
 
         then: 'Verify env body'
-            result.activeProfiles == ['ct']
+            result.activeProfiles.sort() == ['ct', 'tests']
     }
 
 }

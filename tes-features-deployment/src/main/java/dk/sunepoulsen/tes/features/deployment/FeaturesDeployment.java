@@ -17,7 +17,7 @@ import java.util.List;
 
 public class FeaturesDeployment {
 
-    private final String profile;
+    private final List<String> profiles;
 
     @Getter
     @Setter
@@ -26,7 +26,11 @@ public class FeaturesDeployment {
     private final PropertiesResource propertiesResource;
 
     public FeaturesDeployment(String profile) throws ResourceException {
-        this.profile = profile;
+        this(List.of(profile));
+    }
+
+    public FeaturesDeployment(List<String> profiles) throws ResourceException {
+        this.profiles = profiles;
         this.configTemplateName = "templates/application.yml";
         this.propertiesResource = new PropertiesResource(FeaturesDeployment.class.getResourceAsStream("/features-deployment.properties"));
     }
@@ -37,7 +41,7 @@ public class FeaturesDeployment {
     }
 
     public ConfigurationFileStepsResult configurationSteps(CertificateStepsResult certificateStepsResult, PostgresConfigureStepsDatabaseResult featuresDatabaseSteps, AtomicDataSupplier<String> databaseHost, Path storeDirectory) {
-        ConfigurationFileStepsFactory configurationFileStepsFactory = new ConfigurationFileStepsFactory(configTemplateName, storeDirectory, "application-" + profile + ".yml");
+        ConfigurationFileStepsFactory configurationFileStepsFactory = new ConfigurationFileStepsFactory(configTemplateName, storeDirectory, "application-" + profiles.get(0) + ".yml");
         configurationFileStepsFactory.addDefaultTesServiceContext();
         configurationFileStepsFactory.addCertificateContext(certificateStepsResult);
         configurationFileStepsFactory.addDatabaseContext(databaseHost, featuresDatabaseSteps);
@@ -47,6 +51,6 @@ public class FeaturesDeployment {
 
     public ContainerStepResult<SutStartTesServiceStep> containerSteps(SystemUnderTestDeployment systemUnderTestDeployment, SutCreateTestContainerNetworkStep networkStep, CertificateStepsResult certificateStepsResult, ConfigurationFileStepsResult configurationSteps, Path logDirectory) {
         TesContainerStepsFactory featuresServiceStepsFactory = new TesContainerStepsFactory(propertiesResource.getProperty("docker.image.name"), propertiesResource.getProperty("docker.image.tag"), systemUnderTestDeployment, networkStep, logDirectory);
-        return featuresServiceStepsFactory.createSteps(List.of(profile), propertiesResource.getProperty("features.service.key"), certificateStepsResult, configurationSteps);
+        return featuresServiceStepsFactory.createSteps(profiles, propertiesResource.getProperty("features.service.key"), certificateStepsResult, configurationSteps);
     }
 }

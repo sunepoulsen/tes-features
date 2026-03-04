@@ -33,7 +33,7 @@ public class DeploymentSpockExtension extends AbstractSystemUnderTestExtension {
         try {
             log.info("Configuring deployment steps");
 
-            FeaturesDeployment featuresDeployment = new FeaturesDeployment("ct");
+            FeaturesDeployment featuresDeployment = new FeaturesDeployment(List.of("ct", "tests"));
             featuresDeployment.setConfigTemplateName("templates/application-ct.yml");
 
             PostgresConfigureStepsDatabaseResult featuresConfigureDatabaseSteps = featuresDeployment.configureDatabaseSteps(deployDirectory);
