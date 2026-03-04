@@ -5,6 +5,7 @@
 logging:
   level:
     dk.sunepoulsen.tes: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
   file:
     name: $serviceLogFile
 
@@ -40,8 +41,6 @@ requests:
 # ===================================================================
 
 test:
-  endpoints:
-    enabled: true
   csrf:
     disabled: true
 

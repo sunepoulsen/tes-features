@@ -19,7 +19,7 @@ class FeatureGroupsLogic {
     private final FeatureGroupTransformations featureGroupTransformations;
     private final FeatureGroupPersistence featureGroupPersistence;
 
-    @Async
+    @Async("logicExecutor")
     @Transactional
     CompletableFuture<FeatureGroup> getFeatureGroup(final String key) {
         try {

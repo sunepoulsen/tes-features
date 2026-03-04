@@ -11,29 +11,15 @@ import org.springframework.security.web.SecurityFilterChain;
 @Slf4j
 @Configuration
 public class SecurityConfig {
-    @Value("${test.endpoints.enabled}")
-    private Boolean testEndpointsEnabled;
-
     @Value("${test.csrf.disabled:false}")
     private Boolean testCsrfDisabled;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(auth -> {
-            if (!Boolean.TRUE.equals(testEndpointsEnabled)) {
-                log.info("Denying access to test endpoints: /tests/**");
-
-                auth
-                    .requestMatchers("/tests/**")
-                    .denyAll();
-            } else {
-                log.info("Activating access to test endpoints: /tests/**");
-            }
-
+        http.authorizeHttpRequests(auth ->
             auth
                 .requestMatchers("/**")
-                .permitAll();
-            }
+                .permitAll()
         );
 
         if (Boolean.TRUE.equals(testCsrfDisabled)) {

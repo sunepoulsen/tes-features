@@ -5,6 +5,9 @@
 logging:
   level:
     dk.sunepoulsen.tes: INFO
+  pattern:
+    console: "${CONSOLE_LOG_PATTERN:%clr(%d{${LOG_DATEFORMAT_PATTERN:yyyy-MM-dd'T'HH:mm:ss.SSSXXX}}){faint} %clr(${LOG_LEVEL_PATTERN:-%6p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr([%X{X-OPERATION-ID}]){yellow} %clr([%X{X-TRANSACTION-ID}]){yellow} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}}"
+    file: "${FILE_LOG_PATTERN:%d{${LOG_DATEFORMAT_PATTERN:yyyy-MM-dd HH:mm:ss.SSS}} ${LOG_LEVEL_PATTERN:-%6p} ${PID:- } --- [%t] %-40.40logger{39} [%X{X-OPERATION-ID}] [%X{X-TRANSACTION-ID}] : %m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}}"
 
 # ===================================================================
 #                   Actuator configuration
@@ -36,14 +39,6 @@ springdoc:
   model-converters:
     pageable-converter:
       enabled: true
-
-# ===================================================================
-#                   Security Configuration
-# ===================================================================
-
-test:
-  endpoints:
-    enabled: false
 
 # ===================================================================
 #                   SSL configuration
