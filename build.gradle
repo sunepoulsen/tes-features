@@ -26,19 +26,19 @@ release {
 tasks.afterReleaseBuild.dependsOn tasks.patchChangelog
 
 subprojects {
-    group 'dk.sunepoulsen.tes'
-    version "${project.property('version')}"
+    group = 'dk.sunepoulsen.tes'
+    version = "${project.property('version')}"
 
     repositories {
         mavenLocal()
         mavenCentral()
 
         maven {
-            url "$mavenRepositoryBaseUrl/$mavenRepositorySnapshots"
+            url = "$mavenRepositoryBaseUrl/$mavenRepositorySnapshots"
             allowInsecureProtocol = true
         }
         maven {
-            url "$mavenRepositoryBaseUrl/$mavenRepositoryReleases"
+            url = "$mavenRepositoryBaseUrl/$mavenRepositoryReleases"
             allowInsecureProtocol = true
         }
     }
@@ -54,19 +54,19 @@ subprojects {
 
     dependencies {
         // Lombok
-        compileOnly 'org.projectlombok:lombok:1.18.42'
-        annotationProcessor 'org.projectlombok:lombok:1.18.42'
+        compileOnly 'org.projectlombok:lombok:1.18.44'
+        annotationProcessor 'org.projectlombok:lombok:1.18.44'
 
         // Logging
-        implementation 'ch.qos.logback:logback-core:1.5.19'
-        implementation 'ch.qos.logback:logback-classic:1.5.19'
+        implementation 'ch.qos.logback:logback-core:1.5.32'
+        implementation 'ch.qos.logback:logback-classic:1.5.32'
         implementation 'org.slf4j:log4j-over-slf4j:2.0.17'
 
         // Spock
-        testImplementation 'org.apache.groovy:groovy-all:4.0.28'
-        testImplementation 'org.spockframework:spock-core:2.4-M1-groovy-4.0'
-        testImplementation 'net.bytebuddy:byte-buddy:1.17.8'
-        testImplementation 'org.objenesis:objenesis:3.4'
+        testImplementation 'org.apache.groovy:groovy-all:5.0.4'
+        testImplementation 'org.spockframework:spock-core:2.4-groovy-5.0'
+        testImplementation 'net.bytebuddy:byte-buddy:1.18.7'
+        testImplementation 'org.objenesis:objenesis:3.5'
     }
 
     apply from: "${rootProject.projectDir}/gradle/resources.gradle"
@@ -82,6 +82,19 @@ sonar {
     properties {
         property "sonar.projectName", "TES Features"
         property "sonar.projectKey", "tes-features"
+
+        property 'sonar.coverage.exclusions', [
+            // Deployment
+            '**/dk/sunepoulsen/tes/features/deployment/**',
+
+            // Service
+            '**/dk/sunepoulsen/tes/features/service/Application.java',
+            '**/dk/sunepoulsen/tes/features/service/configuration/**',
+            '**/dk/sunepoulsen/tes/features/service/domains/tests/**',
+
+            // Tests
+            '**/dk/sunepoulsen/tes/features/ct/**',
+        ]
 
         property 'sonar.dependencyCheck.severity.blocker', '9.0'
         property 'sonar.dependencyCheck.severity.critical', '7.0'

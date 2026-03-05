@@ -1,6 +1,5 @@
 package dk.sunepoulsen.tes.features.model;
 
-import dk.sunepoulsen.tes.rest.models.BaseModel;
 import dk.sunepoulsen.tes.rest.models.validation.constraints.UriPathPattern;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -11,7 +10,7 @@ import java.util.List;
 
 @Data
 @Schema(name = "Feature", description = "Defines a feature")
-public class Feature implements BaseModel {
+public class Feature {
     @Schema(
         description = "Unique key of this feature",
         requiredMode = Schema.RequiredMode.REQUIRED,

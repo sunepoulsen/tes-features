@@ -2,7 +2,8 @@ package dk.sunepoulsen.tes.features.service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 /**
@@ -11,8 +12,9 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
  *     It contains no special logic besides global annotations to work with <code>Spring Boot</code>
  * </p>
  */
+@EnableAsync
 @EnableWebMvc
-@EnableWebSecurity
+@ConfigurationPropertiesScan
 @SpringBootApplication( scanBasePackages = {
     "dk.sunepoulsen.tes"
 })

@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 
 public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
 
-    static String FEATURE_ENDPOINT_PATH = "/features";
-    static String FEATURE_GROUPS_ENDPOINT_PATH = "/feature-groups";
+    static final String FEATURE_ENDPOINT_PATH = "/features";
+    static final String FEATURE_GROUPS_ENDPOINT_PATH = "/feature-groups";
 
     public FeaturesIntegrator(TechEasySolutionsClient httpClient) {
         super(httpClient);

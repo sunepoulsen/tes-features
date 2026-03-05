@@ -11,6 +11,9 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
+    <logger name="dk.sunepoulsen.tes.json" level="TRACE"/>
+    <logger name="dk.sunepoulsen.tes.rest.integrations" level="TRACE"/>
+
     <logger name="org.apache.velocity" level="INFO"/>
     <logger name="org.testcontainers" level="INFO"/>
     <logger name="com.github.dockerjava.zerodep" level="INFO"/>

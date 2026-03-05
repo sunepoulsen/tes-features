@@ -5,7 +5,6 @@
 logging:
   level:
     dk.sunepoulsen.tes: DEBUG
-    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
   file:
     name: $serviceLogFile
 
@@ -24,25 +23,6 @@ management:
   health:
     db:
       enabled: true
-
-# ===================================================================
-#                   Request logging
-# ===================================================================
-
-requests:
-  logging:
-    include-query-string: true
-    include-headers: true
-    include-payload: true
-    max-payload-length: 10000
-
-# ===================================================================
-#                   Security Configuration
-# ===================================================================
-
-test:
-  csrf:
-    disabled: true
 
 # ===================================================================
 #                   SSL configuration

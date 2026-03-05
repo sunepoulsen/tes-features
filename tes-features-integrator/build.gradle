@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     api project(':tes-features-model')
-    implementation 'dk.sunepoulsen.tes-foundation:tes-rest-integrations:2.1.0-SNAPSHOT'
+    implementation 'dk.sunepoulsen.tes-foundation:tes-rest-integrations:3.0.0-SNAPSHOT'
 }
 
 apply from: "${rootProject.projectDir}/gradle/publish.gradle"

@@ -6,6 +6,7 @@ import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.PersistenceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,7 @@ public class FeatureGroupPersistence {
     private final FeaturePersistence featurePersistence;
     private final FeatureRepository featureRepository;
 
+    @Transactional
     public FeatureGroupEntity registerFeatureGroup(FeatureGroupEntity featureGroup) throws PersistenceException {
         verifyFeatures(featureGroup);
 
@@ -40,6 +42,7 @@ public class FeatureGroupPersistence {
         return entity;
     }
 
+    @Transactional
     public Optional<FeatureGroupEntity> getFeatureGroup(String featureGroupKey) throws PersistenceException {
         return featureGroupRepository.findByKey(featureGroupKey);
     }

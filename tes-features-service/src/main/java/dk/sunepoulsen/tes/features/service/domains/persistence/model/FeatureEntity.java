@@ -28,7 +28,7 @@ public class FeatureEntity extends TimestampEntity {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "feature_group_id", nullable = false)
     private FeatureGroupEntity featureGroup;
 
@@ -41,6 +41,6 @@ public class FeatureEntity extends TimestampEntity {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @OneToMany(mappedBy = "feature", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "feature", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<FeatureActivationEntity> activations;
 }
