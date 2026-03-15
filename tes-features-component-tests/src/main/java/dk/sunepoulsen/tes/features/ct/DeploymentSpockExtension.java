@@ -5,6 +5,7 @@ import dk.sunepoulsen.tes.deployment.core.steps.factories.PostgresConfigureSteps
 import dk.sunepoulsen.tes.deployment.core.steps.factories.PostgresConfigureStepsDatabasesResult;
 import dk.sunepoulsen.tes.features.deployment.FeaturesDeployment;
 import dk.sunepoulsen.tes.flows.FlowStep;
+import dk.sunepoulsen.tes.sut.engine.exceptions.DeploymentException;
 import dk.sunepoulsen.tes.sut.engine.extensions.AbstractSystemUnderTestExtension;
 import dk.sunepoulsen.tes.sut.engine.steps.SutStartPostgresStep;
 import dk.sunepoulsen.tes.sut.engine.steps.SutStartTesServiceStep;
@@ -52,9 +53,9 @@ public class DeploymentSpockExtension extends AbstractSystemUnderTestExtension {
             steps.addAll(featuresContainerSteps.steps());
 
             return steps;
-        } catch (Exception e) {
-            log.info("Failed to create deployment steps", e);
-            throw new RuntimeException(e);
+        } catch (Exception ex) {
+            log.info("Failed to create deployment steps", ex);
+            throw new DeploymentException("Failed to create deployment steps", ex);
         }
     }
 

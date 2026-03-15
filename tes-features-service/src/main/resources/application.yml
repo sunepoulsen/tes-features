@@ -55,6 +55,17 @@ server:
     key-store-type: PKCS12
 
 # ===================================================================
+#                   Processing Configuration
+# ===================================================================
+
+logic:
+  processing:
+    executor:
+      core-pool-size: 10
+      max-pool-size: 200
+      query-capacity: 10000
+
+# ===================================================================
 #                   Spring JPA Configuration
 # ===================================================================
 
@@ -62,6 +73,7 @@ spring:
   liquibase:
     change-log: classpath:/db/changelog/changelog.xml
     default-schema: features
+
   jpa:
     hibernate:
       ddl-auto: validate

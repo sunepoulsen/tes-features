@@ -7,7 +7,6 @@ import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +19,6 @@ class FeatureGroupsLogic {
     private final FeatureGroupPersistence featureGroupPersistence;
 
     @Async("logicExecutor")
-    @Transactional
     CompletableFuture<FeatureGroup> getFeatureGroup(final String key) {
         try {
             Optional<FeatureGroupEntity> entity = featureGroupPersistence.getFeatureGroup(key);

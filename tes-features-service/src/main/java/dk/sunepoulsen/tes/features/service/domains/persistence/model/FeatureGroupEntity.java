@@ -37,10 +37,10 @@ public class FeatureGroupEntity extends TimestampEntity {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @OneToMany(mappedBy = "featureGroup", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "featureGroup", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<FeatureEntity> features;
 
-    @OneToMany(mappedBy = "featureGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "featureGroup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<FeatureGroupActivationEntity> activations;
 
 }

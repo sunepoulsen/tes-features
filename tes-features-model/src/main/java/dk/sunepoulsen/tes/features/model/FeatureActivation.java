@@ -1,6 +1,5 @@
 package dk.sunepoulsen.tes.features.model;
 
-import dk.sunepoulsen.tes.rest.models.BaseModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudCreate;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudUpdate;
@@ -13,7 +12,7 @@ import java.time.ZonedDateTime;
 
 @Data
 @Schema(name = "Feature activation", description = "Defines an activation of a feature group or feature")
-public class FeatureActivation implements BaseModel {
+public class FeatureActivation {
     @Schema(
         description = "Unique id of the feature activation",
         requiredMode = Schema.RequiredMode.REQUIRED,
