@@ -76,21 +76,44 @@ class FeatureGroupsControllerSpec extends Specification {
 
     void "Test get feature group successfully"() {
         given:
-            RegisterFeatureGroup model = new RegisterFeatureGroup(
+            FeatureGroup model = new FeatureGroup(
                 key: 'group-key'
             )
 
         when:
-            DeferredResult<RegisterFeatureGroup> deferredResult = sut.getFeatureGroup(model.key)
+            DeferredResult<FeatureGroup> deferredResult = sut.getFeatureGroup(model.key)
             DeferredResults.wait(deferredResult)
 
         then:
-            RegisterFeatureGroup group = deferredResult.result as RegisterFeatureGroup
+            FeatureGroup group = deferredResult.result as FeatureGroup
             group.key == model.key
 
-            1 * featureGroupsLogic.getFeatureGroup(model.key) >> CompletableFuture.completedFuture(new RegisterFeatureGroup(
+            1 * featureGroupsLogic.getFeatureGroup(model.key) >> CompletableFuture.completedFuture(new FeatureGroup(
                 key: model.key
             ))
+            0 * _
+    }
+
+    void "Test get feature group that return Future with LogicException"() {
+        given:
+            FeatureGroup model = new FeatureGroup(
+                key: 'group-key'
+            )
+
+        when:
+            DeferredResult<FeatureGroup> deferredResult = sut.getFeatureGroup(model.key)
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.getFeatureGroup(model.key) >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
             0 * _
     }
 

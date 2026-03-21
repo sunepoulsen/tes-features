@@ -1,9 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
 import dk.sunepoulsen.tes.features.data.generators.FeatureGroupDataGenerator
-import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
 import dk.sunepoulsen.tes.features.model.FeatureGroup
-import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
 import dk.sunepoulsen.tes.rest.models.EnvelopeModel
@@ -43,19 +41,34 @@ class FeatureGroupsLogicSpec extends Specification {
             0 * _
     }
 
+    void "Test get feature groups with thrown exception"() {
+        when:
+            sut.getFeatureGroups().get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            exception.cause instanceof NullPointerException
+            exception.cause.message == 'message'
+
+            featureGroupPersistence.getFeatureGroups() >> {
+                throw new NullPointerException('message')
+            }
+            0 * _
+    }
+
     void "Test successful get a feature group that exist"() {
         given:
             FeatureGroupEntity foundEntity = new FeatureGroupEntity()
-            RegisterFeatureGroup foundFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
+            FeatureGroup foundFeatureGroup = new FeatureGroupDataGenerator().generate()
 
         when:
-            CompletableFuture<RegisterFeatureGroup> result = sut.getFeatureGroup('key')
+            CompletableFuture<FeatureGroup> result = sut.getFeatureGroup('key')
 
         then:
             result.get() == foundFeatureGroup
 
             1 * featureGroupPersistence.getFeatureGroup('key') >> Optional.of(foundEntity)
-            1 * featureGroupTransformations.toRegisterModel(foundEntity) >> foundFeatureGroup
+            1 * featureGroupTransformations.toFeatureGroupModel(foundEntity) >> foundFeatureGroup
             0 * _
     }
 

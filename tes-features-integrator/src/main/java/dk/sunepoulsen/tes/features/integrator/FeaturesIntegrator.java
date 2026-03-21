@@ -1,6 +1,7 @@
 package dk.sunepoulsen.tes.features.integrator;
 
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
+import dk.sunepoulsen.tes.features.model.FeatureGroup;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsBackendIntegrator;
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient;
@@ -28,13 +29,13 @@ public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
-    public Single<RegisterFeatureGroup> getFeatureGroup(final String key) {
+    public Single<FeatureGroup> getFeatureGroup(final String key) {
         String url = String.format("%s/%s",
             FEATURE_GROUPS_ENDPOINT_PATH,
             URLEncoder.encode(key, StandardCharsets.UTF_8)
         );
 
-        return Single.fromFuture(this.httpClient.get(url, RegisterFeatureGroup.class))
+        return Single.fromFuture(this.httpClient.get(url, FeatureGroup.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 

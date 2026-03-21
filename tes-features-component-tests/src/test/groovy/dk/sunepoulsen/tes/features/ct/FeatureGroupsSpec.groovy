@@ -8,7 +8,7 @@ import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGener
 import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup
-import dk.sunepoulsen.tes.features.model.FeatureActivation
+import dk.sunepoulsen.tes.features.model.FeatureGroup
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientBadRequestException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
@@ -76,28 +76,13 @@ class FeatureGroupsSpec extends Specification implements FeaturesIntegratorProvi
             featureGroup = featuresIntegrator().registerFeatures(featureGroup).blockingGet()
 
         when: 'GET /groups/{feature_group_key}'
-            RegisterFeatureGroup result = featuresIntegrator().getFeatureGroup(featureGroup.key).blockingGet()
+            FeatureGroup result = featuresIntegrator().getFeatureGroup(featureGroup.key).blockingGet()
 
         then: 'Verify response'
             with(result) {
                 assert it.key == featureGroup.key
                 assert it.name == featureGroup.name
                 assert it.description == featureGroup.description
-                it.features.eachWithIndex { feature, index ->
-                    assert feature.key == featureGroup.features[index].key
-                    assert feature.name == featureGroup.features[index].name
-                    assert feature.description == featureGroup.features[index].description
-                    feature.activations.eachWithIndex { FeatureActivation activation, idx ->
-                        assert activation.id == featureGroup.features[index].activations[idx].id
-                        assert activation.enabled == featureGroup.features[index].activations[idx].enabled
-                        assert activation.datetime.isEqual(featureGroup.features[index].activations[idx].datetime)
-                    }
-                }
-                it.activations.eachWithIndex { FeatureActivation activation, idx ->
-                    assert activation.id == featureGroup.activations[idx].id
-                    assert activation.enabled == featureGroup.activations[idx].enabled
-                    assert activation.datetime.isEqual(featureGroup.activations[idx].datetime)
-                }
             }
     }
 

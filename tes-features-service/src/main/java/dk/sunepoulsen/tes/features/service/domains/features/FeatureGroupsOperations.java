@@ -1,7 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
-import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
+import dk.sunepoulsen.tes.features.model.FeatureGroup;
 import dk.sunepoulsen.tes.rest.models.EnvelopeModel;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
@@ -56,29 +56,29 @@ public interface FeatureGroupsOperations {
     DeferredResult<EnvelopeFeatureGroup> getFeatureGroups();
 
     @Operation(
-        summary = "Returns the registerFeature group with a given key",
+        summary = "Returns the register feature group with a given key",
         description = """
-                Returns the found registerFeature group including all features that has been registered within the registerFeature group.
+                Returns the found register feature group excluding all features and activations that has been registered within the feature group.
             """
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned the found registerFeature group",
+            description = "Successfully returned the found feature group",
             content = @Content(
-                schema = @Schema(implementation = RegisterFeatureGroup.class)
+                schema = @Schema(implementation = FeatureGroup.class)
             )
         ),
         @ApiResponse(
             responseCode = "400",
-            description = "If registerFeature group key contains invalid characters",
+            description = "If feature group key contains invalid characters",
             content = @Content(
                 schema = @Schema(implementation = ServiceValidationErrorModel.class)
             )
         ),
         @ApiResponse(
             responseCode = "404",
-            description = "No registerFeature group exist with the given key",
+            description = "No feature group exist with the given key",
             content = @Content(
                 schema = @Schema(implementation = ServiceErrorModel.class)
             )
@@ -94,5 +94,5 @@ public interface FeatureGroupsOperations {
     @GetMapping("/{feature_group_key}")
     @ResponseStatus(HttpStatus.OK)
     @Validated({Default.class, OnCrudRead.class})
-    DeferredResult<RegisterFeatureGroup> getFeatureGroup(@Valid @PathVariable("feature_group_key") final String key);
+    DeferredResult<FeatureGroup> getFeatureGroup(@Valid @PathVariable("feature_group_key") final String key);
 }
