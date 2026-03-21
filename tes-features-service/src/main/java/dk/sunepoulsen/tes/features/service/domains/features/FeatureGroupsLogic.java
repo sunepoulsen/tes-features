@@ -1,6 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
-import dk.sunepoulsen.tes.features.model.FeatureGroup;
+import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -19,13 +21,30 @@ class FeatureGroupsLogic {
     private final FeatureGroupPersistence featureGroupPersistence;
 
     @Async("logicExecutor")
-    CompletableFuture<FeatureGroup> getFeatureGroup(final String key) {
+    CompletableFuture<EnvelopeFeatureGroup> getFeatureGroups() {
+        try {
+            List<FeatureGroupEntity> entities = featureGroupPersistence.getFeatureGroups();
+
+            EnvelopeFeatureGroup groups = new EnvelopeFeatureGroup();
+            groups.setResults(entities.stream()
+                .map(featureGroupTransformations::toFeatureGroupModel)
+                .toList()
+            );
+
+            return CompletableFuture.completedFuture(groups);
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
+
+    @Async("logicExecutor")
+    CompletableFuture<RegisterFeatureGroup> getFeatureGroup(final String key) {
         try {
             Optional<FeatureGroupEntity> entity = featureGroupPersistence.getFeatureGroup(key);
 
             return entity
                 .map(featureGroupEntity ->
-                    CompletableFuture.completedFuture(featureGroupTransformations.toModel(featureGroupEntity))
+                    CompletableFuture.completedFuture(featureGroupTransformations.toRegisterModel(featureGroupEntity))
                 )
                 .orElseGet(() ->
                     CompletableFuture.failedFuture(new ApiNotFoundException("key", "No feature group exists with key: " + key))

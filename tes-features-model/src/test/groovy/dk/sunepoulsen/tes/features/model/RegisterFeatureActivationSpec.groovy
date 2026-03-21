@@ -14,7 +14,7 @@ import spock.lang.Unroll
 
 import java.time.ZonedDateTime
 
-class FeatureActivationSpec extends Specification {
+class RegisterFeatureActivationSpec extends Specification {
 
     private DefaultValidator validator
     private DataGenerator<ZonedDateTime> datetimeGenerator

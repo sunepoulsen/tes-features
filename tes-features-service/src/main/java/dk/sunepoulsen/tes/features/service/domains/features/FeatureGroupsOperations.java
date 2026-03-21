@@ -1,6 +1,8 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
-import dk.sunepoulsen.tes.features.model.FeatureGroup;
+import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
+import dk.sunepoulsen.tes.rest.models.EnvelopeModel;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead;
@@ -20,36 +22,63 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
-@Tag(name = "Feature Groups", description = "Endpoints to manage feature groups")
+@Tag(name = "Feature Groups", description = "Endpoints to manage registerFeature groups")
 @RequestMapping(FeatureGroupsOperations.FEATURE_GROUPS_ENDPOINT_PATH)
 @Validated
 public interface FeatureGroupsOperations {
-    String FEATURE_GROUPS_ENDPOINT_PATH = "/feature-groups";
+    String FEATURE_GROUPS_ENDPOINT_PATH = "/groups";
 
     @Operation(
-        summary = "Returns the feature group with a given key",
+        summary = "Returns a list of all registered feature groups",
         description = """
-                Returns the found feature group including all features that has been registered within the feature group.
+                Returns all found feature groups.
             """
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned the found feature group",
+            description = "Successfully returned all found features groups",
             content = @Content(
-                schema = @Schema(implementation = FeatureGroup.class)
+                schema = @Schema(implementation = EnvelopeModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unable to process this request",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        )
+    })
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    @Validated({Default.class, OnCrudRead.class})
+    DeferredResult<EnvelopeFeatureGroup> getFeatureGroups();
+
+    @Operation(
+        summary = "Returns the registerFeature group with a given key",
+        description = """
+                Returns the found registerFeature group including all features that has been registered within the registerFeature group.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully returned the found registerFeature group",
+            content = @Content(
+                schema = @Schema(implementation = RegisterFeatureGroup.class)
             )
         ),
         @ApiResponse(
             responseCode = "400",
-            description = "If feature group key contains invalid characters",
+            description = "If registerFeature group key contains invalid characters",
             content = @Content(
                 schema = @Schema(implementation = ServiceValidationErrorModel.class)
             )
         ),
         @ApiResponse(
             responseCode = "404",
-            description = "No feature group exist with the given key",
+            description = "No registerFeature group exist with the given key",
             content = @Content(
                 schema = @Schema(implementation = ServiceErrorModel.class)
             )
@@ -65,5 +94,5 @@ public interface FeatureGroupsOperations {
     @GetMapping("/{feature_group_key}")
     @ResponseStatus(HttpStatus.OK)
     @Validated({Default.class, OnCrudRead.class})
-    DeferredResult<FeatureGroup> getFeatureGroup(@Valid @PathVariable("feature_group_key") final String key);
+    DeferredResult<RegisterFeatureGroup> getFeatureGroup(@Valid @PathVariable("feature_group_key") final String key);
 }

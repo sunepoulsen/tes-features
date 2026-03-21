@@ -1,6 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
-import dk.sunepoulsen.tes.features.model.FeatureGroup
+
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiConflictException
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.DuplicateResourceException
@@ -21,17 +22,17 @@ class FeaturesControllerSpec extends Specification {
 
     void "Test register new features successfully"() {
         given:
-            FeatureGroup model = new FeatureGroup()
+            RegisterFeatureGroup model = new RegisterFeatureGroup()
 
         when:
-            DeferredResult<FeatureGroup> deferredResult = sut.registerFeatures(model)
+            DeferredResult<RegisterFeatureGroup> deferredResult = sut.registerFeatures(model)
             DeferredResults.wait(deferredResult)
 
         then:
-            FeatureGroup group = deferredResult.result as FeatureGroup
+            RegisterFeatureGroup group = deferredResult.result as RegisterFeatureGroup
             group.key == 'group-key'
 
-            1 * featuresLogic.registerFeatures(model) >> CompletableFuture.completedFuture(new FeatureGroup(
+            1 * featuresLogic.registerFeatures(model) >> CompletableFuture.completedFuture(new RegisterFeatureGroup(
                 key: 'group-key'
             ))
 
@@ -39,7 +40,7 @@ class FeaturesControllerSpec extends Specification {
 
     void "Test register new features throws LogicException"() {
         given:
-            FeatureGroup model = new FeatureGroup()
+            RegisterFeatureGroup model = new RegisterFeatureGroup()
 
         when:
             sut.registerFeatures(model)

@@ -43,6 +43,11 @@ public class FeatureGroupPersistence {
     }
 
     @Transactional
+    public List<FeatureGroupEntity> getFeatureGroups() throws PersistenceException {
+        return featureGroupRepository.findAll();
+    }
+
+    @Transactional
     public Optional<FeatureGroupEntity> getFeatureGroup(String featureGroupKey) throws PersistenceException {
         return featureGroupRepository.findByKey(featureGroupKey);
     }

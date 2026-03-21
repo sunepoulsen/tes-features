@@ -1,7 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
-import dk.sunepoulsen.tes.features.data.generators.FeatureGroupDataGenerator
-import dk.sunepoulsen.tes.features.model.FeatureGroup
+import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
 import spock.lang.Specification
@@ -24,26 +24,26 @@ class FeaturesLogicSpec extends Specification {
 
     void "Test successful register of features"() {
         given:
-            FeatureGroup featureGroup = new FeatureGroupDataGenerator().generate()
+            RegisterFeatureGroup featureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
             FeatureGroupEntity createEntity = new FeatureGroupEntity()
             FeatureGroupEntity createdEntity = new FeatureGroupEntity(id: 1L)
-            FeatureGroup returnedFeatureGroup = new FeatureGroupDataGenerator().generate()
+            RegisterFeatureGroup returnedFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         when:
-            CompletableFuture<FeatureGroup> result = sut.registerFeatures(featureGroup)
+            CompletableFuture<RegisterFeatureGroup> result = sut.registerFeatures(featureGroup)
 
         then:
             result.get() == returnedFeatureGroup
 
             1 * featureGroupTransformations.toEntity(featureGroup) >> createEntity
             1 * featureGroupPersistence.registerFeatureGroup(createEntity) >> createdEntity
-            1 * featureGroupTransformations.toModel(createdEntity) >> returnedFeatureGroup
+            1 * featureGroupTransformations.toRegisterModel(createdEntity) >> returnedFeatureGroup
     }
 
     void "Test register of features with thrown exception"() {
         given:
-            FeatureGroup featureGroup = new FeatureGroupDataGenerator().generate()
+            RegisterFeatureGroup featureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         when:
             sut.registerFeatures(featureGroup).get()

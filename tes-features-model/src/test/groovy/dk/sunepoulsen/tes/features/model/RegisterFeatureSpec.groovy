@@ -9,10 +9,11 @@ import dk.sunepoulsen.tes.validation.tests.ExpectedConstraintViolation
 import jakarta.validation.ConstraintViolationException
 import jakarta.validation.groups.Default
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.ZonedDateTime
 
-class FeatureGroupSpec extends Specification {
+class RegisterFeatureSpec extends Specification {
 
     private DefaultValidator validator
     private DataGenerator<ZonedDateTime> datetimeGenerator
@@ -22,9 +23,9 @@ class FeatureGroupSpec extends Specification {
         this.datetimeGenerator = TimeGenerators.currentZonedDateTimeGenerator()
     }
 
-    void "Validate feature group that is valid"() {
+    void "Validate feature that is valid"() {
         given:
-            FeatureGroup model = new FeatureGroup(
+            RegisterFeature model = new RegisterFeature(
                 key: 'key',
                 name: 'name'
             )
@@ -36,14 +37,36 @@ class FeatureGroupSpec extends Specification {
             noExceptionThrown()
     }
 
-    void "Validate feature group with invalid features"() {
+    @Unroll
+    void "Validate feature that is invalid: #_testcase"() {
         given:
-            FeatureGroup model = new FeatureGroup(
+            RegisterFeature model = new RegisterFeature(
+                key: _key,
+                name: _name
+            )
+
+        when:
+            this.validator.validate(model)
+
+        then:
+            ConstraintViolationException exception = thrown(ConstraintViolationException)
+            ConstraintViolationAssertions.verifyViolations(exception.constraintViolations, _errors)
+
+        where:
+            _testcase                        | _key  | _name  | _errors
+            'key is null'                    | null  | 'name' | [new ExpectedConstraintViolation('key', 'must not be null')]
+            'key contains invalid character' | ';'   | 'name' | [new ExpectedConstraintViolation('key', 'must match "^[^; ]+$"')]
+            'name is null'                   | 'key' | null   | [new ExpectedConstraintViolation('name', 'must not be null')]
+    }
+
+    void "Validate feature with invalid activations"() {
+        given:
+            RegisterFeature model = new RegisterFeature(
                 key: 'key',
                 name: 'name',
-                features: [
-                    new Feature(
-                        key: 'key'
+                activations: [
+                    new FeatureActivation(
+                        id: 10L
                     )
                 ]
             )
@@ -54,7 +77,7 @@ class FeatureGroupSpec extends Specification {
         then:
             ConstraintViolationException exception = thrown(ConstraintViolationException)
             ConstraintViolationAssertions.verifyViolations(exception.constraintViolations, [
-                new ExpectedConstraintViolation('features[0].name', 'must not be null')
+                new ExpectedConstraintViolation('activations[0].enabled', 'must not be null')
             ])
     }
 

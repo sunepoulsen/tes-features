@@ -24,9 +24,9 @@ class ApiDocumentationSpec extends Specification implements FeaturesIntegratorPr
             apiDocResult.paths."${_endpoint}"."${_method.toLowerCase()}".tags == _tag
 
         where:
-            _method | _endpoint                             | _tag
-            'PUT'   | '/features'                           | FEATURE_TAG
-            'GET'   | '/feature-groups/{feature_group_key}' | FEATURE_GROUP_TAG
+            _method | _endpoint                     | _tag
+            'PUT'   | '/features'                   | FEATURE_TAG
+            'GET'   | '/groups/{feature_group_key}' | FEATURE_GROUP_TAG
     }
 
 }
