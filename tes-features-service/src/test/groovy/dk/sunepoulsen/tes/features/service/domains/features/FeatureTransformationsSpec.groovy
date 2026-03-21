@@ -3,8 +3,8 @@ package dk.sunepoulsen.tes.features.service.domains.features
 import dk.sunepoulsen.tes.data.generators.DataGenerator
 import dk.sunepoulsen.tes.data.generators.Generators
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
-import dk.sunepoulsen.tes.features.model.Feature
 import dk.sunepoulsen.tes.features.model.FeatureActivation
+import dk.sunepoulsen.tes.features.model.RegisterFeature
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity
 import spock.lang.Specification
@@ -34,7 +34,7 @@ class FeatureTransformationsSpec extends Specification {
                 .build()
 
         expect:
-            this.sut.toModel(featureEntity) == new Feature(
+            this.sut.toRegisterModel(featureEntity) == new RegisterFeature(
                 key: featureEntity.key,
                 name: featureEntity.name,
                 description: featureEntity.description,
@@ -71,7 +71,7 @@ class FeatureTransformationsSpec extends Specification {
             ]
 
         expect:
-            this.sut.toModel(featureEntity) == new Feature(
+            this.sut.toRegisterModel(featureEntity) == new RegisterFeature(
                 key: featureEntity.key,
                 name: featureEntity.name,
                 description: featureEntity.description,
@@ -92,7 +92,7 @@ class FeatureTransformationsSpec extends Specification {
     @Unroll
     void "Transform Feature to entity with no associations: #_testcase"() {
         given:
-            Feature feature = new Feature(
+            RegisterFeature feature = new RegisterFeature(
                 key: textGenerator.generate(),
                 name: textGenerator.generate(),
                 description: textGenerator.generate(),
@@ -115,7 +115,7 @@ class FeatureTransformationsSpec extends Specification {
 
     void "Transform Feature to entity with 2 of activations"() {
         given:
-            Feature feature = new Feature(
+            RegisterFeature feature = new RegisterFeature(
                 key: textGenerator.generate(),
                 name: textGenerator.generate(),
                 description: textGenerator.generate(),

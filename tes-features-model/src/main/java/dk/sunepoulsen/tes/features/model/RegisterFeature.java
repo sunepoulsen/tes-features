@@ -10,7 +10,7 @@ import java.util.List;
 
 @Data
 @Schema(name = "Feature", description = "Defines a feature")
-public class Feature {
+public class RegisterFeature {
     @Schema(
         description = "Unique key of this feature",
         requiredMode = Schema.RequiredMode.REQUIRED,

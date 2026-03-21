@@ -1,6 +1,8 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
 import dk.sunepoulsen.tes.features.model.FeatureGroup
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
+import dk.sunepoulsen.tes.rest.models.EnvelopeModel
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
@@ -19,27 +21,80 @@ class FeatureGroupsControllerSpec extends Specification {
         this.sut = new FeatureGroupsController(this.featureGroupsLogic)
     }
 
-    void "Test get feature group successfully"() {
+    void "Test get feature groups successfully"() {
         given:
             FeatureGroup model = new FeatureGroup(
                 key: 'group-key'
             )
 
         when:
-            DeferredResult<FeatureGroup> deferredResult = sut.getFeatureGroup(model.key)
+            DeferredResult<RegisterFeatureGroup> deferredResult = sut.getFeatureGroups()
             DeferredResults.wait(deferredResult)
 
         then:
-            FeatureGroup group = deferredResult.result as FeatureGroup
+            EnvelopeModel<FeatureGroup> modelResponse = deferredResult.result as EnvelopeModel<FeatureGroup>
+            modelResponse.results.first.key == model.key
+
+            1 * featureGroupsLogic.getFeatureGroups() >> CompletableFuture.completedFuture(new EnvelopeModel<FeatureGroup>(
+                results: [model]
+            ))
+            0 * _
+    }
+
+    void "Test get feature groups return Future with LogicException"() {
+        when:
+            DeferredResult<RegisterFeatureGroup> deferredResult = sut.getFeatureGroups()
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.getFeatureGroups() >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test get feature groups throws LogicException"() {
+        when:
+            sut.getFeatureGroups()
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.getFeatureGroups() >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+    }
+
+    void "Test get feature group successfully"() {
+        given:
+            RegisterFeatureGroup model = new RegisterFeatureGroup(
+                key: 'group-key'
+            )
+
+        when:
+            DeferredResult<RegisterFeatureGroup> deferredResult = sut.getFeatureGroup(model.key)
+            DeferredResults.wait(deferredResult)
+
+        then:
+            RegisterFeatureGroup group = deferredResult.result as RegisterFeatureGroup
             group.key == model.key
 
-            1 * featureGroupsLogic.getFeatureGroup(model.key) >> CompletableFuture.completedFuture(new FeatureGroup(
+            1 * featureGroupsLogic.getFeatureGroup(model.key) >> CompletableFuture.completedFuture(new RegisterFeatureGroup(
                 key: model.key
             ))
             0 * _
     }
 
-    void "Test register new features throws LogicException"() {
+    void "Test get feature group throws LogicException"() {
         when:
             sut.getFeatureGroup('key')
 

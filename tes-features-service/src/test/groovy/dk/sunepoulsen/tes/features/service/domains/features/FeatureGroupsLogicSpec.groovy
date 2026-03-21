@@ -1,9 +1,12 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
 import dk.sunepoulsen.tes.features.data.generators.FeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
 import dk.sunepoulsen.tes.features.model.FeatureGroup
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
+import dk.sunepoulsen.tes.rest.models.EnvelopeModel
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
 import spock.lang.Specification
 
@@ -23,19 +26,36 @@ class FeatureGroupsLogicSpec extends Specification {
         this.sut = new FeatureGroupsLogic(featureGroupTransformations, featureGroupPersistence)
     }
 
-    void "Test successful get a feature group that exist"() {
+    void "Test successful get feature groups"() {
         given:
             FeatureGroupEntity foundEntity = new FeatureGroupEntity()
             FeatureGroup foundFeatureGroup = new FeatureGroupDataGenerator().generate()
 
         when:
-            CompletableFuture<FeatureGroup> result = sut.getFeatureGroup('key')
+            CompletableFuture<EnvelopeModel<FeatureGroup>> result = sut.getFeatureGroups()
+
+        then:
+            !result.get().getResults().empty
+            result.get().getResults().first == foundFeatureGroup
+
+            1 * featureGroupPersistence.getFeatureGroups() >> [foundEntity]
+            1 * featureGroupTransformations.toFeatureGroupModel(foundEntity) >> foundFeatureGroup
+            0 * _
+    }
+
+    void "Test successful get a feature group that exist"() {
+        given:
+            FeatureGroupEntity foundEntity = new FeatureGroupEntity()
+            RegisterFeatureGroup foundFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
+
+        when:
+            CompletableFuture<RegisterFeatureGroup> result = sut.getFeatureGroup('key')
 
         then:
             result.get() == foundFeatureGroup
 
             1 * featureGroupPersistence.getFeatureGroup('key') >> Optional.of(foundEntity)
-            1 * featureGroupTransformations.toModel(foundEntity) >> foundFeatureGroup
+            1 * featureGroupTransformations.toRegisterModel(foundEntity) >> foundFeatureGroup
             0 * _
     }
 

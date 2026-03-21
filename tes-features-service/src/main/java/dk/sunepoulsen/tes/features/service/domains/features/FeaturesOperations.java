@@ -1,6 +1,6 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
-import dk.sunepoulsen.tes.features.model.FeatureGroup;
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudCreate;
@@ -37,7 +37,7 @@ public interface FeaturesOperations {
             responseCode = "200",
             description = "Successfully created or ignored if the feature already exists",
             content = @Content(
-                schema = @Schema(implementation = FeatureGroup.class)
+                schema = @Schema(implementation = RegisterFeatureGroup.class)
             )
         ),
         @ApiResponse(
@@ -58,5 +58,5 @@ public interface FeaturesOperations {
     @PutMapping("/")
     @ResponseStatus(HttpStatus.OK)
     @Validated({Default.class, OnCrudCreate.class})
-    DeferredResult<FeatureGroup> registerFeatures(@Valid @RequestBody FeatureGroup featureGroup);
+    DeferredResult<RegisterFeatureGroup> registerFeatures(@Valid @RequestBody RegisterFeatureGroup featureGroup);
 }

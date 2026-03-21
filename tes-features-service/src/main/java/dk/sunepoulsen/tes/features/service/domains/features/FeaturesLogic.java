@@ -1,6 +1,6 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
-import dk.sunepoulsen.tes.features.model.FeatureGroup;
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +17,12 @@ class FeaturesLogic {
     private final FeatureGroupPersistence featureGroupPersistence;
 
     @Async("logicExecutor")
-    CompletableFuture<FeatureGroup> registerFeatures(FeatureGroup featureGroup) {
+    CompletableFuture<RegisterFeatureGroup> registerFeatures(RegisterFeatureGroup featureGroup) {
         try {
             FeatureGroupEntity entity = featureGroupTransformations.toEntity(featureGroup);
             entity = featureGroupPersistence.registerFeatureGroup(entity);
 
-            return CompletableFuture.completedFuture(featureGroupTransformations.toModel(entity));
+            return CompletableFuture.completedFuture(featureGroupTransformations.toRegisterModel(entity));
         } catch (Exception ex) {
             return CompletableFuture.failedFuture(ex);
         }

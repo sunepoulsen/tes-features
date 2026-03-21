@@ -1,6 +1,6 @@
 package dk.sunepoulsen.tes.features.integrator
 
-import dk.sunepoulsen.tes.features.model.FeatureGroup
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientInternalServerException
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
@@ -23,16 +23,16 @@ class FeaturesIntegratorSpec extends Specification {
 
     void "Register features with OK"() {
         given:
-            FeatureGroup model = new FeatureGroup()
+            RegisterFeatureGroup model = new RegisterFeatureGroup()
 
         when:
-            Single<FeatureGroup> result = sut.registerFeatures(model)
+            Single<RegisterFeatureGroup> result = sut.registerFeatures(model)
 
         then:
             result.blockingGet().key == 'group-key'
 
-            1 * httpClient.put(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, model, FeatureGroup) >> CompletableFuture.supplyAsync {
-                new FeatureGroup(
+            1 * httpClient.put(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, model, RegisterFeatureGroup) >> CompletableFuture.supplyAsync {
+                new RegisterFeatureGroup(
                     key: 'group-key'
                 )
             }
@@ -40,7 +40,7 @@ class FeaturesIntegratorSpec extends Specification {
 
     void "Register features with Internal Server Error"() {
         given:
-            FeatureGroup model = new FeatureGroup()
+            RegisterFeatureGroup model = new RegisterFeatureGroup()
 
         when:
             sut.registerFeatures(model).blockingGet()
@@ -51,7 +51,7 @@ class FeaturesIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.put(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, model, FeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.put(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, model, RegisterFeatureGroup) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',
@@ -62,13 +62,13 @@ class FeaturesIntegratorSpec extends Specification {
 
     void "Get feature group with OK"() {
         when:
-            Single<FeatureGroup> result = sut.getFeatureGroup('group-key')
+            Single<RegisterFeatureGroup> result = sut.getFeatureGroup('group-key')
 
         then:
             result.blockingGet().key == 'group-key'
 
-            1 * httpClient.get("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", FeatureGroup) >> CompletableFuture.supplyAsync {
-                new FeatureGroup(
+            1 * httpClient.get("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", RegisterFeatureGroup) >> CompletableFuture.supplyAsync {
+                new RegisterFeatureGroup(
                     key: 'group-key'
                 )
             }
@@ -85,7 +85,7 @@ class FeaturesIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.get("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", FeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.get("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", RegisterFeatureGroup) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',

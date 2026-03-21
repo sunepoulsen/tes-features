@@ -3,9 +3,10 @@ package dk.sunepoulsen.tes.features.service.domains.features
 import dk.sunepoulsen.tes.data.generators.DataGenerator
 import dk.sunepoulsen.tes.data.generators.Generators
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
-import dk.sunepoulsen.tes.features.model.Feature
 import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.FeatureGroup
+import dk.sunepoulsen.tes.features.model.RegisterFeature
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity
@@ -43,7 +44,7 @@ class FeatureGroupTransformationsSpec extends Specification {
             )
 
         expect:
-            this.sut.toModel(featureGroupEntity) == new FeatureGroup(
+            this.sut.toRegisterModel(featureGroupEntity) == new RegisterFeatureGroup(
                 key: featureGroupEntity.key,
                 name: featureGroupEntity.name,
                 description: featureGroupEntity.description,
@@ -94,12 +95,12 @@ class FeatureGroupTransformationsSpec extends Specification {
             ]
 
         expect:
-            this.sut.toModel(featureGroupEntity) == new FeatureGroup(
+            this.sut.toRegisterModel(featureGroupEntity) == new RegisterFeatureGroup(
                 key: featureGroupEntity.key,
                 name: featureGroupEntity.name,
                 description: featureGroupEntity.description,
                 features: [
-                    new Feature(
+                    new RegisterFeature(
                         key: featureGroupEntity.features[0].key,
                         name: featureGroupEntity.features[0].name,
                         description: featureGroupEntity.features[0].description,
@@ -123,10 +124,52 @@ class FeatureGroupTransformationsSpec extends Specification {
 
     }
 
+    void "Transform FeatureGroupEntity to model of FeatureGroup"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = FeatureGroupEntity.builder()
+                .id(1L)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroupEntity.features = [
+                FeatureEntity.builder()
+                    .id(1L)
+                    .featureGroup(featureGroupEntity)
+                    .key(textGenerator.generate())
+                    .name(textGenerator.generate())
+                    .description(textGenerator.generate())
+                    .activations([])
+                    .build()
+            ]
+
+            featureGroupEntity.activations = [
+                new FeatureGroupActivationEntity(
+                    id: 1L,
+                    featureGroup: featureGroupEntity,
+                    enabled: true
+                ),
+                new FeatureGroupActivationEntity(
+                    id: 2L,
+                    featureGroup: featureGroupEntity,
+                    enabled: false,
+                    dateTime: ZonedDateTime.now().plusWeeks(1)
+                )
+            ]
+
+        expect:
+            this.sut.toFeatureGroupModel(featureGroupEntity) == new FeatureGroup(
+                key: featureGroupEntity.key,
+                name: featureGroupEntity.name,
+                description: featureGroupEntity.description
+            )
+    }
+
     @Unroll
     void "Transform FeatureGroup to entity with no associations: #_testcase"() {
         given:
-            FeatureGroup featureGroup = new FeatureGroup(
+            RegisterFeatureGroup featureGroup = new RegisterFeatureGroup(
                 key: textGenerator.generate(),
                 name: textGenerator.generate(),
                 description: textGenerator.generate(),
@@ -153,12 +196,12 @@ class FeatureGroupTransformationsSpec extends Specification {
 
     void "Transform FeatureGroup to entity with 2 features and 2 activations"() {
         given:
-            FeatureGroup featureGroup = new FeatureGroup(
+            RegisterFeatureGroup featureGroup = new RegisterFeatureGroup(
                 key: textGenerator.generate(),
                 name: textGenerator.generate(),
                 description: textGenerator.generate(),
                 features: [
-                    new Feature(
+                    new RegisterFeature(
                         key: textGenerator.generate(),
                         name: textGenerator.generate(),
                         description: textGenerator.generate(),
@@ -174,7 +217,7 @@ class FeatureGroupTransformationsSpec extends Specification {
                             )
                         ]
                     ),
-                    new Feature(
+                    new RegisterFeature(
                         key: textGenerator.generate(),
                         name: textGenerator.generate(),
                         description: textGenerator.generate(),

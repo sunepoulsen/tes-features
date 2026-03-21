@@ -1,6 +1,6 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
-import dk.sunepoulsen.tes.features.model.FeatureGroup;
+import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.LogicException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ class FeaturesController implements FeaturesOperations {
 
     @Override
     @PutMapping
-    public DeferredResult<FeatureGroup> registerFeatures(FeatureGroup featureGroup) {
+    public DeferredResult<RegisterFeatureGroup> registerFeatures(RegisterFeatureGroup featureGroup) {
         try {
             return DeferredResults.of(featuresLogic.registerFeatures(featureGroup));
         } catch (LogicException ex) {

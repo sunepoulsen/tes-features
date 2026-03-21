@@ -1,6 +1,6 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
-import dk.sunepoulsen.tes.features.model.Feature;
+import dk.sunepoulsen.tes.features.model.RegisterFeature;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +12,8 @@ class FeatureTransformations {
 
     private final FeatureActivationTransformations featureActivationTransformations;
 
-    Feature toModel(FeatureEntity featureEntity) {
-        Feature result = new Feature();
+    RegisterFeature toRegisterModel(FeatureEntity featureEntity) {
+        RegisterFeature result = new RegisterFeature();
 
         result.setKey(featureEntity.getKey());
         result.setName(featureEntity.getName());
@@ -29,15 +29,15 @@ class FeatureTransformations {
         return result;
     }
 
-    FeatureEntity toEntity(Feature feature) {
+    FeatureEntity toEntity(RegisterFeature registerFeature) {
         FeatureEntity featureEntity = FeatureEntity.builder()
-            .key(feature.getKey())
-            .name(feature.getName())
-            .description(feature.getDescription())
+            .key(registerFeature.getKey())
+            .name(registerFeature.getName())
+            .description(registerFeature.getDescription())
             .build();
 
-        if (feature.getActivations() != null) {
-            featureEntity.setActivations(feature.getActivations().stream()
+        if (registerFeature.getActivations() != null) {
+            featureEntity.setActivations(registerFeature.getActivations().stream()
                 .map(featureActivation -> {
                     FeatureActivationEntity activationEntity = featureActivationTransformations.toEntity(featureActivation);
                     activationEntity.setFeature(featureEntity);
