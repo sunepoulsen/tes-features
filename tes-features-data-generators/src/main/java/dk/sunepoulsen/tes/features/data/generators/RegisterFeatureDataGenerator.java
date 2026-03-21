@@ -8,10 +8,13 @@ import dk.sunepoulsen.tes.features.model.RegisterFeature;
 
 public class RegisterFeatureDataGenerator implements DataGenerator<RegisterFeature> {
 
+    static final Integer MIN_TEXT_LENGTH = 5;
+    static final Integer MAX_TEXT_LENGTH = 100;
+
     private final DataGenerator<String> textGenerator;
 
     public RegisterFeatureDataGenerator() {
-        this(Generators.textGenerator(NumberGenerators.integerGenerator(5, 100)));
+        this(Generators.textGenerator(NumberGenerators.integerGenerator(MIN_TEXT_LENGTH, MAX_TEXT_LENGTH)));
     }
 
     public RegisterFeatureDataGenerator(DataGenerator<String> textGenerator) {

@@ -91,6 +91,7 @@ sonar {
             '**/dk/sunepoulsen/tes/features/service/Application.java',
             '**/dk/sunepoulsen/tes/features/service/configuration/**',
             '**/dk/sunepoulsen/tes/features/service/domains/tests/**',
+            '**/dk/sunepoulsen/tes/features/service/domains/persistence/Tests*',
 
             // Tests
             '**/dk/sunepoulsen/tes/features/ct/**',

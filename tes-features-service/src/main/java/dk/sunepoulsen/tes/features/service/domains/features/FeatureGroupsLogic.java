@@ -1,7 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
-import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
+import dk.sunepoulsen.tes.features.model.FeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException;
@@ -38,13 +38,13 @@ class FeatureGroupsLogic {
     }
 
     @Async("logicExecutor")
-    CompletableFuture<RegisterFeatureGroup> getFeatureGroup(final String key) {
+    CompletableFuture<FeatureGroup> getFeatureGroup(final String key) {
         try {
             Optional<FeatureGroupEntity> entity = featureGroupPersistence.getFeatureGroup(key);
 
             return entity
                 .map(featureGroupEntity ->
-                    CompletableFuture.completedFuture(featureGroupTransformations.toRegisterModel(featureGroupEntity))
+                    CompletableFuture.completedFuture(featureGroupTransformations.toFeatureGroupModel(featureGroupEntity))
                 )
                 .orElseGet(() ->
                     CompletableFuture.failedFuture(new ApiNotFoundException("key", "No feature group exists with key: " + key))
