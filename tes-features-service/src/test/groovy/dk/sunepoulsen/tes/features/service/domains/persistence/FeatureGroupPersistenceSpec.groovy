@@ -430,4 +430,50 @@ class FeatureGroupPersistenceSpec extends Specification {
             exception.message == "No feature group with key 'key' exists"
     }
 
+    void "Tests delete feature group that exist"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.deleteFeatureGroup(featureGroup.getKey())
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            !this.featureGroupRepository.existsById(createdFeatureGroup.id)
+    }
+
+    void "Tests delete feature group that does not exist"() {
+        when:
+            this.sut.deleteFeatureGroup('some-key')
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == 'feature_group_key'
+            exception.message == "No feature group with key 'some-key' exists"
+    }
+
 }

@@ -5,6 +5,7 @@ import dk.sunepoulsen.tes.features.model.FeatureGroup
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientInternalServerException
+import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
 import io.reactivex.rxjava3.core.Single
 import spock.lang.Specification
@@ -176,6 +177,37 @@ class FeaturesIntegratorSpec extends Specification {
                     message: 'message'
                 )))
             }
+    }
+
+    void "Delete feature group with OK"() {
+        when:
+            sut.deleteFeatureGroup('group-key').blockingGet()
+
+        then:
+            noExceptionThrown()
+
+            1 * httpClient.delete("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key") >> CompletableFuture.supplyAsync { "" }
+            0 * _
+    }
+
+    void "Delete feature group with not found"() {
+        when:
+            sut.deleteFeatureGroup('group-key').blockingGet()
+
+        then:
+            ClientNotFoundException ex = thrown(ClientNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.delete("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key") >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientNotFoundException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
+            0 * _
     }
 
 }

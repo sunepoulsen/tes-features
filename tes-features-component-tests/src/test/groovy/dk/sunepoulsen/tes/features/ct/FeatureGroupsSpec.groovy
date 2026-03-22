@@ -199,4 +199,35 @@ class FeatureGroupsSpec extends Specification implements FeaturesIntegratorProvi
             exception.serviceError.message == "No feature group with key 'some-key' exists"
     }
 
+    void "DELETE /groups/{feature_group_key} returns OK"() {
+        given: 'Services is available'
+            isFeaturesServiceAvailable()
+
+        and: 'valid feature group'
+            RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator(textGenerator).generate()
+
+        and:
+            registeredFeatureGroup = featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
+
+        when: 'DELETE /groups/{feature_group_key}'
+            String result = featuresIntegrator().deleteFeatureGroup(registeredFeatureGroup.key).blockingGet()
+
+        then: 'Verify response'
+            result == ''
+    }
+
+    void "DELETE /groups/{feature_group_key} returns not found"() {
+        given: 'Services is available'
+            isFeaturesServiceAvailable()
+
+        when: 'DELETE /groups/{feature_group_key}'
+            featuresIntegrator().deleteFeatureGroup('some-key').blockingGet()
+
+        then: 'Verify response'
+            ClientNotFoundException exception = thrown(ClientNotFoundException)
+            exception.response.statusCode() == 404
+            exception.serviceError.param == 'feature_group_key'
+            exception.serviceError.message == "No feature group with key 'some-key' exists"
+    }
+
 }
