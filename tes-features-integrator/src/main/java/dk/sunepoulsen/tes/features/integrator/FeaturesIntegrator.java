@@ -39,4 +39,14 @@ public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
+    public Single<FeatureGroup> patchFeatureGroup(final String key, final FeatureGroup featureGroup) {
+        String url = String.format("%s/%s",
+            FEATURE_GROUPS_ENDPOINT_PATH,
+            URLEncoder.encode(key, StandardCharsets.UTF_8)
+        );
+
+        return Single.fromFuture(this.httpClient.patch(url, featureGroup, FeatureGroup.class))
+            .onErrorResumeNext(this::mapClientExceptions);
+    }
+
 }

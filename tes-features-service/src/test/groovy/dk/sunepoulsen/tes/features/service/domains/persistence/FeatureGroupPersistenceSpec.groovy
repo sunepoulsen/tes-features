@@ -7,6 +7,7 @@ import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEnti
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.PersistenceException
+import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -371,6 +372,62 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         then:
             foundFeatureGroup.empty
+    }
+
+    void "Tests patch feature group that exist"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            Optional<FeatureGroupEntity> patchedFeatureGroup = this.sut.patchFeatureGroup(featureGroup.key, new FeatureGroupEntity(
+                name: 'new-name',
+                description: 'new-description'
+            ))
+
+        then:
+            !patchedFeatureGroup.empty
+            with(patchedFeatureGroup.get()) {
+                assert it.key == createdFeatureGroup.key
+                assert it.name == 'new-name'
+                assert it.description == 'new-description'
+
+                assert it.features.size() == createdFeatureGroup.features.size()
+                assert it.activations.size() == createdFeatureGroup.activations.size()
+            }
+    }
+
+    void "Tests patch feature group that does not exist"() {
+        when:
+            this.sut.patchFeatureGroup('key', new FeatureGroupEntity())
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == 'feature_group_key'
+            exception.message == "No feature group with key 'key' exists"
     }
 
 }

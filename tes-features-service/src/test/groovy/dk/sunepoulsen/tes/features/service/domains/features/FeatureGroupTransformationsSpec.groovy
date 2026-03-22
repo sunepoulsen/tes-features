@@ -167,7 +167,7 @@ class FeatureGroupTransformationsSpec extends Specification {
     }
 
     @Unroll
-    void "Transform FeatureGroup to entity with no associations: #_testcase"() {
+    void "Transform RegisterFeatureGroup to entity with no associations: #_testcase"() {
         given:
             RegisterFeatureGroup featureGroup = new RegisterFeatureGroup(
                 key: textGenerator.generate(),
@@ -194,7 +194,7 @@ class FeatureGroupTransformationsSpec extends Specification {
             'empty features & empty activations' | []        | []             | []           | []
     }
 
-    void "Transform FeatureGroup to entity with 2 features and 2 activations"() {
+    void "Transform RegisterFeatureGroup to entity with 2 features and 2 activations"() {
         given:
             RegisterFeatureGroup featureGroup = new RegisterFeatureGroup(
                 key: textGenerator.generate(),
@@ -317,4 +317,20 @@ class FeatureGroupTransformationsSpec extends Specification {
                 )
             ]
     }
+
+    void "Transform FeatureGroup to patch entity"() {
+        given:
+            FeatureGroup featureGroup = new FeatureGroup(
+                key: textGenerator.generate(),
+                name: textGenerator.generate(),
+                description: textGenerator.generate()
+            )
+
+        expect:
+            this.sut.toPatchEntity(featureGroup) == FeatureGroupEntity.builder()
+                .name(featureGroup.name)
+                .description(featureGroup.description)
+                .build()
+    }
+
 }

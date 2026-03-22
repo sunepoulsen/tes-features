@@ -83,4 +83,11 @@ class FeatureGroupTransformations {
         return featureGroupEntity;
     }
 
+    FeatureGroupEntity toPatchEntity(FeatureGroup featureGroup) {
+        return FeatureGroupEntity.builder()
+            .name(featureGroup.getName())
+            .description(featureGroup.getDescription())
+            .build();
+    }
+
 }

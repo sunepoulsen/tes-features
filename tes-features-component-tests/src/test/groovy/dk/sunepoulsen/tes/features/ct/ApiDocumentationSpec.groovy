@@ -26,7 +26,9 @@ class ApiDocumentationSpec extends Specification implements FeaturesIntegratorPr
         where:
             _method | _endpoint                     | _tag
             'PUT'   | '/features'                   | FEATURE_TAG
+            'GET'   | '/groups'                     | FEATURE_GROUP_TAG
             'GET'   | '/groups/{feature_group_key}' | FEATURE_GROUP_TAG
+            'PATCH' | '/groups/{feature_group_key}' | FEATURE_GROUP_TAG
     }
 
 }

@@ -6,10 +6,7 @@ import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.LogicException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
 @RestController
@@ -42,4 +39,15 @@ class FeatureGroupsController implements FeatureGroupsOperations {
             throw ex.mapApiException();
         }
     }
+
+    @Override
+    @PatchMapping("/{feature_group_key}")
+    public DeferredResult<FeatureGroup> patchFeatureGroup(@Valid @PathVariable("feature_group_key") final String key, @Valid @RequestBody FeatureGroup featureGroup) {
+        try {
+            return DeferredResults.of(featureGroupsLogic.patchFeatureGroup(key, featureGroup));
+        } catch (LogicException ex) {
+            throw ex.mapApiException();
+        }
+    }
+
 }

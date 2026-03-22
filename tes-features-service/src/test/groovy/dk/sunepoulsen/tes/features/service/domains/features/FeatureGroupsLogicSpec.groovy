@@ -6,6 +6,7 @@ import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersi
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
 import dk.sunepoulsen.tes.rest.models.EnvelopeModel
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
+import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
 import spock.lang.Specification
 
 import java.util.concurrent.CompletableFuture
@@ -98,6 +99,80 @@ class FeatureGroupsLogicSpec extends Specification {
             featureGroupPersistence.getFeatureGroup('key') >> {
                 throw new NullPointerException('message')
             }
+            0 * _
+    }
+
+    void "Test patch of a feature group that exists"() {
+        given:
+            FeatureGroup newValues = new FeatureGroup(
+                name: 'new-name'
+            )
+            FeatureGroupEntity newValuesEntity = new FeatureGroupEntity(
+                name: 'new-name'
+            )
+
+            FeatureGroupEntity patchedEntity = new FeatureGroupEntity(
+                name: 'new-name',
+                description: 'old-description'
+            )
+            FeatureGroup patchedFeatureGroup = new FeatureGroup(
+                name: patchedEntity.name,
+                description: patchedEntity.description
+            )
+
+        when:
+            CompletableFuture<FeatureGroup> result = sut.patchFeatureGroup('key', newValues)
+
+        then:
+            result.get() == patchedFeatureGroup
+
+            1 * featureGroupPersistence.patchFeatureGroup('key', newValuesEntity) >> Optional.of(patchedEntity)
+            1 * featureGroupTransformations.toPatchEntity(newValues) >> newValuesEntity
+            1 * featureGroupTransformations.toFeatureGroupModel(patchedEntity) >> patchedFeatureGroup
+            0 * _
+    }
+
+    void "Test patch of a feature group that exists, but can not be returned"() {
+        given:
+            FeatureGroup newValues = new FeatureGroup(
+                name: 'new-name'
+            )
+            FeatureGroupEntity newValuesEntity = new FeatureGroupEntity(
+                name: 'new-name'
+            )
+
+        when:
+            sut.patchFeatureGroup('key', newValues).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == "No feature group exists with key: key"
+
+            1 * featureGroupPersistence.patchFeatureGroup('key', newValuesEntity) >> Optional.empty()
+            1 * featureGroupTransformations.toPatchEntity(newValues) >> newValuesEntity
+            0 * _
+    }
+
+    void "Test patch of a feature group that does not exist"() {
+        given:
+            FeatureGroup newValues = new FeatureGroup()
+            FeatureGroupEntity newValuesEntity = new FeatureGroupEntity()
+
+        when:
+            sut.patchFeatureGroup('key', newValues).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featureGroupPersistence.patchFeatureGroup('key', newValuesEntity) >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
+            1 * featureGroupTransformations.toPatchEntity(newValues) >> newValuesEntity
             0 * _
     }
 
