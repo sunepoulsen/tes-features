@@ -1,7 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
+import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup
 import dk.sunepoulsen.tes.features.model.FeatureGroup
-import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.rest.models.EnvelopeModel
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults
@@ -28,7 +28,7 @@ class FeatureGroupsControllerSpec extends Specification {
             )
 
         when:
-            DeferredResult<RegisterFeatureGroup> deferredResult = sut.getFeatureGroups()
+            DeferredResult<EnvelopeFeatureGroup> deferredResult = sut.getFeatureGroups()
             DeferredResults.wait(deferredResult)
 
         then:
@@ -43,7 +43,7 @@ class FeatureGroupsControllerSpec extends Specification {
 
     void "Test get feature groups return Future with LogicException"() {
         when:
-            DeferredResult<RegisterFeatureGroup> deferredResult = sut.getFeatureGroups()
+            DeferredResult<EnvelopeFeatureGroup> deferredResult = sut.getFeatureGroups()
             DeferredResults.wait(deferredResult)
             throw deferredResult.getResult() as Throwable
 
