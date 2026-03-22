@@ -1,8 +1,6 @@
 package dk.sunepoulsen.tes.features.integrator
 
-import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup
-import dk.sunepoulsen.tes.features.model.FeatureGroup
-import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
+import dk.sunepoulsen.tes.features.model.*
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientInternalServerException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
@@ -34,7 +32,7 @@ class FeaturesIntegratorSpec extends Specification {
         then:
             result.blockingGet().key == 'group-key'
 
-            1 * httpClient.put(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, model, RegisterFeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.put(FeaturesIntegrator.REGISTER_FEATURES_ENDPOINT_PATH, model, RegisterFeatureGroup) >> CompletableFuture.supplyAsync {
                 new RegisterFeatureGroup(
                     key: 'group-key'
                 )
@@ -54,7 +52,7 @@ class FeaturesIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.put(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, model, RegisterFeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.put(FeaturesIntegrator.REGISTER_FEATURES_ENDPOINT_PATH, model, RegisterFeatureGroup) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',
@@ -208,6 +206,44 @@ class FeaturesIntegratorSpec extends Specification {
                 )))
             }
             0 * _
+    }
+
+    void "Get features of feature group returns OK"() {
+        when:
+            Single<EnvelopeFeature> result = sut.getFeatures('group-key')
+
+        then:
+            result.blockingGet().results.first.key == 'feature-key'
+
+            1 * httpClient.get(String.format(FeaturesIntegrator.FEATURES_ENDPOINT_PATH, 'group-key'), EnvelopeFeature) >> CompletableFuture.supplyAsync {
+                new EnvelopeFeature(
+                    results: [
+                        new Feature(
+                            key: 'feature-key'
+                        )
+                    ]
+                )
+            }
+            0 * _
+    }
+
+    void "Get features of feature group returns Internal Server Error"() {
+        when:
+            sut.getFeatures('group-key').blockingGet()
+
+        then:
+            ClientInternalServerException ex = thrown(ClientInternalServerException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.get(String.format(FeaturesIntegrator.FEATURES_ENDPOINT_PATH, 'group-key'), EnvelopeFeature) >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
     }
 
 }

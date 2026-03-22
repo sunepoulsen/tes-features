@@ -1,16 +1,16 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
+import dk.sunepoulsen.tes.features.model.EnvelopeFeature;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.LogicException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
 @RestController
-@RequestMapping("/features")
+@RequestMapping
 class FeaturesController implements FeaturesOperations {
 
     private final FeaturesLogic featuresLogic;
@@ -21,10 +21,20 @@ class FeaturesController implements FeaturesOperations {
     }
 
     @Override
-    @PutMapping
+    @PutMapping(REGISTER_FEATURES_ENDPOINT_PATH)
     public DeferredResult<RegisterFeatureGroup> registerFeatures(RegisterFeatureGroup featureGroup) {
         try {
             return DeferredResults.of(featuresLogic.registerFeatures(featureGroup));
+        } catch (LogicException ex) {
+            throw ex.mapApiException();
+        }
+    }
+
+    @Override
+    @GetMapping(FEATURES_ENDPOINT_PATH)
+    public DeferredResult<EnvelopeFeature> getFeatures(@Valid @PathVariable("feature_group_key") final String key) {
+        try {
+            return DeferredResults.of(featuresLogic.getFeatures(key));
         } catch (LogicException ex) {
             throw ex.mapApiException();
         }

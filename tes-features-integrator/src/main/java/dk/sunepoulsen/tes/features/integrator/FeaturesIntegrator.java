@@ -1,5 +1,6 @@
 package dk.sunepoulsen.tes.features.integrator;
 
+import dk.sunepoulsen.tes.features.model.EnvelopeFeature;
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
 import dk.sunepoulsen.tes.features.model.FeatureGroup;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
@@ -12,9 +13,9 @@ import java.nio.charset.StandardCharsets;
 
 public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
 
-    public static final String FEATURE_ENDPOINT_PATH = "/features";
+    public static final String REGISTER_FEATURES_ENDPOINT_PATH = "/features";
     public static final String FEATURE_GROUPS_ENDPOINT_PATH = "/groups";
-
+    public static final String FEATURES_ENDPOINT_PATH = FEATURE_GROUPS_ENDPOINT_PATH + "/%s/features";
     private static final String URI_PATH_WITH_ID_FORMAT = "%s/%s";
 
     public FeaturesIntegrator(TechEasySolutionsClient httpClient) {
@@ -22,7 +23,7 @@ public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
     }
 
     public Single<RegisterFeatureGroup> registerFeatures(RegisterFeatureGroup featureGroup) {
-        return Single.fromFuture(this.httpClient.put(FEATURE_ENDPOINT_PATH, featureGroup, RegisterFeatureGroup.class))
+        return Single.fromFuture(this.httpClient.put(REGISTER_FEATURES_ENDPOINT_PATH, featureGroup, RegisterFeatureGroup.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -58,6 +59,15 @@ public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
         );
 
         return Single.fromFuture(this.httpClient.delete(url))
+            .onErrorResumeNext(this::mapClientExceptions);
+    }
+
+    public Single<EnvelopeFeature> getFeatures(final String featureGroupKey) {
+        String url = String.format(FEATURES_ENDPOINT_PATH,
+            URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8)
+        );
+
+        return Single.fromFuture(this.httpClient.get(url, EnvelopeFeature.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 

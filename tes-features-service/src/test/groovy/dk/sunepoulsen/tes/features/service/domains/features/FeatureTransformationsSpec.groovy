@@ -3,6 +3,7 @@ package dk.sunepoulsen.tes.features.service.domains.features
 import dk.sunepoulsen.tes.data.generators.DataGenerator
 import dk.sunepoulsen.tes.data.generators.Generators
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
+import dk.sunepoulsen.tes.features.model.Feature
 import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.RegisterFeature
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity
@@ -10,6 +11,8 @@ import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEnti
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 
 class FeatureTransformationsSpec extends Specification {
@@ -87,6 +90,31 @@ class FeatureTransformationsSpec extends Specification {
                         datetime: featureEntity.activations[1].dateTime
                     )
                 ])
+    }
+
+    void "Transform FeatureEntity to model of Feature"() {
+        given:
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .id(1L)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureEntity.setActivations(
+                List.of(new FeatureActivationEntity(
+                    feature: featureEntity,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                ))
+            )
+
+        expect:
+            this.sut.toFeatureModel(featureEntity) == new Feature(
+                key: featureEntity.key,
+                name: featureEntity.name,
+                description: featureEntity.description
+            )
     }
 
     @Unroll

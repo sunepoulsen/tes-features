@@ -1,10 +1,13 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
-
+import dk.sunepoulsen.tes.features.model.EnvelopeFeature
+import dk.sunepoulsen.tes.features.model.Feature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiConflictException
+import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.DuplicateResourceException
+import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
 import org.springframework.web.context.request.async.DeferredResult
 import spock.lang.Specification
 
@@ -35,7 +38,7 @@ class FeaturesControllerSpec extends Specification {
             1 * featuresLogic.registerFeatures(model) >> CompletableFuture.completedFuture(new RegisterFeatureGroup(
                 key: 'group-key'
             ))
-
+            0 * _
     }
 
     void "Test register new features throws LogicException"() {
@@ -54,6 +57,61 @@ class FeaturesControllerSpec extends Specification {
             1 * featuresLogic.registerFeatures(model) >> {
                 throw new DuplicateResourceException('code', 'param', 'message')
             }
+            0 * _
+    }
+
+    void "Test get features for a feature group successfully"() {
+        given:
+            Feature model = new Feature(
+                key: 'group-key'
+            )
+
+        when:
+            DeferredResult<EnvelopeFeature> deferredResult = sut.getFeatures('key')
+            DeferredResults.wait(deferredResult)
+
+        then:
+            EnvelopeFeature modelResponse = deferredResult.result as EnvelopeFeature
+            modelResponse.results.first.key == model.key
+
+            1 * featuresLogic.getFeatures('key') >> CompletableFuture.completedFuture(new EnvelopeFeature(
+                results: [model]
+            ))
+            0 * _
+    }
+
+    void "Test get features for a feature group that returns Future with LogicException"() {
+        when:
+            DeferredResult<EnvelopeFeature> deferredResult = sut.getFeatures('key')
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.getFeatures('key') >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test get features for a feature group that throws LogicException"() {
+        when:
+            sut.getFeatures('key')
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.getFeatures('key') >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
     }
 
 }

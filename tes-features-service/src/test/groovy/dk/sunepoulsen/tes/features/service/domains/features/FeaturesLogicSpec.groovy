@@ -1,8 +1,13 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
+import dk.sunepoulsen.tes.features.data.generators.FeatureDataGenerator
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.model.EnvelopeFeature
+import dk.sunepoulsen.tes.features.model.Feature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence
+import dk.sunepoulsen.tes.features.service.domains.persistence.FeaturePersistence
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
 import spock.lang.Specification
 
@@ -12,14 +17,23 @@ import java.util.concurrent.ExecutionException
 class FeaturesLogicSpec extends Specification {
 
     private FeatureGroupTransformations featureGroupTransformations
+    private FeatureTransformations featureTransformations
     private FeatureGroupPersistence featureGroupPersistence
+    private FeaturePersistence featurePersistence
     private FeaturesLogic sut
 
     void setup() {
         this.featureGroupTransformations = Mock(FeatureGroupTransformations)
+        this.featureTransformations = Mock(FeatureTransformations)
         this.featureGroupPersistence = Mock(FeatureGroupPersistence)
+        this.featurePersistence = Mock(FeaturePersistence)
 
-        this.sut = new FeaturesLogic(featureGroupTransformations, featureGroupPersistence)
+        this.sut = new FeaturesLogic(
+            featureGroupTransformations,
+            featureTransformations,
+            featureGroupPersistence,
+            featurePersistence
+        )
     }
 
     void "Test successful register of features"() {
@@ -54,6 +68,38 @@ class FeaturesLogicSpec extends Specification {
             exception.cause.message == 'message'
 
             1 * featureGroupTransformations.toEntity(featureGroup) >> {
+                throw new NullPointerException('message')
+            }
+            0 * _
+    }
+
+    void "Test successful get features for a feature group"() {
+        given:
+            FeatureEntity foundEntity = new FeatureEntity()
+            Feature foundFeature = new FeatureDataGenerator().generate()
+
+        when:
+            CompletableFuture<EnvelopeFeature> result = sut.getFeatures('key')
+
+        then:
+            !result.get().getResults().empty
+            result.get().getResults().first == foundFeature
+
+            1 * featurePersistence.getFeatures('key') >> [foundEntity]
+            1 * featureTransformations.toFeatureModel(foundEntity) >> foundFeature
+            0 * _
+    }
+
+    void "Test get features for a feature group with thrown exception"() {
+        when:
+            sut.getFeatures('key').get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            exception.cause instanceof NullPointerException
+            exception.cause.message == 'message'
+
+            1 * featurePersistence.getFeatures('key') >> {
                 throw new NullPointerException('message')
             }
             0 * _

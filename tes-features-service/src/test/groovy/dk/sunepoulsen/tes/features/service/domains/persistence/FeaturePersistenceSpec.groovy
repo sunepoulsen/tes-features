@@ -5,6 +5,7 @@ import dk.sunepoulsen.tes.data.generators.Generators
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,6 +34,9 @@ class FeaturePersistenceSpec extends Specification {
 
     @Autowired
     private FeatureActivationRepository featureActivationRepository
+
+    @Autowired
+    private FeatureGroupPersistence featureGroupPersistence
 
     @Autowired
     private FeatureGroupPersistenceTestService featureGroupPersistenceTestService
@@ -257,6 +261,52 @@ class FeaturePersistenceSpec extends Specification {
         then:
             DataIntegrityViolationException ex = thrown(DataIntegrityViolationException)
             ex.message.contains('NULL not allowed for column "DESCRIPTION";')
+    }
+
+    void "Tests get all features in a feature group that exists"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = featureGroupPersistence.registerFeatureGroup(featureGroup)
+
+        when:
+            List<FeatureEntity> result = sut.getFeatures(createdFeatureGroup.key)
+
+        then:
+            result.size() == 1
+            result.first.key == createdFeatureGroup.features.first.key
+
+    }
+
+    void "Tests get all features that belong to a feature group that does not exist"() {
+        when:
+            sut.getFeatures('unknown')
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == 'feature_group_key'
+            exception.message == "No feature group with key 'unknown' exists"
     }
 
 }

@@ -1,5 +1,6 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
+import dk.sunepoulsen.tes.features.model.Feature;
 import dk.sunepoulsen.tes.features.model.RegisterFeature;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity;
@@ -25,6 +26,16 @@ class FeatureTransformations {
                 .toList()
             );
         }
+
+        return result;
+    }
+
+    Feature toFeatureModel(FeatureEntity featureEntity) {
+        Feature result = new Feature();
+
+        result.setKey(featureEntity.getKey());
+        result.setName(featureEntity.getName());
+        result.setDescription(featureEntity.getDescription());
 
         return result;
     }

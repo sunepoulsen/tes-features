@@ -1,11 +1,15 @@
 package dk.sunepoulsen.tes.features.service.domains.persistence;
 
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity;
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.PersistenceException;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,4 +37,14 @@ public class FeaturePersistence {
             return featureRepository.save(feature);
         });
     }
+
+    @Transactional
+    public List<FeatureEntity> getFeatures(final String featureGroupKey) throws PersistenceException {
+        final FeatureGroupEntity foundEntity = featureGroupRepository.findByKey(featureGroupKey).orElseThrow(() ->
+            new ResourceNotFoundException("feature_group_key", "No feature group with key '" + featureGroupKey + "' exists")
+        );
+
+        return featureRepository.findByFeatureGroup(foundEntity);
+    }
+
 }
