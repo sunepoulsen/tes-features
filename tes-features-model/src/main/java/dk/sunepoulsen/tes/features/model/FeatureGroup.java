@@ -1,9 +1,12 @@
 package dk.sunepoulsen.tes.features.model;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead;
+import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudUpdate;
 import dk.sunepoulsen.tes.rest.models.validation.constraints.UriPathPattern;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 import lombok.Data;
 
 @Data
@@ -15,7 +18,8 @@ public class FeatureGroup {
         requiredMode = Schema.RequiredMode.REQUIRED,
         accessMode = Schema.AccessMode.READ_ONLY
     )
-    @NotNull
+    @NotNull(groups = {OnCrudRead.class})
+    @Null(groups = {OnCrudUpdate.class})
     @UriPathPattern
     private String key;
 
@@ -24,7 +28,7 @@ public class FeatureGroup {
         requiredMode = Schema.RequiredMode.REQUIRED,
         accessMode = Schema.AccessMode.READ_WRITE
     )
-    @NotNull
+    @NotNull(groups = {OnCrudRead.class})
     private String name;
 
     @Schema(

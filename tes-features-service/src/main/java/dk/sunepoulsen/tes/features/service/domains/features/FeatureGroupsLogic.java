@@ -5,6 +5,7 @@ import dk.sunepoulsen.tes.features.model.FeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException;
+import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,21 @@ class FeatureGroupsLogic {
                 )
                 .orElseGet(() ->
                     CompletableFuture.failedFuture(new ApiNotFoundException("key", "No feature group exists with key: " + key))
+                );
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
+
+    @Async("logicExecutor")
+    CompletableFuture<FeatureGroup> patchFeatureGroup(final String key, final FeatureGroup newValues) {
+        try {
+            return featureGroupPersistence.patchFeatureGroup(key, featureGroupTransformations.toPatchEntity(newValues))
+                .map(featureGroupEntity ->
+                    CompletableFuture.completedFuture(featureGroupTransformations.toFeatureGroupModel(featureGroupEntity))
+                )
+                .orElseGet(() ->
+                    CompletableFuture.failedFuture(new ResourceNotFoundException("key", "No feature group exists with key: " + key))
                 );
         } catch (Exception ex) {
             return CompletableFuture.failedFuture(ex);

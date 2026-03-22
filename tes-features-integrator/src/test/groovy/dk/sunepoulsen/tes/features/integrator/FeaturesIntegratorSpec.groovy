@@ -134,4 +134,48 @@ class FeaturesIntegratorSpec extends Specification {
             }
     }
 
+    void "Patch feature group with OK"() {
+        given:
+            FeatureGroup newValues = new FeatureGroup(
+                name: 'new-name'
+            )
+
+        when:
+            Single<FeatureGroup> result = sut.patchFeatureGroup('group-key', newValues)
+
+        then:
+            result.blockingGet().key == 'group-key'
+
+            1 * httpClient.patch("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", newValues, FeatureGroup) >> CompletableFuture.supplyAsync {
+                new FeatureGroup(
+                    key: 'group-key'
+                )
+            }
+            0 * _
+    }
+
+    void "Patch feature group Internal Server Error"() {
+        given:
+            FeatureGroup newValues = new FeatureGroup(
+                name: 'new-name'
+            )
+
+        when:
+            sut.patchFeatureGroup('group-key', newValues).blockingGet()
+
+        then:
+            ClientInternalServerException ex = thrown(ClientInternalServerException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.patch("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", newValues, FeatureGroup) >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
+    }
+
 }

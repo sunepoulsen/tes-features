@@ -1,6 +1,8 @@
 package dk.sunepoulsen.tes.features.service.domains.persistence;
 
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -14,4 +16,13 @@ interface FeatureGroupRepository extends ListCrudRepository<FeatureGroupEntity, 
             WHERE lower(g.key) = lower(:key)
         """)
     Optional<FeatureGroupEntity> findByKey(@Param("key") String key);
+
+    @Query("""
+            SELECT g
+            FROM FeatureGroupEntity g
+            WHERE lower(g.key) = lower(:key)
+        """)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<FeatureGroupEntity> findForUpdate(@Param("key") String key);
+
 }

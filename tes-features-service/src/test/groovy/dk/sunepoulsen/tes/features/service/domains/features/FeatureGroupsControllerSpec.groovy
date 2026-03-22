@@ -132,4 +132,68 @@ class FeatureGroupsControllerSpec extends Specification {
             }
     }
 
+    void "Test patch feature group successfully"() {
+        given:
+            FeatureGroup newValues = new FeatureGroup(
+                name: 'new-name'
+            )
+
+        when:
+            DeferredResult<FeatureGroup> deferredResult = sut.patchFeatureGroup('key', newValues)
+            DeferredResults.wait(deferredResult)
+
+        then:
+            FeatureGroup group = deferredResult.result as FeatureGroup
+            group.key == 'returned-key'
+
+            1 * featureGroupsLogic.patchFeatureGroup('key', newValues) >> CompletableFuture.completedFuture(new FeatureGroup(
+                key: 'returned-key'
+            ))
+            0 * _
+    }
+
+    void "Test patch feature group that does not exist"() {
+        given:
+            FeatureGroup newValues = new FeatureGroup(
+                name: 'new-name'
+            )
+
+        when:
+            DeferredResult<FeatureGroup> deferredResult = sut.patchFeatureGroup('key', newValues)
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.patchFeatureGroup('key', newValues) >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test patch feature group throws LogicException"() {
+        given:
+            FeatureGroup newValues = new FeatureGroup(
+                name: 'new-name'
+            )
+
+        when:
+            sut.patchFeatureGroup('key', newValues)
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.patchFeatureGroup('key', newValues) >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
+    }
+
 }
