@@ -58,12 +58,11 @@ public class FeatureGroupPersistence {
      * Patches the information of a feature group.
      * <p>
      * Only these properties of a feature group can be patched:
-     *     <ul>
-     *         <li>name</li>
-     *         <li>description</li>
-     *     </ul>
-     *     All other properties in the passed {@code FeatureGroupEntity} will be ignored.
-     * </p>
+     * <ul>
+     *     <li>name</li>
+     *     <li>description</li>
+     * </ul>
+     * All other properties in the passed {@code FeatureGroupEntity} will be ignored.
      *
      * @param key                The key of the feature group that will be patched.
      * @param featureGroupEntity New property values of the feature group to be patched.
@@ -82,6 +81,15 @@ public class FeatureGroupPersistence {
         featureGroupRepository.save(foundEntity);
 
         return featureGroupRepository.findByKey(key);
+    }
+
+    @Transactional
+    public void deleteFeatureGroup(final String featureGroupKey) throws PersistenceException {
+        final FeatureGroupEntity foundEntity = featureGroupRepository.findByKey(featureGroupKey).orElseThrow(() ->
+            new ResourceNotFoundException("feature_group_key", "No feature group with key '" + featureGroupKey + "' exists")
+        );
+
+        featureGroupRepository.delete(foundEntity);
     }
 
     private void verifyFeatures(FeatureGroupEntity featureGroup) throws PersistenceException {

@@ -50,4 +50,14 @@ class FeatureGroupsController implements FeatureGroupsOperations {
         }
     }
 
+    @Override
+    @DeleteMapping("/{feature_group_key}")
+    public DeferredResult<String> deleteFeatureGroup(@Valid @PathVariable("feature_group_key") final String key) {
+        try {
+            return DeferredResults.of(featureGroupsLogic.deleteFeatureGroup(key));
+        } catch (LogicException ex) {
+            throw ex.mapApiException();
+        }
+    }
+
 }

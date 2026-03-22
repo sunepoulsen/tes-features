@@ -176,4 +176,31 @@ class FeatureGroupsLogicSpec extends Specification {
             0 * _
     }
 
+    void "Test delete of a feature group that exists"() {
+        when:
+            String result = sut.deleteFeatureGroup('key').get()
+
+        then:
+            result == "{}"
+
+            1 * featureGroupPersistence.deleteFeatureGroup('key')
+            0 * _
+    }
+
+    void "Test delete of a feature group that does not exists"() {
+        when:
+            sut.deleteFeatureGroup('key').get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featureGroupPersistence.deleteFeatureGroup('key') >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
+            0 * _
+    }
+
 }

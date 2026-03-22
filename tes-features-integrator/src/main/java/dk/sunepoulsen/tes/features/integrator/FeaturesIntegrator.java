@@ -15,6 +15,8 @@ public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
     public static final String FEATURE_ENDPOINT_PATH = "/features";
     public static final String FEATURE_GROUPS_ENDPOINT_PATH = "/groups";
 
+    private static final String URI_PATH_WITH_ID_FORMAT = "%s/%s";
+
     public FeaturesIntegrator(TechEasySolutionsClient httpClient) {
         super(httpClient);
     }
@@ -30,7 +32,7 @@ public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
     }
 
     public Single<FeatureGroup> getFeatureGroup(final String key) {
-        String url = String.format("%s/%s",
+        String url = String.format(URI_PATH_WITH_ID_FORMAT,
             FEATURE_GROUPS_ENDPOINT_PATH,
             URLEncoder.encode(key, StandardCharsets.UTF_8)
         );
@@ -40,12 +42,22 @@ public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
     }
 
     public Single<FeatureGroup> patchFeatureGroup(final String key, final FeatureGroup featureGroup) {
-        String url = String.format("%s/%s",
+        String url = String.format(URI_PATH_WITH_ID_FORMAT,
             FEATURE_GROUPS_ENDPOINT_PATH,
             URLEncoder.encode(key, StandardCharsets.UTF_8)
         );
 
         return Single.fromFuture(this.httpClient.patch(url, featureGroup, FeatureGroup.class))
+            .onErrorResumeNext(this::mapClientExceptions);
+    }
+
+    public Single<String> deleteFeatureGroup(final String key) {
+        String url = String.format(URI_PATH_WITH_ID_FORMAT,
+            FEATURE_GROUPS_ENDPOINT_PATH,
+            URLEncoder.encode(key, StandardCharsets.UTF_8)
+        );
+
+        return Single.fromFuture(this.httpClient.delete(url))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 

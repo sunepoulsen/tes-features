@@ -70,4 +70,14 @@ class FeatureGroupsLogic {
         }
     }
 
+    @Async("logicExecutor")
+    CompletableFuture<String> deleteFeatureGroup(final String key) {
+        try {
+            featureGroupPersistence.deleteFeatureGroup(key);
+            return CompletableFuture.completedFuture("{}");
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
+
 }

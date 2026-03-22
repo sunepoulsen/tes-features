@@ -134,4 +134,45 @@ public interface FeatureGroupsOperations {
     @ResponseStatus(HttpStatus.OK)
     @Validated({Default.class, OnCrudUpdate.class})
     DeferredResult<FeatureGroup> patchFeatureGroup(@Valid @PathVariable("feature_group_key") final String key, @Valid @RequestBody FeatureGroup featureGroup);
+
+    @Operation(
+        summary = "Delete a feature group including all features and activations within the feature group.",
+        description = """
+                Deletes a feature group and returns nothing.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "The feature group has been deleted",
+            content = @Content(
+                schema = @Schema(implementation = FeatureGroup.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "If feature group key is invalid.",
+            content = @Content(
+                schema = @Schema(implementation = ServiceValidationErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No feature group exist with the given key",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unable to process this request",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        )
+    })
+    @DeleteMapping("/{feature_group_key}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Validated({Default.class})
+    DeferredResult<String> deleteFeatureGroup(@Valid @PathVariable("feature_group_key") final String key);
 }

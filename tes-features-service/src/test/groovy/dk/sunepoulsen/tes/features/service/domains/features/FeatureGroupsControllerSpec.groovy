@@ -196,4 +196,50 @@ class FeatureGroupsControllerSpec extends Specification {
             0 * _
     }
 
+    void "Test delete feature group successfully"() {
+        when:
+            DeferredResult<Void> deferredResult = sut.deleteFeatureGroup('key')
+            DeferredResults.wait(deferredResult)
+
+        then:
+            deferredResult.result
+
+            1 * featureGroupsLogic.deleteFeatureGroup('key') >> CompletableFuture.completedFuture(null)
+            0 * _
+    }
+
+    void "Test delete feature group that does not exist"() {
+        when:
+            DeferredResult<Void> deferredResult = sut.deleteFeatureGroup('key')
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.deleteFeatureGroup('key') >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test delete feature group throws LogicException"() {
+        when:
+            sut.deleteFeatureGroup('key')
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.deleteFeatureGroup('key') >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
+    }
+
 }
