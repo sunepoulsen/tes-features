@@ -246,4 +246,39 @@ class FeaturesIntegratorSpec extends Specification {
             }
     }
 
+    void "Get feature of feature group returns OK"() {
+        when:
+            Single<Feature> result = sut.getFeature('group-key', 'feature-key')
+
+        then:
+            result.blockingGet().key == 'feature-key'
+
+            1 * httpClient.get(String.format(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, 'group-key', 'feature-key'), Feature) >> CompletableFuture.supplyAsync {
+                new Feature(
+                    key: 'feature-key'
+                )
+            }
+            0 * _
+    }
+
+    void "Get feature of feature group returns Internal Server Error"() {
+        when:
+            sut.getFeature('group-key', 'feature-key').blockingGet()
+
+        then:
+            ClientInternalServerException ex = thrown(ClientInternalServerException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.get(String.format(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, 'group-key', 'feature-key'), Feature) >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
+            0 * _
+    }
+
 }

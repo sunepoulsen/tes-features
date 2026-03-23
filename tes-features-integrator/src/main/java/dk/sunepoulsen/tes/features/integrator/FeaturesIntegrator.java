@@ -1,9 +1,6 @@
 package dk.sunepoulsen.tes.features.integrator;
 
-import dk.sunepoulsen.tes.features.model.EnvelopeFeature;
-import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
-import dk.sunepoulsen.tes.features.model.FeatureGroup;
-import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
+import dk.sunepoulsen.tes.features.model.*;
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsBackendIntegrator;
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient;
 import io.reactivex.rxjava3.core.Single;
@@ -16,6 +13,7 @@ public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
     public static final String REGISTER_FEATURES_ENDPOINT_PATH = "/features";
     public static final String FEATURE_GROUPS_ENDPOINT_PATH = "/groups";
     public static final String FEATURES_ENDPOINT_PATH = FEATURE_GROUPS_ENDPOINT_PATH + "/%s/features";
+    public static final String FEATURE_ENDPOINT_PATH = FEATURE_GROUPS_ENDPOINT_PATH + "/%s/features/%s";
     private static final String URI_PATH_WITH_ID_FORMAT = "%s/%s";
 
     public FeaturesIntegrator(TechEasySolutionsClient httpClient) {
@@ -68,6 +66,16 @@ public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
         );
 
         return Single.fromFuture(this.httpClient.get(url, EnvelopeFeature.class))
+            .onErrorResumeNext(this::mapClientExceptions);
+    }
+
+    public Single<Feature> getFeature(final String featureGroupKey, final String featureKey) {
+        String url = String.format(FEATURE_ENDPOINT_PATH,
+            URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
+            URLEncoder.encode(featureKey, StandardCharsets.UTF_8)
+        );
+
+        return Single.fromFuture(this.httpClient.get(url, Feature.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 

@@ -15,6 +15,7 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -307,6 +308,79 @@ class FeaturePersistenceSpec extends Specification {
             ResourceNotFoundException exception = thrown(ResourceNotFoundException)
             exception.param == 'feature_group_key'
             exception.message == "No feature group with key 'unknown' exists"
+    }
+
+    void "Tests get feature in a feature group that does not exists"() {
+        when:
+            Optional<FeatureEntity> result = sut.getFeature('wrong-group-key', 'wrong-key')
+
+        then:
+            result.empty
+    }
+
+    void "Tests get unknown feature in a feature group that exists"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity feature = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            this.sut.registerFeature(feature)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            Optional<FeatureEntity> result = sut.getFeature(featureGroupEntity.key, 'wrong-key')
+
+        then:
+            result.empty
+    }
+
+    @Unroll
+    void "Tests get known feature in a feature group that exists: #_testcase"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(_featureGroupKey)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(_featureKey)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            Optional<FeatureEntity> result = sut.getFeature(_argFeatureGroupKey, _argFeatureKey)
+
+        then:
+            !result.empty
+            result.get().id == createdFeature.id
+            result.get().key == createdFeature.key
+
+        where:
+            _testcase                         | _featureGroupKey  | _featureKey  | _argFeatureGroupKey             | _argFeatureKey
+            'Normal case'                     | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'
+            'Feature group key is lower case' | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'.toLowerCase() | 'featureKey'
+            'Feature group key is upper case' | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'.toUpperCase() | 'featureKey'
+            'Feature key is lower case'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'.toLowerCase()
+            'Feature key is upper case'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'.toUpperCase()
     }
 
 }

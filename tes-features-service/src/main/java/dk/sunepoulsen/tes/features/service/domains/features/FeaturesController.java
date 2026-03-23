@@ -1,6 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
 import dk.sunepoulsen.tes.features.model.EnvelopeFeature;
+import dk.sunepoulsen.tes.features.model.Feature;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.LogicException;
@@ -35,6 +36,18 @@ class FeaturesController implements FeaturesOperations {
     public DeferredResult<EnvelopeFeature> getFeatures(@Valid @PathVariable("feature_group_key") final String key) {
         try {
             return DeferredResults.of(featuresLogic.getFeatures(key));
+        } catch (LogicException ex) {
+            throw ex.mapApiException();
+        }
+    }
+
+    @Override
+    @GetMapping(FEATURE_ENDPOINT_PATH)
+    public DeferredResult<Feature> getFeature(
+        @Valid @PathVariable("feature_group_key") final String featureGroupKey,
+        @Valid @PathVariable("feature_key") final String featureKey) {
+        try {
+            return DeferredResults.of(featuresLogic.getFeature(featureGroupKey, featureKey));
         } catch (LogicException ex) {
             throw ex.mapApiException();
         }

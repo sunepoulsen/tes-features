@@ -32,6 +32,13 @@ interface FeatureRepository extends PagingAndSortingRepository<FeatureEntity, Lo
     @Query("""
             SELECT f
             FROM FeatureEntity f
+            WHERE lower(f.featureGroup.key) = lower(:featureGroupKey) AND lower(f.key) = lower(:featureKey)
+        """)
+    Optional<FeatureEntity> findByKey(@Param("featureGroupKey") String featureGroupKey, @Param("featureKey") String featureKey);
+
+    @Query("""
+            SELECT f
+            FROM FeatureEntity f
             WHERE f.featureGroup = :featureGroup
         """)
     List<FeatureEntity> findByFeatureGroup(@Param("featureGroup") FeatureGroupEntity featureGroup);

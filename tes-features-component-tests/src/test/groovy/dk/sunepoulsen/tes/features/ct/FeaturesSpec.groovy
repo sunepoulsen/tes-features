@@ -8,6 +8,7 @@ import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGener
 import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.EnvelopeFeature
+import dk.sunepoulsen.tes.features.model.Feature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientBadRequestException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
@@ -15,6 +16,7 @@ import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
+import spock.lang.Unroll
 
 @Slf4j
 class FeaturesSpec extends Specification implements FeaturesIntegratorProvider, FeaturesTestsIntegratorProvider {
@@ -83,6 +85,69 @@ class FeaturesSpec extends Specification implements FeaturesIntegratorProvider, 
             exception.serviceError == new ServiceErrorModel(
                 param: 'feature_group_key',
                 message: "No feature group with key 'group-key' exists"
+            )
+    }
+
+    void "GET /groups/{feature_group_key}/features/{feature_key} returns OK"() {
+        given: 'Services is available'
+            isFeaturesServiceAvailable()
+
+        and: 'valid feature group'
+            List<RegisterFeatureGroup> featureGroups = [
+                new RegisterFeatureGroupDataGenerator(textGenerator).generate(),
+                new RegisterFeatureGroupDataGenerator(textGenerator).generate(),
+                new RegisterFeatureGroupDataGenerator(textGenerator).generate()
+            ]
+
+        and:
+            featureGroups.each {
+                featuresIntegrator().registerFeatures(it).blockingGet()
+            }
+
+        and:
+            RegisterFeatureGroup featureGroup = featureGroups[1]
+            Integer featureIndex = NumberGenerators.integerGenerator(0, featureGroup.features.size()).generate()
+
+        when: 'GET /groups/{feature_group_key}/features/{feature_key}'
+            Feature responseFeature = featuresIntegrator().getFeature(featureGroup.key, featureGroup.features[featureIndex].key).blockingGet()
+
+        then: 'Verify response'
+            assert responseFeature.key == featureGroup.features[featureIndex].key
+            assert responseFeature.name == featureGroup.features[featureIndex].name
+            assert responseFeature.description == featureGroup.features[featureIndex].description
+    }
+
+    @Unroll
+    void "GET /groups/{feature_group_key}/features/{feature_key} returns Bad request: #_testcase"() {
+        given: 'Services is available'
+            isFeaturesServiceAvailable()
+
+        when: 'GET /groups/{feature_group_key}/features/{feature_key}'
+            featuresIntegrator().getFeature(_featureGroupKey, _featureKey).blockingGet()
+
+        then: 'Verify response'
+            ClientBadRequestException exception = thrown(ClientBadRequestException)
+            exception.response.statusCode() == 400
+            exception.serviceError == new ServiceValidationErrorModel()
+
+        where:
+            _testcase                   | _featureGroupKey | _featureKey
+            'Invalid feature group key' | 'wrong;key'      | 'valid-key'
+            'Invalid feature key'       | 'valid-key'      | 'wrong;key'
+    }
+
+    void "GET /groups/{feature_group_key}/features/{feature_key} returns not found"() {
+        given: 'Services is available'
+            isFeaturesServiceAvailable()
+
+        when: 'GET /groups/{feature_group_key}/features/{feature_key}'
+            featuresIntegrator().getFeature('group-key', 'key').blockingGet()
+
+        then: 'Verify response'
+            ClientNotFoundException exception = thrown(ClientNotFoundException)
+            exception.response.statusCode() == 404
+            exception.serviceError == new ServiceErrorModel(
+                message: "No feature exists with the given keys"
             )
     }
 

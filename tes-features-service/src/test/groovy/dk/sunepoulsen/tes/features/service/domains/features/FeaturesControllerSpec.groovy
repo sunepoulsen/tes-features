@@ -114,4 +114,56 @@ class FeaturesControllerSpec extends Specification {
             0 * _
     }
 
+    void "Test get feature for a feature group successfully"() {
+        given:
+            Feature model = new Feature(
+                key: 'key'
+            )
+
+        when:
+            DeferredResult<Feature> deferredResult = sut.getFeature('group-key', 'key')
+            DeferredResults.wait(deferredResult)
+
+        then:
+            Feature modelResponse = deferredResult.result as Feature
+            modelResponse.key == model.key
+
+            1 * featuresLogic.getFeature('group-key', 'key') >> CompletableFuture.completedFuture(model)
+            0 * _
+    }
+
+    void "Test get feature for a feature group that does not exist"() {
+        when:
+            DeferredResult<Feature> deferredResult = sut.getFeature('group-key', 'key')
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.getFeature('group-key', 'key') >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test get feature for a feature group fails with LogicException"() {
+        when:
+            sut.getFeature('group-key', 'key')
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.getFeature('group-key', 'key') >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
+    }
+
 }
