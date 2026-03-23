@@ -9,6 +9,7 @@ import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersi
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeaturePersistence
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
+import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
 import spock.lang.Specification
 
 import java.util.concurrent.CompletableFuture
@@ -68,6 +69,50 @@ class FeaturesLogicSpec extends Specification {
             exception.cause.message == 'message'
 
             1 * featureGroupTransformations.toEntity(featureGroup) >> {
+                throw new NullPointerException('message')
+            }
+            0 * _
+    }
+
+    void "Test successful get feature"() {
+        given:
+            FeatureEntity foundEntity = new FeatureEntity()
+            Feature foundFeature = new FeatureDataGenerator().generate()
+
+        when:
+            CompletableFuture<Feature> result = sut.getFeature('group-key', foundFeature.key)
+
+        then:
+            result.get().key == foundFeature.key
+
+            1 * featurePersistence.getFeature('group-key', foundFeature.key) >> Optional.of(foundEntity)
+            1 * featureTransformations.toFeatureModel(foundEntity) >> foundFeature
+            0 * _
+    }
+
+    void "Test get feature that does not exist"() {
+        when:
+            sut.getFeature('group-key', 'key').get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            exception.cause instanceof ResourceNotFoundException
+            exception.cause.message == 'No feature exists with the given keys'
+
+            1 * featurePersistence.getFeature('group-key', 'key') >> Optional.empty()
+            0 * _
+    }
+
+    void "Test get feature fails with exception"() {
+        when:
+            sut.getFeature('group-key', 'key').get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            exception.cause instanceof NullPointerException
+            exception.cause.message == 'message'
+
+            1 * featurePersistence.getFeature('group-key', 'key') >> {
                 throw new NullPointerException('message')
             }
             0 * _

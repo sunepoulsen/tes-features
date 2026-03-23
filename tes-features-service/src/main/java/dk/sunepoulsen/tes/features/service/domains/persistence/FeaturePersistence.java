@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +46,11 @@ public class FeaturePersistence {
         );
 
         return featureRepository.findByFeatureGroup(foundEntity);
+    }
+
+    @Transactional
+    public Optional<FeatureEntity> getFeature(final String featureGroupKey, final String featureKey) throws PersistenceException {
+        return featureRepository.findByKey(featureGroupKey, featureKey);
     }
 
 }
