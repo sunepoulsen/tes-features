@@ -383,4 +383,83 @@ class FeaturePersistenceSpec extends Specification {
             'Feature key is upper case'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'.toUpperCase()
     }
 
+    @Unroll
+    void "Tests patch feature that exist: #_testcase"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(_featureGroupKey)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(_featureKey)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            Optional<FeatureEntity> patchedFeature = this.sut.patchFeature(_argFeatureGroupKey, _argFeatureKey, new FeatureEntity(
+                name: 'new-name',
+                description: 'new-description'
+            ))
+
+        then:
+            !patchedFeature.empty
+            with(patchedFeature.get()) {
+                assert it.key == createdFeature.key
+                assert it.name == 'new-name'
+                assert it.description == 'new-description'
+            }
+
+        where:
+            _testcase                         | _featureGroupKey  | _featureKey  | _argFeatureGroupKey             | _argFeatureKey
+            'Normal case'                     | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'
+            'Feature group key is lower case' | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'.toLowerCase() | 'featureKey'
+            'Feature group key is upper case' | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'.toUpperCase() | 'featureKey'
+            'Feature key is lower case'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'.toLowerCase()
+            'Feature key is upper case'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'.toUpperCase()
+    }
+
+    @Unroll
+    void "Tests patch feature of missing feature: #_testcase"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(_featureGroupKey)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(_featureKey)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            this.sut.registerFeature(featureEntity)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.patchFeature(_argFeatureGroupKey, _argFeatureKey, new FeatureEntity())
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == null
+            exception.message == "No feature with feature group '${_argFeatureGroupKey}' and feature '${_argFeatureKey}' exists"
+
+        where:
+            _testcase                      | _featureGroupKey  | _featureKey  | _argFeatureGroupKey | _argFeatureKey
+            'Feature group does not exist' | 'featureGroupKey' | 'featureKey' | 'bad-key'           | 'featureKey'
+            'Feature does not exist'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'   | 'bad-key'
+    }
+
 }

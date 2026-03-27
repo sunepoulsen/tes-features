@@ -32,6 +32,7 @@ class ApiDocumentationSpec extends Specification implements FeaturesIntegratorPr
             'DELETE' | '/groups/{feature_group_key}'                        | FEATURE_GROUP_TAG
             'GET'    | '/groups/{feature_group_key}/features'               | FEATURE_TAG
             'GET'    | '/groups/{feature_group_key}/features/{feature_key}' | FEATURE_TAG
+            'PATCH' | '/groups/{feature_group_key}/features/{feature_key}' | FEATURE_TAG
     }
 
 }

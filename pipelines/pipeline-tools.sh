@@ -1,6 +1,6 @@
 #!/bin/bash
 
-JAVA_VERSION=24.0.2-tem
+JAVA_VERSION=25.0.2-tem
 
 echo "Select tools"
 

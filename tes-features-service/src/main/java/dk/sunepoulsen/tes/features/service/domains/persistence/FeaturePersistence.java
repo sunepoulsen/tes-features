@@ -2,6 +2,7 @@ package dk.sunepoulsen.tes.features.service.domains.persistence;
 
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
+import dk.sunepoulsen.tes.springboot.rest.logic.PatchUtilities;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.PersistenceException;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,36 @@ public class FeaturePersistence {
 
     @Transactional
     public Optional<FeatureEntity> getFeature(final String featureGroupKey, final String featureKey) throws PersistenceException {
+        return featureRepository.findByKey(featureGroupKey, featureKey);
+    }
+
+    /**
+     * Patches the information of a feature.
+     * <p>
+     * Only these properties of a feature can be patched:
+     * <ul>
+     *     <li>name</li>
+     *     <li>description</li>
+     * </ul>
+     * All other properties in the passed {@code FeatureEntity} will be ignored.
+     *
+     * @param featureGroupKey The key of the feature group that contains the feature to be patched.
+     * @param featureKey      The key of the feature that will be patched.
+     * @param featureEntity   New property values of the feature to be patched.
+     * @return The {@code FeatureEntity} after it has been patched.
+     * @throws PersistenceException In case of persistence errors.
+     */
+    @Transactional
+    public Optional<FeatureEntity> patchFeature(final String featureGroupKey, final String featureKey, final FeatureEntity featureEntity) throws PersistenceException {
+        final FeatureEntity foundEntity = featureRepository.findForUpdate(featureGroupKey, featureKey).orElseThrow(() ->
+            new ResourceNotFoundException("No feature with feature group '" + featureGroupKey + "' and feature '" + featureKey + "' exists")
+        );
+
+        foundEntity.setName(PatchUtilities.patchValue(foundEntity.getName(), featureEntity.getName()));
+        foundEntity.setDescription(PatchUtilities.patchValue(foundEntity.getDescription(), featureEntity.getDescription()));
+
+        featureRepository.save(foundEntity);
+
         return featureRepository.findByKey(featureGroupKey, featureKey);
     }
 

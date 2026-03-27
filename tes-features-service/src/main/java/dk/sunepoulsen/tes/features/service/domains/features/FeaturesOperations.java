@@ -8,6 +8,7 @@ import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudCreate;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead;
+import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -139,4 +140,50 @@ public interface FeaturesOperations {
     DeferredResult<Feature> getFeature(
         @Valid @PathVariable("feature_group_key") final String featureGroupKey,
         @Valid @PathVariable("feature_key") final String featureKey);
+
+    @Operation(
+        summary = "Patch a feature with new values",
+        description = """
+                Returns the feature after is has been patched.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "The feature has been patched successfully.",
+            content = @Content(
+                schema = @Schema(implementation = Feature.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "If feature keys or the feature body is invalid.",
+            content = @Content(
+                schema = @Schema(implementation = ServiceValidationErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No feature exist with the given key",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unable to process this request",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        )
+    })
+    @PatchMapping(FEATURE_ENDPOINT_PATH)
+    @ResponseStatus(HttpStatus.OK)
+    @Validated({Default.class, OnCrudUpdate.class})
+    DeferredResult<Feature> patchFeature(
+        @Valid @PathVariable("feature_group_key") final String featureGroupKey,
+        @Valid @PathVariable("feature_key") final String featureKey,
+        @Valid @RequestBody final Feature feature
+    );
+
 }

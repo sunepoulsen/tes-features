@@ -150,4 +150,77 @@ class FeaturesLogicSpec extends Specification {
             0 * _
     }
 
+    void "Test patch of a feature that exists"() {
+        given:
+            Feature newValues = new Feature(
+                name: 'new-name'
+            )
+            FeatureEntity newValuesEntity = new FeatureEntity(
+                name: 'new-name'
+            )
+
+            FeatureEntity patchedEntity = new FeatureEntity(
+                name: 'new-name',
+                description: 'old-description'
+            )
+            Feature patchedFeature = new Feature(
+                name: patchedEntity.name,
+                description: patchedEntity.description
+            )
+
+        when:
+            CompletableFuture<Feature> result = sut.patchFeature('group-key', 'key', newValues)
+
+        then:
+            result.get() == patchedFeature
+
+            1 * featurePersistence.patchFeature('group-key', 'key', newValuesEntity) >> Optional.of(patchedEntity)
+            1 * featureTransformations.toPatchEntity(newValues) >> newValuesEntity
+            1 * featureTransformations.toFeatureModel(patchedEntity) >> patchedFeature
+            0 * _
+    }
+
+    void "Test patch of a feature group that exists, but can not be returned"() {
+        given:
+            Feature newValues = new Feature(
+                name: 'new-name'
+            )
+            FeatureEntity newValuesEntity = new FeatureEntity(
+                name: 'new-name'
+            )
+
+        when:
+            sut.patchFeature('group-key', 'key', newValues).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.message == "No feature with feature group 'group-key' and feature 'key' exists"
+
+            1 * featurePersistence.patchFeature('group-key', 'key', newValuesEntity) >> Optional.empty()
+            1 * featureTransformations.toPatchEntity(newValues) >> newValuesEntity
+            0 * _
+    }
+
+    void "Test patch of a feature group that does not exist"() {
+        given:
+            Feature newValues = new Feature()
+            FeatureEntity newValuesEntity = new FeatureEntity()
+
+        when:
+            sut.patchFeature('group-key', 'key', newValues).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featurePersistence.patchFeature('group-key', 'key', newValuesEntity) >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
+            1 * featureTransformations.toPatchEntity(newValues) >> newValuesEntity
+            0 * _
+    }
+
 }
