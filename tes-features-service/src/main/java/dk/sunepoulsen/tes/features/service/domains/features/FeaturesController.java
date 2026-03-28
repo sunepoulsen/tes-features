@@ -53,4 +53,17 @@ class FeaturesController implements FeaturesOperations {
         }
     }
 
+    @Override
+    @PatchMapping(FEATURE_ENDPOINT_PATH)
+    public DeferredResult<Feature> patchFeature(
+        @Valid @PathVariable("feature_group_key") final String featureGroupKey,
+        @Valid @PathVariable("feature_key") final String featureKey,
+        @Valid @RequestBody final Feature feature) {
+        try {
+            return DeferredResults.of(featuresLogic.patchFeature(featureGroupKey, featureKey, feature));
+        } catch (LogicException ex) {
+            throw ex.mapApiException();
+        }
+    }
+
 }

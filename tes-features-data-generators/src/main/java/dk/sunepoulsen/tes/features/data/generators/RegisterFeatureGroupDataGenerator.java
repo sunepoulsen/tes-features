@@ -1,17 +1,21 @@
 package dk.sunepoulsen.tes.features.data.generators;
 
-import dk.sunepoulsen.tes.data.generators.DataGenerator;
-import dk.sunepoulsen.tes.data.generators.DataListGenerator;
-import dk.sunepoulsen.tes.data.generators.Generators;
-import dk.sunepoulsen.tes.data.generators.NumberGenerators;
+import dk.sunepoulsen.tes.data.generators.*;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 
+import java.util.List;
+
 public class RegisterFeatureGroupDataGenerator implements DataGenerator<RegisterFeatureGroup> {
+
+    private static final DataGenerator<String> DEFAULT_TEXT_GENERATOR = Generators.textGenerator(
+        List.of(CharacterGenerator.URI_PATH_CHARECTERS),
+        NumberGenerators.integerGenerator(5, 50)
+    );
 
     private final DataGenerator<String> textGenerator;
 
     public RegisterFeatureGroupDataGenerator() {
-        this(Generators.textGenerator(NumberGenerators.integerGenerator(5, 100)));
+        this(DEFAULT_TEXT_GENERATOR);
     }
 
     public RegisterFeatureGroupDataGenerator(DataGenerator<String> textGenerator) {

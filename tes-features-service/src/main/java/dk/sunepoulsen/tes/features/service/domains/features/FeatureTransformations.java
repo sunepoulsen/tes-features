@@ -62,4 +62,11 @@ class FeatureTransformations {
         return featureEntity;
     }
 
+    FeatureEntity toPatchEntity(Feature feature) {
+        return FeatureEntity.builder()
+            .name(feature.getName())
+            .description(feature.getDescription())
+            .build();
+    }
+
 }

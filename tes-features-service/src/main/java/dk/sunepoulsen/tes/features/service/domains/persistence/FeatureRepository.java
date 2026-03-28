@@ -2,6 +2,8 @@ package dk.sunepoulsen.tes.features.service.domains.persistence;
 
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -35,6 +37,14 @@ interface FeatureRepository extends PagingAndSortingRepository<FeatureEntity, Lo
             WHERE lower(f.featureGroup.key) = lower(:featureGroupKey) AND lower(f.key) = lower(:featureKey)
         """)
     Optional<FeatureEntity> findByKey(@Param("featureGroupKey") String featureGroupKey, @Param("featureKey") String featureKey);
+
+    @Query("""
+            SELECT f
+            FROM FeatureEntity f
+            WHERE lower(f.featureGroup.key) = lower(:featureGroupKey) AND lower(f.key) = lower(:featureKey)
+        """)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<FeatureEntity> findForUpdate(@Param("featureGroupKey") String featureGroupKey, @Param("featureKey") String featureKey);
 
     @Query("""
             SELECT f

@@ -69,4 +69,19 @@ class FeaturesLogic {
         }
     }
 
+    @Async("logicExecutor")
+    CompletableFuture<Feature> patchFeature(final String featureGroupKey, final String featureKey, final Feature newValues) {
+        try {
+            return featurePersistence.patchFeature(featureGroupKey, featureKey, featureTransformations.toPatchEntity(newValues))
+                .map(featureEntity ->
+                    CompletableFuture.completedFuture(featureTransformations.toFeatureModel(featureEntity))
+                )
+                .orElseGet(() ->
+                    CompletableFuture.failedFuture(new ResourceNotFoundException("No feature with feature group '" + featureGroupKey + "' and feature '" + featureKey + "' exists"))
+                );
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
+
 }

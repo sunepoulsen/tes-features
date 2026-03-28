@@ -186,4 +186,19 @@ class FeatureTransformationsSpec extends Specification {
             ]
     }
 
+    void "Transform Feature to patch entity"() {
+        given:
+            Feature feature = new Feature(
+                key: textGenerator.generate(),
+                name: textGenerator.generate(),
+                description: textGenerator.generate()
+            )
+
+        expect:
+            this.sut.toPatchEntity(feature) == FeatureEntity.builder()
+                .name(feature.name)
+                .description(feature.description)
+                .build()
+    }
+
 }

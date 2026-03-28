@@ -166,4 +166,70 @@ class FeaturesControllerSpec extends Specification {
             0 * _
     }
 
+    void "Test patch feature in a feature group successfully"() {
+        given:
+            Feature model = new Feature(
+                key: 'key'
+            )
+
+            Feature newValues = new Feature(
+                name: 'new-name'
+            )
+
+        when:
+            DeferredResult<Feature> deferredResult = sut.patchFeature('group-key', 'key', newValues)
+            DeferredResults.wait(deferredResult)
+
+        then:
+            Feature modelResponse = deferredResult.result as Feature
+            modelResponse.key == model.key
+
+            1 * featuresLogic.patchFeature('group-key', 'key', newValues) >> CompletableFuture.completedFuture(model)
+            0 * _
+    }
+
+    void "Test patch feature in a feature group that does not exist"() {
+        given:
+            Feature newValues = new Feature(
+                name: 'new-name'
+            )
+
+        when:
+            DeferredResult<Feature> deferredResult = sut.patchFeature('group-key', 'key', newValues)
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.patchFeature('group-key', 'key', newValues) >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test patch feature in a feature group fails with LogicException"() {
+        given:
+            Feature newValues = new Feature(
+                name: 'new-name'
+            )
+
+        when:
+            sut.patchFeature('group-key', 'key', newValues)
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.patchFeature('group-key', 'key', newValues) >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
+    }
+
 }

@@ -281,4 +281,49 @@ class FeaturesIntegratorSpec extends Specification {
             0 * _
     }
 
+    void "Patch feature with OK"() {
+        given:
+            Feature newValues = new Feature(
+                name: 'new-name'
+            )
+
+        when:
+            Single<Feature> result = sut.patchFeature('group-key', 'key', newValues)
+
+        then:
+            result.blockingGet().key == 'key'
+
+            1 * httpClient.patch(String.format(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, 'group-key', 'key'), newValues, Feature) >> CompletableFuture.supplyAsync {
+                new Feature(
+                    key: 'key'
+                )
+            }
+            0 * _
+    }
+
+    void "Patch feature that returns Internal Server Error"() {
+        given:
+            Feature newValues = new Feature(
+                name: 'new-name'
+            )
+
+        when:
+            sut.patchFeature('group-key', 'key', newValues).blockingGet()
+
+        then:
+            ClientInternalServerException ex = thrown(ClientInternalServerException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.patch(String.format(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, 'group-key', 'key'), newValues, Feature) >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
+            0 * _
+    }
+
 }

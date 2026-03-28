@@ -1,9 +1,6 @@
 package dk.sunepoulsen.tes.features.ct
 
-import dk.sunepoulsen.tes.data.generators.CharacterGenerator
-import dk.sunepoulsen.tes.data.generators.DataGenerator
-import dk.sunepoulsen.tes.data.generators.Generators
-import dk.sunepoulsen.tes.data.generators.NumberGenerators
+
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
 import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
@@ -18,13 +15,7 @@ import spock.lang.Specification
 @Slf4j
 class RegisterFeaturesSpec extends Specification implements FeaturesIntegratorProvider, FeaturesTestsIntegratorProvider {
 
-    private DataGenerator<String> textGenerator
-
     void setup() {
-        this.textGenerator = Generators.textGenerator(
-            [CharacterGenerator.URI_PATH_CHARECTERS],
-            NumberGenerators.integerGenerator(5, 50)
-        )
         featuresTestsIntegrator().deletePersistence().blockingGet()
     }
 
@@ -33,7 +24,7 @@ class RegisterFeaturesSpec extends Specification implements FeaturesIntegratorPr
             isFeaturesServiceAvailable()
 
         and: 'valid feature group'
-            RegisterFeatureGroup featureGroup = new RegisterFeatureGroupDataGenerator(textGenerator).generate()
+            RegisterFeatureGroup featureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         when: 'Call PUT /features'
             RegisterFeatureGroup result = featuresIntegrator().registerFeatures(featureGroup).blockingGet()
