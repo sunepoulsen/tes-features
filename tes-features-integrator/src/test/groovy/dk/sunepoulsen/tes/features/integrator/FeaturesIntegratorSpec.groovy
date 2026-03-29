@@ -326,4 +326,35 @@ class FeaturesIntegratorSpec extends Specification {
             0 * _
     }
 
+    void "Delete feature from a feature group with OK"() {
+        when:
+            sut.deleteFeature('group-key', 'key').blockingGet()
+
+        then:
+            noExceptionThrown()
+
+            1 * httpClient.delete(String.format(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, 'group-key', 'key')) >> CompletableFuture.supplyAsync { "" }
+            0 * _
+    }
+
+    void "Delete feature from a feature group with not found"() {
+        when:
+            sut.deleteFeature('group-key', 'key').blockingGet()
+
+        then:
+            ClientNotFoundException ex = thrown(ClientNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.delete(String.format(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, 'group-key', 'key')) >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientNotFoundException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
+            0 * _
+    }
+
 }

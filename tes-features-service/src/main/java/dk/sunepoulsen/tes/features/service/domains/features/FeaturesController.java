@@ -3,6 +3,7 @@ package dk.sunepoulsen.tes.features.service.domains.features;
 import dk.sunepoulsen.tes.features.model.EnvelopeFeature;
 import dk.sunepoulsen.tes.features.model.Feature;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
+import dk.sunepoulsen.tes.rest.models.NoContent;
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.LogicException;
 import jakarta.validation.Valid;
@@ -66,4 +67,15 @@ class FeaturesController implements FeaturesOperations {
         }
     }
 
+    @Override
+    @DeleteMapping(FEATURE_ENDPOINT_PATH)
+    public DeferredResult<NoContent> deleteFeature(
+        @Valid @PathVariable("feature_group_key") final String featureGroupKey,
+        @Valid @PathVariable("feature_key") final String featureKey) {
+        try {
+            return DeferredResults.of(featuresLogic.deleteFeature(featureGroupKey, featureKey));
+        } catch (LogicException ex) {
+            throw ex.mapApiException();
+        }
+    }
 }

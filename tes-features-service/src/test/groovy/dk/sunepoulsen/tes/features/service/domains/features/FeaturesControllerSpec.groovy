@@ -3,6 +3,7 @@ package dk.sunepoulsen.tes.features.service.domains.features
 import dk.sunepoulsen.tes.features.model.EnvelopeFeature
 import dk.sunepoulsen.tes.features.model.Feature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
+import dk.sunepoulsen.tes.rest.models.NoContent
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiConflictException
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults
@@ -227,6 +228,52 @@ class FeaturesControllerSpec extends Specification {
             ex.serviceError.message == 'message'
 
             1 * featuresLogic.patchFeature('group-key', 'key', newValues) >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
+    }
+
+    void "Test delete feature from a feature group successfully"() {
+        when:
+            DeferredResult<NoContent> deferredResult = sut.deleteFeature('group-key', 'key')
+            DeferredResults.wait(deferredResult)
+
+        then:
+            deferredResult.result == new NoContent()
+
+            1 * featuresLogic.deleteFeature('group-key', 'key') >> CompletableFuture.completedFuture(new NoContent())
+            0 * _
+    }
+
+    void "Test delete feature from a feature group that does not exist"() {
+        when:
+            DeferredResult<NoContent> deferredResult = sut.deleteFeature('group-key', 'key')
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.deleteFeature('group-key', 'key') >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test delete feature from a feature group fails with LogicException"() {
+        when:
+            sut.deleteFeature('group-key', 'key')
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.deleteFeature('group-key', 'key') >> {
                 throw new ResourceNotFoundException('code', 'param', 'message')
             }
             0 * _

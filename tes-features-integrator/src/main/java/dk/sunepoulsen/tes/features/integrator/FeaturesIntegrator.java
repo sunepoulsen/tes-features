@@ -89,4 +89,14 @@ public class FeaturesIntegrator extends TechEasySolutionsBackendIntegrator {
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
+    public Single<String> deleteFeature(final String featureGroupKey, final String featureKey) {
+        String url = String.format(FEATURE_ENDPOINT_PATH,
+            URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
+            URLEncoder.encode(featureKey, StandardCharsets.UTF_8)
+        );
+
+        return Single.fromFuture(this.httpClient.delete(url))
+            .onErrorResumeNext(this::mapClientExceptions);
+    }
+
 }

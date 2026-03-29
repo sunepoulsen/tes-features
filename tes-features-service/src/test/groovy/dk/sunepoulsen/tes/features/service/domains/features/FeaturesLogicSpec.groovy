@@ -223,4 +223,30 @@ class FeaturesLogicSpec extends Specification {
             0 * _
     }
 
+    void "Test successful delete of a feature"() {
+        when:
+            CompletableFuture result = sut.deleteFeature('group-key', 'key')
+
+        then:
+            result.get() != null
+
+            1 * featurePersistence.deleteFeature('group-key', 'key')
+            0 * _
+    }
+
+    void "Test delete of a feature with thrown exception"() {
+        when:
+            sut.deleteFeature('group-key', 'key').get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            exception.cause instanceof NullPointerException
+            exception.cause.message == 'message'
+
+            1 * featurePersistence.deleteFeature('group-key', 'key') >> {
+                throw new NullPointerException('message')
+            }
+            0 * _
+    }
+
 }
