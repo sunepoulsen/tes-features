@@ -1,5 +1,6 @@
 package dk.sunepoulsen.tes.features.service.domains.persistence;
 
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
 import dk.sunepoulsen.tes.springboot.rest.logic.PatchUtilities;
@@ -18,11 +19,11 @@ import java.util.Optional;
 @Slf4j
 public class FeaturePersistence {
 
-    private static final String FEATURE_GROUP_NOT_FOUND_MESSAGE = "No feature group with key '%s' exists";
     private static final String FEATURE_NOT_FOUND_MESSAGE = "No feature with feature group '%s' and feature '%s' exists";
 
     private final FeatureGroupRepository featureGroupRepository;
     private final FeatureRepository featureRepository;
+    private final FeatureActivationRepository featureActivationRepository;
 
     public FeatureEntity registerFeature(FeatureEntity feature) throws PersistenceException {
         if (feature.getFeatureGroup() == null) {
@@ -46,7 +47,7 @@ public class FeaturePersistence {
     @Transactional
     public List<FeatureEntity> getFeatures(final String featureGroupKey) throws PersistenceException {
         final FeatureGroupEntity foundEntity = featureGroupRepository.findByKey(featureGroupKey).orElseThrow(() ->
-            new ResourceNotFoundException("feature_group_key", String.format(FEATURE_GROUP_NOT_FOUND_MESSAGE, featureGroupKey))
+            new ResourceNotFoundException("feature_group_key", String.format(FeatureGroupPersistence.FEATURE_GROUP_NOT_FOUND_MESSAGE, featureGroupKey))
         );
 
         return featureRepository.findByFeatureGroup(foundEntity);
@@ -101,6 +102,16 @@ public class FeaturePersistence {
         );
 
         featureRepository.delete(foundEntity);
+    }
+
+    @Transactional
+    public FeatureActivationEntity createActivation(final String featureGroupKey, final String featureKey, final FeatureActivationEntity activationEntity) throws PersistenceException {
+        final FeatureEntity foundEntity = featureRepository.findForUpdate(featureGroupKey, featureKey).orElseThrow(() ->
+            new ResourceNotFoundException(String.format(FEATURE_NOT_FOUND_MESSAGE, featureGroupKey, featureKey))
+        );
+
+        activationEntity.setFeature(foundEntity);
+        return featureActivationRepository.save(activationEntity);
     }
 
 

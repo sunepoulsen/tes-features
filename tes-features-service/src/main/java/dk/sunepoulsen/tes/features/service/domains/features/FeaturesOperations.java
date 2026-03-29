@@ -3,7 +3,7 @@ package dk.sunepoulsen.tes.features.service.domains.features;
 import dk.sunepoulsen.tes.features.model.EnvelopeFeature;
 import dk.sunepoulsen.tes.features.model.Feature;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
-import dk.sunepoulsen.tes.rest.models.EnvelopeModel;
+import dk.sunepoulsen.tes.features.service.domains.features.openapi.Features;
 import dk.sunepoulsen.tes.rest.models.NoContent;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
-@Tag(name = "Features", description = "Endpoints to manage features")
+@Features
 @RequestMapping
 @Validated
 public interface FeaturesOperations {
@@ -40,10 +39,7 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully created or ignored if the feature already exists",
-            content = @Content(
-                schema = @Schema(implementation = RegisterFeatureGroup.class)
-            )
+            description = "Successfully created or ignored if the feature already exists"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -74,10 +70,7 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned all found features groups",
-            content = @Content(
-                schema = @Schema(implementation = EnvelopeModel.class)
-            )
+            description = "Successfully returned all found features groups"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -108,10 +101,7 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned a found feature",
-            content = @Content(
-                schema = @Schema(implementation = Feature.class)
-            )
+            description = "Successfully returned a found feature"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -151,10 +141,7 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "The feature has been patched successfully.",
-            content = @Content(
-                schema = @Schema(implementation = Feature.class)
-            )
+            description = "The feature has been patched successfully."
         ),
         @ApiResponse(
             responseCode = "400",
@@ -196,8 +183,7 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "204",
-            description = "The feature has been deleted",
-            content = @Content
+            description = "The feature has been deleted"
         ),
         @ApiResponse(
             responseCode = "400",

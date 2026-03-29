@@ -8,6 +8,7 @@ import dk.sunepoulsen.tes.features.model.RegisterFeature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientBadRequestException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
+import dk.sunepoulsen.tes.rest.models.NoContent
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel
 import groovy.util.logging.Slf4j
@@ -36,10 +37,10 @@ class DeleteFeatureSpec extends Specification implements FeaturesIntegratorProvi
             RegisterFeature registeredFeature = registeredFeatureGroup.features[featureIndex]
 
         when: 'DELETE /groups/{feature_group_key}/features/{feature_key}'
-            String result = featuresIntegrator().deleteFeature(registeredFeatureGroup.key, registeredFeature.key).blockingGet()
+            NoContent result = featuresIntegrator().deleteFeature(registeredFeatureGroup.key, registeredFeature.key).blockingGet()
 
         then: 'Verify response'
-            result == ''
+            result != null
     }
 
     @Unroll

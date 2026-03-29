@@ -77,7 +77,8 @@ class RegisterFeatureSpec extends Specification {
         then:
             ConstraintViolationException exception = thrown(ConstraintViolationException)
             ConstraintViolationAssertions.verifyViolations(exception.constraintViolations, [
-                new ExpectedConstraintViolation('activations[0].enabled', 'must not be null')
+                new ExpectedConstraintViolation('activations[0].enabled', 'must not be null'),
+                new ExpectedConstraintViolation('activations[0].datetime', 'must not be null')
             ])
     }
 

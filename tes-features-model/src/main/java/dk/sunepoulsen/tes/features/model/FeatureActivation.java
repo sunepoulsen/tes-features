@@ -35,5 +35,6 @@ public class FeatureActivation {
         requiredMode = Schema.RequiredMode.NOT_REQUIRED,
         accessMode = Schema.AccessMode.READ_WRITE
     )
+    @NotNull(groups = {OnCrudCreate.class, OnCrudRead.class})
     private ZonedDateTime datetime;
 }

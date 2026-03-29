@@ -2,6 +2,7 @@ package dk.sunepoulsen.tes.features.integrator
 
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientResponseException
+import dk.sunepoulsen.tes.rest.models.NoContent
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
 import spock.lang.Specification
 
@@ -24,7 +25,9 @@ class FeaturesTestsIntegratorSpec extends Specification {
             this.sut.deletePersistence().blockingGet()
 
         then:
-            1 * httpClient.delete('/tests/persistence') >> CompletableFuture.supplyAsync { "" }
+            1 * httpClient.delete('/tests/persistence') >> CompletableFuture.supplyAsync {
+                new NoContent()
+            }
     }
 
     void "POST DELETE persistence with ForbiddenRequest result"() {

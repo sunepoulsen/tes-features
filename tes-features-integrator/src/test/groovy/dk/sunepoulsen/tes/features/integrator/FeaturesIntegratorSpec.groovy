@@ -4,11 +4,13 @@ import dk.sunepoulsen.tes.features.model.*
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientInternalServerException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
+import dk.sunepoulsen.tes.rest.models.NoContent
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
 import io.reactivex.rxjava3.core.Single
 import spock.lang.Specification
 
 import java.net.http.HttpResponse
+import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 
@@ -184,7 +186,9 @@ class FeaturesIntegratorSpec extends Specification {
         then:
             noExceptionThrown()
 
-            1 * httpClient.delete("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key") >> CompletableFuture.supplyAsync { "" }
+            1 * httpClient.delete("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key") >> CompletableFuture.supplyAsync {
+                new NoContent()
+            }
             0 * _
     }
 
@@ -206,6 +210,54 @@ class FeaturesIntegratorSpec extends Specification {
                 )))
             }
             0 * _
+    }
+
+    void "Create new activation for a feature group with OK"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(
+                enabled: true,
+                datetime: ZonedDateTime.now()
+            )
+
+        when:
+            Single<FeatureActivation> result = sut.createFeatureGroupActivation('group-key', newActivation)
+
+        then:
+            result.blockingGet().id == 27L
+
+            1 * httpClient.post("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations", newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
+                new FeatureActivation(
+                    id: 27L,
+                    enabled: true,
+                    datetime: ZonedDateTime.now()
+                )
+            }
+            0 * _
+    }
+
+    void "Create new activation for a feature group with Internal Server Error"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(
+                enabled: true,
+                datetime: ZonedDateTime.now()
+            )
+
+        when:
+            sut.createFeatureGroupActivation('group-key', newActivation).blockingGet()
+
+        then:
+            ClientInternalServerException ex = thrown(ClientInternalServerException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.post("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations", newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
     }
 
     void "Get features of feature group returns OK"() {
@@ -333,7 +385,9 @@ class FeaturesIntegratorSpec extends Specification {
         then:
             noExceptionThrown()
 
-            1 * httpClient.delete(String.format(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, 'group-key', 'key')) >> CompletableFuture.supplyAsync { "" }
+            1 * httpClient.delete(String.format(FeaturesIntegrator.FEATURE_ENDPOINT_PATH, 'group-key', 'key')) >> CompletableFuture.supplyAsync {
+                new NoContent()
+            }
             0 * _
     }
 
@@ -355,6 +409,54 @@ class FeaturesIntegratorSpec extends Specification {
                 )))
             }
             0 * _
+    }
+
+    void "Create new activation for a feature with OK"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(
+                enabled: true,
+                datetime: ZonedDateTime.now()
+            )
+
+        when:
+            Single<FeatureActivation> result = sut.createFeatureActivation('group-key', 'feature-key', newActivation)
+
+        then:
+            result.blockingGet().id == 27L
+
+            1 * httpClient.post("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/features/feature-key/activations", newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
+                new FeatureActivation(
+                    id: 27L,
+                    enabled: true,
+                    datetime: ZonedDateTime.now()
+                )
+            }
+            0 * _
+    }
+
+    void "Create new activation for a feature with Internal Server Error"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(
+                enabled: true,
+                datetime: ZonedDateTime.now()
+            )
+
+        when:
+            sut.createFeatureActivation('group-key', 'feature-key', newActivation).blockingGet()
+
+        then:
+            ClientInternalServerException ex = thrown(ClientInternalServerException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.post("${FeaturesIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/features/feature-key/activations", newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
     }
 
 }

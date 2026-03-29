@@ -4,9 +4,11 @@ import dk.sunepoulsen.tes.features.data.generators.FeatureDataGenerator
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
 import dk.sunepoulsen.tes.features.model.EnvelopeFeature
 import dk.sunepoulsen.tes.features.model.Feature
+import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeaturePersistence
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
@@ -21,6 +23,7 @@ class FeaturesLogicSpec extends Specification {
     private FeatureTransformations featureTransformations
     private FeatureGroupPersistence featureGroupPersistence
     private FeaturePersistence featurePersistence
+    private FeatureActivationTransformations featureActivationTransformations
     private FeaturesLogic sut
 
     void setup() {
@@ -28,12 +31,14 @@ class FeaturesLogicSpec extends Specification {
         this.featureTransformations = Mock(FeatureTransformations)
         this.featureGroupPersistence = Mock(FeatureGroupPersistence)
         this.featurePersistence = Mock(FeaturePersistence)
+        this.featureActivationTransformations = Mock(FeatureActivationTransformations)
 
         this.sut = new FeaturesLogic(
             featureGroupTransformations,
             featureTransformations,
             featureGroupPersistence,
-            featurePersistence
+            featurePersistence,
+            this.featureActivationTransformations
         )
     }
 
@@ -245,6 +250,46 @@ class FeaturesLogicSpec extends Specification {
 
             1 * featurePersistence.deleteFeature('group-key', 'key') >> {
                 throw new NullPointerException('message')
+            }
+            0 * _
+    }
+
+    void "Test create new activation successfully"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation()
+            FeatureActivationEntity activationEntity = new FeatureActivationEntity()
+            FeatureActivationEntity createdEntity = new FeatureActivationEntity()
+            FeatureActivation returnedActivation = new FeatureActivation()
+
+        when:
+            CompletableFuture<FeatureActivation> result = sut.createActivation('group-key', 'feature-key', newActivation)
+
+        then:
+            result.get() == returnedActivation
+
+            1 * featureActivationTransformations.toEntity(newActivation) >> activationEntity
+            1 * featurePersistence.createActivation('group-key', 'feature-key', activationEntity) >> createdEntity
+            1 * featureActivationTransformations.toModel(createdEntity) >> returnedActivation
+            0 * _
+    }
+
+    void "Test create new activation with thrown exception"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation()
+            FeatureActivationEntity activationEntity = new FeatureActivationEntity()
+
+        when:
+            sut.createActivation('group-key', 'feature-key', newActivation).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featureActivationTransformations.toEntity(newActivation) >> activationEntity
+            1 * featurePersistence.createActivation('group-key', 'feature-key', activationEntity) >> {
+                throw new ResourceNotFoundException('key', 'message')
             }
             0 * _
     }
