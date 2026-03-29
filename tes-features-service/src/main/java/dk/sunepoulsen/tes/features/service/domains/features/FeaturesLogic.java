@@ -7,6 +7,7 @@ import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersi
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeaturePersistence;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
+import dk.sunepoulsen.tes.rest.models.NoContent;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -84,4 +85,13 @@ class FeaturesLogic {
         }
     }
 
+    @Async("logicExecutor")
+    CompletableFuture<NoContent> deleteFeature(final String featureGroupKey, final String featureKey) {
+        try {
+            featurePersistence.deleteFeature(featureGroupKey, featureKey);
+            return CompletableFuture.completedFuture(new NoContent());
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
 }

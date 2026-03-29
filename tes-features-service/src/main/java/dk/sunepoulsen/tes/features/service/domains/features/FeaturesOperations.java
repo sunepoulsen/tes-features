@@ -4,6 +4,7 @@ import dk.sunepoulsen.tes.features.model.EnvelopeFeature;
 import dk.sunepoulsen.tes.features.model.Feature;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.rest.models.EnvelopeModel;
+import dk.sunepoulsen.tes.rest.models.NoContent;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudCreate;
@@ -185,5 +186,46 @@ public interface FeaturesOperations {
         @Valid @PathVariable("feature_key") final String featureKey,
         @Valid @RequestBody final Feature feature
     );
+
+    @Operation(
+        summary = "Delete a feature identified by its feature group key and feature key.",
+        description = """
+                Deletes a feature and returns nothing.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "The feature has been deleted",
+            content = @Content
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "If feature keys are invalid.",
+            content = @Content(
+                schema = @Schema(implementation = ServiceValidationErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No feature exist with the given keys",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unable to process this request",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        )
+    })
+    @DeleteMapping(FEATURE_ENDPOINT_PATH)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Validated({Default.class})
+    DeferredResult<NoContent> deleteFeature(
+        @Valid @PathVariable("feature_group_key") final String featureGroupKey,
+        @Valid @PathVariable("feature_key") final String featureKey);
 
 }

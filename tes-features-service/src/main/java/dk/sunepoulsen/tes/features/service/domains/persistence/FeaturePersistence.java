@@ -18,6 +18,9 @@ import java.util.Optional;
 @Slf4j
 public class FeaturePersistence {
 
+    private static final String FEATURE_GROUP_NOT_FOUND_MESSAGE = "No feature group with key '%s' exists";
+    private static final String FEATURE_NOT_FOUND_MESSAGE = "No feature with feature group '%s' and feature '%s' exists";
+
     private final FeatureGroupRepository featureGroupRepository;
     private final FeatureRepository featureRepository;
 
@@ -43,7 +46,7 @@ public class FeaturePersistence {
     @Transactional
     public List<FeatureEntity> getFeatures(final String featureGroupKey) throws PersistenceException {
         final FeatureGroupEntity foundEntity = featureGroupRepository.findByKey(featureGroupKey).orElseThrow(() ->
-            new ResourceNotFoundException("feature_group_key", "No feature group with key '" + featureGroupKey + "' exists")
+            new ResourceNotFoundException("feature_group_key", String.format(FEATURE_GROUP_NOT_FOUND_MESSAGE, featureGroupKey))
         );
 
         return featureRepository.findByFeatureGroup(foundEntity);
@@ -73,7 +76,7 @@ public class FeaturePersistence {
     @Transactional
     public Optional<FeatureEntity> patchFeature(final String featureGroupKey, final String featureKey, final FeatureEntity featureEntity) throws PersistenceException {
         final FeatureEntity foundEntity = featureRepository.findForUpdate(featureGroupKey, featureKey).orElseThrow(() ->
-            new ResourceNotFoundException("No feature with feature group '" + featureGroupKey + "' and feature '" + featureKey + "' exists")
+            new ResourceNotFoundException(String.format(FEATURE_NOT_FOUND_MESSAGE, featureGroupKey, featureKey))
         );
 
         foundEntity.setName(PatchUtilities.patchValue(foundEntity.getName(), featureEntity.getName()));
@@ -83,5 +86,22 @@ public class FeaturePersistence {
 
         return featureRepository.findByKey(featureGroupKey, featureKey);
     }
+
+    /**
+     * Deletes a feature identified by feature group key and feature key.
+     *
+     * @param featureGroupKey The key of the feature group that contains the feature to be deleted.
+     * @param featureKey      The key of the feature that will be deleted.
+     * @throws PersistenceException In case of persistence errors.
+     */
+    @Transactional
+    public void deleteFeature(final String featureGroupKey, final String featureKey) throws PersistenceException {
+        final FeatureEntity foundEntity = featureRepository.findByKey(featureGroupKey, featureKey).orElseThrow(() ->
+            new ResourceNotFoundException(String.format(FEATURE_NOT_FOUND_MESSAGE, featureGroupKey, featureKey))
+        );
+
+        featureRepository.delete(foundEntity);
+    }
+
 
 }
