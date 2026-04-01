@@ -1,8 +1,10 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
 import dk.sunepoulsen.tes.features.data.generators.FeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.FeatureGroup
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
 import dk.sunepoulsen.tes.rest.models.EnvelopeModel
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
@@ -16,13 +18,15 @@ class FeatureGroupsLogicSpec extends Specification {
 
     private FeatureGroupTransformations featureGroupTransformations
     private FeatureGroupPersistence featureGroupPersistence
+    private FeatureGroupActivationTransformations featureGroupActivationTransformations
     private FeatureGroupsLogic sut
 
     void setup() {
         this.featureGroupTransformations = Mock(FeatureGroupTransformations)
         this.featureGroupPersistence = Mock(FeatureGroupPersistence)
+        this.featureGroupActivationTransformations = Mock(FeatureGroupActivationTransformations)
 
-        this.sut = new FeatureGroupsLogic(featureGroupTransformations, featureGroupPersistence)
+        this.sut = new FeatureGroupsLogic(featureGroupTransformations, featureGroupPersistence, featureGroupActivationTransformations)
     }
 
     void "Test successful get feature groups"() {
@@ -198,6 +202,60 @@ class FeatureGroupsLogicSpec extends Specification {
             resourceNotFoundException.message == 'message'
 
             1 * featureGroupPersistence.deleteFeatureGroup('key') >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
+            0 * _
+    }
+
+    void "Test successful creation of a feature activation"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(
+                enabled: true
+            )
+            FeatureGroupActivationEntity activationEntity = new FeatureGroupActivationEntity(
+                enabled: true
+            )
+            FeatureGroupActivationEntity createdEntity = new FeatureGroupActivationEntity(
+                id: 1L,
+                enabled: true
+            )
+            FeatureActivation createdActivation = new FeatureActivation(
+                id: 1L,
+                enabled: true
+            )
+
+        when:
+            CompletableFuture<FeatureActivation> result = sut.createActivation('key', newActivation)
+
+        then:
+            result.get() == createdActivation
+
+            1 * featureGroupActivationTransformations.toEntity(newActivation) >> activationEntity
+            1 * featureGroupPersistence.createActivation('key', activationEntity) >> createdEntity
+            1 * featureGroupActivationTransformations.toModel(createdEntity) >> createdActivation
+            0 * _
+    }
+
+    void "Test creation of a feature activation with thrown exception"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(
+                enabled: true
+            )
+            FeatureGroupActivationEntity activationEntity = new FeatureGroupActivationEntity(
+                enabled: true
+            )
+
+        when:
+            sut.createActivation('key', newActivation).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featureGroupActivationTransformations.toEntity(newActivation) >> activationEntity
+            1 * featureGroupPersistence.createActivation('key', activationEntity) >> {
                 throw new ResourceNotFoundException('key', 'message')
             }
             0 * _

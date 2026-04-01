@@ -2,7 +2,7 @@ package dk.sunepoulsen.tes.features.service.domains.features;
 
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
 import dk.sunepoulsen.tes.features.model.FeatureGroup;
-import dk.sunepoulsen.tes.rest.models.EnvelopeModel;
+import dk.sunepoulsen.tes.features.service.domains.features.openapi.FeatureGroups;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead;
@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
-@Tag(name = "Feature Groups", description = "Endpoints to manage registerFeature groups")
+@FeatureGroups
 @RequestMapping(FeatureGroupsOperations.FEATURE_GROUPS_ENDPOINT_PATH)
 @Validated
 public interface FeatureGroupsOperations {
@@ -35,10 +34,7 @@ public interface FeatureGroupsOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned all found features groups",
-            content = @Content(
-                schema = @Schema(implementation = EnvelopeModel.class)
-            )
+            description = "Successfully returned all found features groups"
         ),
         @ApiResponse(
             responseCode = "500",
@@ -62,10 +58,7 @@ public interface FeatureGroupsOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned the found feature group",
-            content = @Content(
-                schema = @Schema(implementation = FeatureGroup.class)
-            )
+            description = "Successfully returned the found feature group"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -103,10 +96,7 @@ public interface FeatureGroupsOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "The feature group has been patched successfully.",
-            content = @Content(
-                schema = @Schema(implementation = FeatureGroup.class)
-            )
+            description = "The feature group has been patched successfully."
         ),
         @ApiResponse(
             responseCode = "400",
@@ -144,10 +134,7 @@ public interface FeatureGroupsOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "204",
-            description = "The feature group has been deleted",
-            content = @Content(
-                schema = @Schema(implementation = FeatureGroup.class)
-            )
+            description = "The feature group has been deleted"
         ),
         @ApiResponse(
             responseCode = "400",

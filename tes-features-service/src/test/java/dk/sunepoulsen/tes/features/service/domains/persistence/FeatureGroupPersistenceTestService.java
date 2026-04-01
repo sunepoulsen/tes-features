@@ -15,6 +15,7 @@ public class FeatureGroupPersistenceTestService {
 
     private final FeatureGroupRepository featureGroupRepository;
     private final FeatureRepository featureRepository;
+    private final FeatureGroupActivationRepository featureGroupActivationRepository;
     private final FeatureActivationRepository featureActivationRepository;
 
     private List<CrudRepository<?, ?>> repositories;
@@ -24,6 +25,7 @@ public class FeatureGroupPersistenceTestService {
         this.repositories = List.of(
             featureActivationRepository,
             featureRepository,
+            featureGroupActivationRepository,
             featureGroupRepository
         );
     }

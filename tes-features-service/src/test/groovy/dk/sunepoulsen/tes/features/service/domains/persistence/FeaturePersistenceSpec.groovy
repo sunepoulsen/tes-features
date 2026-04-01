@@ -534,4 +534,99 @@ class FeaturePersistenceSpec extends Specification {
             'Feature does not exist'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'   | 'bad-key'
     }
 
+    void "Tests create activation successfully for existing feature"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        and:
+            ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
+
+        when:
+            FeatureActivationEntity result = this.sut.createActivation(
+                featureGroupEntity.key,
+                createdFeature.key,
+                new FeatureActivationEntity(
+                    enabled: false,
+                    dateTime: activationDateTime
+                )
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            result.id > 0
+            result.feature.id == createdFeature.id
+            result.enabled == false
+            result.dateTime == activationDateTime
+
+            featureActivationRepository.count() == 1
+
+            List<FeatureActivationEntity> featureActivations = featureActivationRepository.findAllByFeatureId(createdFeature.id)
+            featureActivations.size() == 1
+            featureActivations.first.id == result.id
+    }
+
+    void "Tests create activation for feature that does not exist"() {
+        when:
+            this.sut.createActivation('unknown-group', 'unknown-feature', new FeatureActivationEntity(
+                enabled: true,
+                dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+            ))
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == null
+            exception.message == "No feature with feature group 'unknown-group' and feature 'unknown-feature' exists"
+    }
+
+    void "Tests create activation with missing required fields"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.createActivation(
+                featureGroupEntity.key,
+                createdFeature.key,
+                new FeatureActivationEntity(
+                    enabled: true
+                )
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            DataIntegrityViolationException ex = thrown(DataIntegrityViolationException)
+            ex.message.contains('NULL not allowed for column "DATETIME";')
+    }
+
 }

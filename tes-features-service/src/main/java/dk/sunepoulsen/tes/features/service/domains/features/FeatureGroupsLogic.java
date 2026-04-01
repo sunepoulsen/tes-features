@@ -1,8 +1,10 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
+import dk.sunepoulsen.tes.features.model.FeatureActivation;
 import dk.sunepoulsen.tes.features.model.FeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence;
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException;
@@ -20,6 +22,7 @@ class FeatureGroupsLogic {
 
     private final FeatureGroupTransformations featureGroupTransformations;
     private final FeatureGroupPersistence featureGroupPersistence;
+    private final FeatureGroupActivationTransformations featureGroupActivationTransformations;
 
     @Async("logicExecutor")
     CompletableFuture<EnvelopeFeatureGroup> getFeatureGroups() {
@@ -79,5 +82,18 @@ class FeatureGroupsLogic {
             return CompletableFuture.failedFuture(ex);
         }
     }
+
+    @Async("logicExecutor")
+    CompletableFuture<FeatureActivation> createActivation(final String key, final FeatureActivation newActivation) {
+        try {
+            FeatureGroupActivationEntity activationEntity = featureGroupActivationTransformations.toEntity(newActivation);
+            activationEntity = featureGroupPersistence.createActivation(key, activationEntity);
+
+            return CompletableFuture.completedFuture(featureGroupActivationTransformations.toModel(activationEntity));
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
+
 
 }

@@ -11,6 +11,7 @@ import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundExcep
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
@@ -474,6 +475,109 @@ class FeatureGroupPersistenceSpec extends Specification {
             ResourceNotFoundException exception = thrown(ResourceNotFoundException)
             exception.param == 'feature_group_key'
             exception.message == "No feature group with key 'some-key' exists"
+    }
+
+    void "Tests create activation for feature group that exists"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        and:
+            FeatureGroupActivationEntity newActivation = new FeatureGroupActivationEntity(
+                enabled: false,
+                dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 3, 10, 14, 45), ZoneId.of('UTC'))
+            )
+
+        when:
+            FeatureGroupActivationEntity createdActivation = this.sut.createActivation(featureGroup.key, newActivation)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            createdActivation.id > 0
+            createdActivation.featureGroup.id == createdFeatureGroup.id
+            createdActivation.enabled == newActivation.enabled
+            createdActivation.dateTime == newActivation.dateTime
+    }
+
+    void "Tests create activation for feature group that does not exist"() {
+        given:
+            FeatureGroupActivationEntity newActivation = new FeatureGroupActivationEntity(
+                enabled: false,
+                dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 3, 10, 14, 45), ZoneId.of('UTC'))
+            )
+
+        when:
+            this.sut.createActivation('non-existing-key', newActivation)
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == 'feature_group_key'
+            exception.message == "No feature group with key 'non-existing-key' exists"
+    }
+
+    void "Tests create activation for feature group with missing required fields"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        and:
+            FeatureGroupActivationEntity newActivation = new FeatureGroupActivationEntity(
+                enabled: false
+            )
+
+        when:
+            this.sut.createActivation(featureGroup.key, newActivation)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        then:
+            DataIntegrityViolationException ex = thrown(DataIntegrityViolationException)
+            ex.message.contains('NULL not allowed for column "DATETIME";')
     }
 
 }

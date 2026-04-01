@@ -2,9 +2,11 @@ package dk.sunepoulsen.tes.features.service.domains.features;
 
 import dk.sunepoulsen.tes.features.model.EnvelopeFeature;
 import dk.sunepoulsen.tes.features.model.Feature;
+import dk.sunepoulsen.tes.features.model.FeatureActivation;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeaturePersistence;
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
 import dk.sunepoulsen.tes.rest.models.NoContent;
@@ -25,6 +27,7 @@ class FeaturesLogic {
     private final FeatureTransformations featureTransformations;
     private final FeatureGroupPersistence featureGroupPersistence;
     private final FeaturePersistence featurePersistence;
+    private final FeatureActivationTransformations featureActivationTransformations;
 
     @Async("logicExecutor")
     CompletableFuture<RegisterFeatureGroup> registerFeatures(RegisterFeatureGroup featureGroup) {
@@ -94,4 +97,17 @@ class FeaturesLogic {
             return CompletableFuture.failedFuture(ex);
         }
     }
+
+    @Async("logicExecutor")
+    CompletableFuture<FeatureActivation> createActivation(final String featureGroupKey, final String featureKey, final FeatureActivation newActivation) {
+        try {
+            FeatureActivationEntity activationEntity = featureActivationTransformations.toEntity(newActivation);
+            activationEntity = featurePersistence.createActivation(featureGroupKey, featureKey, activationEntity);
+
+            return CompletableFuture.completedFuture(featureActivationTransformations.toModel(activationEntity));
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
+
 }

@@ -6,6 +6,7 @@ import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
+import dk.sunepoulsen.tes.rest.models.NoContent
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
@@ -27,10 +28,10 @@ class DeleteFeatureGroupSpec extends Specification implements FeaturesIntegrator
             registeredFeatureGroup = featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
 
         when: 'DELETE /groups/{feature_group_key}'
-            String result = featuresIntegrator().deleteFeatureGroup(registeredFeatureGroup.key).blockingGet()
+            NoContent result = featuresIntegrator().deleteFeatureGroup(registeredFeatureGroup.key).blockingGet()
 
         then: 'Verify response'
-            result == ''
+            result != null
     }
 
     void "DELETE /groups/{feature_group_key} returns not found"() {

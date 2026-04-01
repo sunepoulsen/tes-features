@@ -1,6 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.persistence;
 
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity;
+import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
 import dk.sunepoulsen.tes.springboot.rest.logic.PatchUtilities;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.PersistenceException;
@@ -18,9 +19,14 @@ import java.util.Optional;
 @Slf4j
 public class FeatureGroupPersistence {
 
+    static final String FEATURE_GROUP_NOT_FOUND_MESSAGE = "No feature group with key '%s' exists";
+    private static final String FEATURE_GROUP_KEY_PARAM = "feature_group_key";
+
     private final FeatureGroupRepository featureGroupRepository;
     private final FeaturePersistence featurePersistence;
     private final FeatureRepository featureRepository;
+
+    private final FeatureGroupActivationRepository featureGroupActivationRepository;
 
     @Transactional
     public FeatureGroupEntity registerFeatureGroup(FeatureGroupEntity featureGroup) throws PersistenceException {
@@ -72,7 +78,7 @@ public class FeatureGroupPersistence {
     @Transactional
     public Optional<FeatureGroupEntity> patchFeatureGroup(final String key, final FeatureGroupEntity featureGroupEntity) throws PersistenceException {
         final FeatureGroupEntity foundEntity = featureGroupRepository.findForUpdate(key).orElseThrow(() ->
-            new ResourceNotFoundException("feature_group_key", "No feature group with key '" + key + "' exists")
+            new ResourceNotFoundException(FEATURE_GROUP_KEY_PARAM, String.format(FEATURE_GROUP_NOT_FOUND_MESSAGE, key))
         );
 
         foundEntity.setName(PatchUtilities.patchValue(foundEntity.getName(), featureGroupEntity.getName()));
@@ -86,10 +92,20 @@ public class FeatureGroupPersistence {
     @Transactional
     public void deleteFeatureGroup(final String featureGroupKey) throws PersistenceException {
         final FeatureGroupEntity foundEntity = featureGroupRepository.findByKey(featureGroupKey).orElseThrow(() ->
-            new ResourceNotFoundException("feature_group_key", "No feature group with key '" + featureGroupKey + "' exists")
+            new ResourceNotFoundException(FEATURE_GROUP_KEY_PARAM, String.format(FEATURE_GROUP_NOT_FOUND_MESSAGE, featureGroupKey))
         );
 
         featureGroupRepository.delete(foundEntity);
+    }
+
+    @Transactional
+    public FeatureGroupActivationEntity createActivation(final String featureGroupKey, final FeatureGroupActivationEntity activationEntity) throws PersistenceException {
+        final FeatureGroupEntity foundEntity = featureGroupRepository.findForUpdate(featureGroupKey).orElseThrow(() ->
+            new ResourceNotFoundException(FEATURE_GROUP_KEY_PARAM, String.format(FEATURE_GROUP_NOT_FOUND_MESSAGE, featureGroupKey))
+        );
+
+        activationEntity.setFeatureGroup(foundEntity);
+        return featureGroupActivationRepository.save(activationEntity);
     }
 
     private void verifyFeatures(FeatureGroupEntity featureGroup) throws PersistenceException {

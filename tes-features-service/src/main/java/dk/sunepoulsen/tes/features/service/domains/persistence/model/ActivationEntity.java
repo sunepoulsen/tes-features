@@ -16,7 +16,7 @@ public class ActivationEntity extends TimestampEntity {
     @Column(name = "enabled", nullable = false)
     private Boolean enabled;
 
-    @Column(name = "datetime")
+    @Column(name = "datetime", nullable = false)
     private ZonedDateTime dateTime;
 
 }
