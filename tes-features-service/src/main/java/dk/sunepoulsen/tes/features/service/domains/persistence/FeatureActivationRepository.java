@@ -7,7 +7,16 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/**
+ * Repository for feature activations.
+ */
 interface FeatureActivationRepository extends ListCrudRepository<FeatureActivationEntity, Long> {
+    /**
+     * Returns all activations for the given feature.
+     *
+     * @param featureId the feature id
+     * @return a list of all found activations
+     */
     @Query("""
             SELECT a
             FROM FeatureActivationEntity a

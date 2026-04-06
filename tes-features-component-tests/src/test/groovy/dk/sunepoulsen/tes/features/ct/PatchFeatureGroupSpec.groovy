@@ -2,7 +2,7 @@ package dk.sunepoulsen.tes.features.ct
 
 
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
-import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
+import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.FeatureGroup
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
@@ -14,7 +14,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class PatchFeatureGroupSpec extends Specification implements FeaturesIntegratorProvider, FeaturesTestsIntegratorProvider {
+class PatchFeatureGroupSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingGet()
@@ -28,7 +28,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesIntegratorP
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            registeredFeatureGroup = featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
         when: 'has valid patch body'
             FeatureGroup featureGroup = new FeatureGroup(
@@ -36,7 +36,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesIntegratorP
             )
 
         and: 'PATCH /groups/{feature_group_key}'
-            FeatureGroup result = featuresIntegrator().patchFeatureGroup(registeredFeatureGroup.key, featureGroup).blockingGet()
+            FeatureGroup result = featuresServiceIntegrator().featureGroups().patchFeatureGroup(registeredFeatureGroup.key, featureGroup).blockingGet()
 
         then: 'Verify response'
             with(result) {
@@ -54,7 +54,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesIntegratorP
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            registeredFeatureGroup = featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
         when: 'has invalid patch body'
             FeatureGroup featureGroup = new FeatureGroup(
@@ -62,7 +62,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesIntegratorP
             )
 
         and: 'PATCH /groups/{feature_group_key}'
-            featuresIntegrator().patchFeatureGroup(registeredFeatureGroup.key, featureGroup).blockingGet()
+            featuresServiceIntegrator().featureGroups().patchFeatureGroup(registeredFeatureGroup.key, featureGroup).blockingGet()
 
         then: 'Verify response'
             ClientBadRequestException exception = thrown(ClientBadRequestException)
@@ -86,7 +86,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesIntegratorP
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
+            featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
         when: 'has valid patch body'
             FeatureGroup featureGroup = new FeatureGroup(
@@ -94,7 +94,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesIntegratorP
             )
 
         and: 'PATCH /groups/{feature_group_key}'
-            featuresIntegrator().patchFeatureGroup('some-key', featureGroup).blockingGet()
+            featuresServiceIntegrator().featureGroups().patchFeatureGroup('some-key', featureGroup).blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

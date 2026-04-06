@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Persistence service for features.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,6 +28,13 @@ public class FeaturePersistence {
     private final FeatureRepository featureRepository;
     private final FeatureActivationRepository featureActivationRepository;
 
+    /**
+     * Registers a feature.
+     *
+     * @param feature the feature to register
+     * @return the registered feature
+     * @throws PersistenceException in case of persistence errors
+     */
     public FeatureEntity registerFeature(FeatureEntity feature) throws PersistenceException {
         if (feature.getFeatureGroup() == null) {
             throw new IllegalArgumentException("Feature group must not be null");
@@ -44,6 +54,13 @@ public class FeaturePersistence {
         });
     }
 
+    /**
+     * Returns all features for a feature group.
+     *
+     * @param featureGroupKey the feature group key
+     * @return a list of all features
+     * @throws PersistenceException in case of persistence errors
+     */
     @Transactional
     public List<FeatureEntity> getFeatures(final String featureGroupKey) throws PersistenceException {
         final FeatureGroupEntity foundEntity = featureGroupRepository.findByKey(featureGroupKey).orElseThrow(() ->
@@ -53,6 +70,14 @@ public class FeaturePersistence {
         return featureRepository.findByFeatureGroup(foundEntity);
     }
 
+    /**
+     * Returns a feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @return an {@link Optional} with the feature
+     * @throws PersistenceException in case of persistence errors
+     */
     @Transactional
     public Optional<FeatureEntity> getFeature(final String featureGroupKey, final String featureKey) throws PersistenceException {
         return featureRepository.findByKey(featureGroupKey, featureKey);
@@ -104,6 +129,32 @@ public class FeaturePersistence {
         featureRepository.delete(foundEntity);
     }
 
+    /**
+     * Returns a list of all activations for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey the feature key
+     * @return the activations
+     * @throws PersistenceException in case of persistence errors
+     */
+    @Transactional
+    public List<FeatureActivationEntity> getActivations(final String featureGroupKey, final String featureKey) throws PersistenceException {
+        final FeatureEntity foundEntity = featureRepository.findByKey(featureGroupKey, featureKey).orElseThrow(() ->
+            new ResourceNotFoundException(String.format(FEATURE_NOT_FOUND_MESSAGE, featureGroupKey, featureKey))
+        );
+
+        return featureActivationRepository.findAllByFeatureId(foundEntity.getId());
+    }
+
+    /**
+     * Creates a new activation for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey the feature key
+     * @param activationEntity the activation to create
+     * @return the created activation
+     * @throws PersistenceException in case of persistence errors
+     */
     @Transactional
     public FeatureActivationEntity createActivation(final String featureGroupKey, final String featureKey, final FeatureActivationEntity activationEntity) throws PersistenceException {
         final FeatureEntity foundEntity = featureRepository.findForUpdate(featureGroupKey, featureKey).orElseThrow(() ->

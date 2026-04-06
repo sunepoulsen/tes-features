@@ -580,4 +580,51 @@ class FeatureGroupPersistenceSpec extends Specification {
             ex.message.contains('NULL not allowed for column "DATETIME";')
     }
 
+    void "Tests get activations for feature group that exists"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            List<FeatureGroupActivationEntity> result = this.sut.getActivations(featureGroup.key)
+
+        then:
+            result.size() == 1
+            result.first.enabled == featureGroup.activations.first.enabled
+            result.first.dateTime == featureGroup.activations.first.dateTime
+    }
+
+    void "Tests get activations for feature group that does not exist"() {
+        when:
+            this.sut.getActivations('non-existing-key')
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == 'feature_group_key'
+            exception.message == "No feature group with key 'non-existing-key' exists"
+    }
+
 }

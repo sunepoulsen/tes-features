@@ -2,7 +2,7 @@ package dk.sunepoulsen.tes.features.ct
 
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
-import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
+import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.RegisterFeature
@@ -18,7 +18,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 @Slf4j
-class CreateFeatureActivationSpec extends Specification implements FeaturesIntegratorProvider, FeaturesTestsIntegratorProvider {
+class CreateFeatureActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingGet()
@@ -32,7 +32,7 @@ class CreateFeatureActivationSpec extends Specification implements FeaturesInteg
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            registeredFeatureGroup = featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
         and: 'select a feature to add a new activation for'
             Integer featureIndex = NumberGenerators.integerGenerator(0, registeredFeatureGroup.features.size()).generate()
@@ -45,7 +45,7 @@ class CreateFeatureActivationSpec extends Specification implements FeaturesInteg
             )
 
         and: 'POST /groups/{feature_group_key}/features/{feature_key}/activations'
-            FeatureActivation result = featuresIntegrator().createFeatureActivation(registeredFeatureGroup.key, registeredFeature.key, newActivation).blockingGet()
+            FeatureActivation result = featuresServiceIntegrator().features().activations().createFeatureActivation(registeredFeatureGroup.key, registeredFeature.key, newActivation).blockingGet()
 
         then: 'Verify response'
             result.id > 0
@@ -61,7 +61,7 @@ class CreateFeatureActivationSpec extends Specification implements FeaturesInteg
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            registeredFeatureGroup = featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
         and: 'select a feature to add a new activation for'
             Integer featureIndex = NumberGenerators.integerGenerator(0, registeredFeatureGroup.features.size()).generate()
@@ -73,7 +73,7 @@ class CreateFeatureActivationSpec extends Specification implements FeaturesInteg
             )
 
         and: 'POST /groups/{feature_group_key}/features/{feature_key}/activations'
-            featuresIntegrator().createFeatureActivation(registeredFeatureGroup.key, registeredFeature.key, newActivation).blockingGet()
+            featuresServiceIntegrator().features().activations().createFeatureActivation(registeredFeatureGroup.key, registeredFeature.key, newActivation).blockingGet()
 
         then: 'Verify response'
             ClientBadRequestException exception = thrown(ClientBadRequestException)
@@ -97,7 +97,7 @@ class CreateFeatureActivationSpec extends Specification implements FeaturesInteg
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
+            featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
         and: 'select a feature to add a new activation for'
             Integer featureIndex = NumberGenerators.integerGenerator(0, registeredFeatureGroup.features.size()).generate()
@@ -110,7 +110,7 @@ class CreateFeatureActivationSpec extends Specification implements FeaturesInteg
             )
 
         and: 'POST /groups/{feature_group_key}/features/{feature_key}/activations'
-            featuresIntegrator().createFeatureActivation('some-key', registeredFeature.key, newActivation).blockingGet()
+            featuresServiceIntegrator().features().activations().createFeatureActivation('some-key', registeredFeature.key, newActivation).blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

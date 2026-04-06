@@ -2,7 +2,7 @@ package dk.sunepoulsen.tes.features.ct
 
 
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
-import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
+import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
@@ -13,7 +13,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class RegisterFeaturesSpec extends Specification implements FeaturesIntegratorProvider, FeaturesTestsIntegratorProvider {
+class RegisterFeaturesServiceSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingGet()
@@ -27,7 +27,7 @@ class RegisterFeaturesSpec extends Specification implements FeaturesIntegratorPr
             RegisterFeatureGroup featureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         when: 'Call PUT /features'
-            RegisterFeatureGroup result = featuresIntegrator().registerFeatures(featureGroup).blockingGet()
+            RegisterFeatureGroup result = featuresServiceIntegrator().features().registerFeatures(featureGroup).blockingGet()
 
         then: 'Verify response'
             with(result) {
@@ -60,7 +60,7 @@ class RegisterFeaturesSpec extends Specification implements FeaturesIntegratorPr
             RegisterFeatureGroup featureGroup = new RegisterFeatureGroup()
 
         when: 'Call PUT /features'
-            featuresIntegrator().registerFeatures(featureGroup).blockingGet()
+            featuresServiceIntegrator().features().registerFeatures(featureGroup).blockingGet()
 
         then: 'Verify response'
             ClientBadRequestException exception = thrown(ClientBadRequestException)

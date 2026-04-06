@@ -1,6 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
 
+import dk.sunepoulsen.tes.features.model.EnvelopeFeatureActivation
 import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults
@@ -87,6 +88,57 @@ class FeatureGroupActivationsControllerSpec extends Specification {
             ex.serviceError.message == 'message'
 
             1 * featureGroupsLogic.createActivation('key', newActivation) >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
+    }
+
+    void "Test get activations for feature group: Successfully"() {
+        given:
+            EnvelopeFeatureActivation envelope = new EnvelopeFeatureActivation()
+            envelope.setResults([new FeatureActivation(id: 17L, enabled: true)])
+
+        when:
+            DeferredResult<EnvelopeFeatureActivation> deferredResult = sut.getActivations('key')
+            DeferredResults.wait(deferredResult)
+
+        then:
+            EnvelopeFeatureActivation endpointResponse = deferredResult.result as EnvelopeFeatureActivation
+            endpointResponse == envelope
+
+            1 * featureGroupsLogic.getActivations('key') >> CompletableFuture.completedFuture(envelope)
+            0 * _
+    }
+
+    void "Test get activations for feature group: Logic layer returns LogicException"() {
+        when:
+            DeferredResult<EnvelopeFeatureActivation> deferredResult = sut.getActivations('key')
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.getActivations('key') >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test get activations for feature group: Logic layer throws LogicException"() {
+        when:
+            sut.getActivations('key')
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.getActivations('key') >> {
                 throw new ResourceNotFoundException('code', 'param', 'message')
             }
             0 * _

@@ -1,15 +1,15 @@
 package dk.sunepoulsen.tes.features.deployment
 
-import dk.sunepoulsen.tes.features.integrator.FeaturesIntegrator
+import dk.sunepoulsen.tes.features.integrator.FeaturesServiceIntegrator
 import dk.sunepoulsen.tes.io.resources.PropertiesResource
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient
 import dk.sunepoulsen.tes.sut.engine.providers.SystemUnderTestProvider
 import dk.sunepoulsen.tes.sut.engine.services.SutHttpService
 import dk.sunepoulsen.tes.sut.engine.services.SutService
 
-trait FeaturesIntegratorProvider implements SystemUnderTestProvider {
+trait FeaturesServiceIntegratorProvider implements SystemUnderTestProvider {
 
-    private FeaturesIntegrator featuresIntegratorInstance = null
+    private FeaturesServiceIntegrator featuresIntegratorInstance = null
 
     boolean isFeaturesServiceAvailable() {
         PropertiesResource propertiesResource = new PropertiesResource(FeaturesDeployment.class.getResourceAsStream('/features-deployment.properties'))
@@ -19,7 +19,7 @@ trait FeaturesIntegratorProvider implements SystemUnderTestProvider {
         ).container().isHostAccessible()
     }
 
-    FeaturesIntegrator featuresIntegrator() {
+    FeaturesServiceIntegrator featuresServiceIntegrator() {
         if (featuresIntegratorInstance != null) {
             return featuresIntegratorInstance
         }
@@ -31,7 +31,7 @@ trait FeaturesIntegratorProvider implements SystemUnderTestProvider {
         )
         TechEasySolutionsClient client = new TechEasySolutionsClient(featuresService.baseUrl(8080), clientConfig())
 
-        featuresIntegratorInstance = new FeaturesIntegrator(client)
+        featuresIntegratorInstance = new FeaturesServiceIntegrator(client)
         return featuresIntegratorInstance
     }
 

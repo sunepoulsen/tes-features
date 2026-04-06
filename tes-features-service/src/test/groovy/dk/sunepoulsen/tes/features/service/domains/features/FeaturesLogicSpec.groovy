@@ -2,10 +2,7 @@ package dk.sunepoulsen.tes.features.service.domains.features
 
 import dk.sunepoulsen.tes.features.data.generators.FeatureDataGenerator
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
-import dk.sunepoulsen.tes.features.model.EnvelopeFeature
-import dk.sunepoulsen.tes.features.model.Feature
-import dk.sunepoulsen.tes.features.model.FeatureActivation
-import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
+import dk.sunepoulsen.tes.features.model.*
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeaturePersistence
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity
@@ -289,6 +286,39 @@ class FeaturesLogicSpec extends Specification {
 
             1 * featureActivationTransformations.toEntity(newActivation) >> activationEntity
             1 * featurePersistence.createActivation('group-key', 'feature-key', activationEntity) >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
+            0 * _
+    }
+
+    void "Test successful get activations for feature"() {
+        given:
+            FeatureActivationEntity foundEntity = new FeatureActivationEntity(id: 1L, enabled: true)
+            FeatureActivation foundActivation = new FeatureActivation(id: 1L, enabled: true)
+
+        when:
+            CompletableFuture<EnvelopeFeatureActivation> result = sut.getActivations('group-key', 'feature-key')
+
+        then:
+            !result.get().results.empty
+            result.get().results.first == foundActivation
+
+            1 * featurePersistence.getActivations('group-key', 'feature-key') >> [foundEntity]
+            1 * featureActivationTransformations.toModel(foundEntity) >> foundActivation
+            0 * _
+    }
+
+    void "Test get activations for feature with thrown exception"() {
+        when:
+            sut.getActivations('group-key', 'feature-key').get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featurePersistence.getActivations('group-key', 'feature-key') >> {
                 throw new ResourceNotFoundException('key', 'message')
             }
             0 * _

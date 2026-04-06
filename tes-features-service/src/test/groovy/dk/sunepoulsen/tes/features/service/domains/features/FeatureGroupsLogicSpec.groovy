@@ -1,6 +1,7 @@
 package dk.sunepoulsen.tes.features.service.domains.features
 
 import dk.sunepoulsen.tes.features.data.generators.FeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.model.EnvelopeFeatureActivation
 import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.FeatureGroup
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence
@@ -256,6 +257,39 @@ class FeatureGroupsLogicSpec extends Specification {
 
             1 * featureGroupActivationTransformations.toEntity(newActivation) >> activationEntity
             1 * featureGroupPersistence.createActivation('key', activationEntity) >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
+            0 * _
+    }
+
+    void "Test successful get activations for feature group"() {
+        given:
+            FeatureGroupActivationEntity foundEntity = new FeatureGroupActivationEntity(id: 1L, enabled: true)
+            FeatureActivation foundActivation = new FeatureActivation(id: 1L, enabled: true)
+
+        when:
+            CompletableFuture<EnvelopeFeatureActivation> result = sut.getActivations('key')
+
+        then:
+            !result.get().results.empty
+            result.get().results.first == foundActivation
+
+            1 * featureGroupPersistence.getActivations('key') >> [foundEntity]
+            1 * featureGroupActivationTransformations.toModel(foundEntity) >> foundActivation
+            0 * _
+    }
+
+    void "Test get activations for feature group with thrown exception"() {
+        when:
+            sut.getActivations('key').get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featureGroupPersistence.getActivations('key') >> {
                 throw new ResourceNotFoundException('key', 'message')
             }
             0 * _
