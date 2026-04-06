@@ -165,5 +165,22 @@ public class FeaturePersistence {
         return featureActivationRepository.save(activationEntity);
     }
 
+    /**
+     * Returns a specific activation for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param activationId    the activation id
+     * @return the activation
+     * @throws PersistenceException in case of persistence errors
+     */
+    @Transactional
+    public Optional<FeatureActivationEntity> getActivation(final String featureGroupKey, final String featureKey, final Long activationId) throws PersistenceException {
+        final FeatureEntity foundEntity = featureRepository.findByKey(featureGroupKey, featureKey).orElseThrow(() ->
+            new ResourceNotFoundException(String.format(FEATURE_NOT_FOUND_MESSAGE, featureGroupKey, featureKey))
+        );
+
+        return featureActivationRepository.findByIdAndFeatureId(activationId, foundEntity.getId());
+    }
 
 }

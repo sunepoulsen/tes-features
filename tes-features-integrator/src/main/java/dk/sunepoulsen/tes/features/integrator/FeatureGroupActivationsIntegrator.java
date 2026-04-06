@@ -44,4 +44,20 @@ public class FeatureGroupActivationsIntegrator extends AbstractIntegrator {
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
+    /**
+     * Returns a specific activation for a feature group.
+     *
+     * @param featureGroupKey the feature group key
+     * @param activationId    the activation id
+     * @return a {@link Single} with the activation
+     */
+    public Single<FeatureActivation> getFeatureGroupActivation(final String featureGroupKey, final Long activationId) {
+        String url = String.format(FEATURE_GROUP_ACTIVATIONS_ENDPOINT_PATH + "/%s",
+            URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
+            URLEncoder.encode(activationId.toString(), StandardCharsets.UTF_8));
+
+        return Single.fromFuture(this.httpClient.get(url, FeatureActivation.class))
+            .onErrorResumeNext(this::mapClientExceptions);
+    }
+
 }

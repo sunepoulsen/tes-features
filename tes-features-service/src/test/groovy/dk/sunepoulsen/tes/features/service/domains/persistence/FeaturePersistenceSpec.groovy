@@ -480,7 +480,7 @@ class FeaturePersistenceSpec extends Specification {
                 .build()
 
         and:
-            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
+            featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
             this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
@@ -680,4 +680,81 @@ class FeaturePersistenceSpec extends Specification {
             exception.message == "No feature with feature group 'unknown-group' and feature 'unknown-feature' exists"
     }
 
+    void "Tests get specific activation for feature that exists"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        and:
+            ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
+            FeatureActivationEntity activation = this.sut.createActivation(
+                featureGroupEntity.key,
+                createdFeature.key,
+                new FeatureActivationEntity(
+                    enabled: false,
+                    dateTime: activationDateTime
+                )
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            Optional<FeatureActivationEntity> result = this.sut.getActivation(featureGroupEntity.key, createdFeature.key, activation.id)
+
+        then:
+            result.isPresent()
+            result.get().enabled == false
+            result.get().dateTime == activationDateTime
+    }
+
+    void "Tests get specific activation for feature that does not exist"() {
+        when:
+            this.sut.getActivation('unknown-group', 'unknown-feature', 1)
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == null
+            exception.message == "No feature with feature group 'unknown-group' and feature 'unknown-feature' exists"
+    }
+
+    void "Tests get specific activation that does not exist for feature"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            Optional<FeatureActivationEntity> result = this.sut.getActivation(featureGroupEntity.key, createdFeature.key, 999)
+
+        then:
+            result.isEmpty()
+    }
 }

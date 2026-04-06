@@ -144,4 +144,54 @@ class FeatureGroupActivationsControllerSpec extends Specification {
             0 * _
     }
 
+    void "Test get specific activation for feature group: Successfully"() {
+        given:
+            FeatureActivation foundActivation = new FeatureActivation(id: 17L, enabled: true)
+
+        when:
+            DeferredResult<FeatureActivation> deferredResult = sut.getActivation('key', 17)
+            DeferredResults.wait(deferredResult)
+
+        then:
+            FeatureActivation endpointResponse = deferredResult.result as FeatureActivation
+            endpointResponse == foundActivation
+
+            1 * featureGroupsLogic.getActivation('key', 17) >> CompletableFuture.completedFuture(foundActivation)
+            0 * _
+    }
+
+    void "Test get specific activation for feature group: Logic layer returns LogicException"() {
+        when:
+            DeferredResult<FeatureActivation> deferredResult = sut.getActivation('key', 17)
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.getActivation('key', 17) >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test get specific activation for feature group: Logic layer throws LogicException"() {
+        when:
+            sut.getActivation('key', 17)
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.getActivation('key', 17) >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
+    }
+
 }

@@ -324,4 +324,49 @@ class FeaturesLogicSpec extends Specification {
             0 * _
     }
 
+    void "Test successful get specific activation for feature"() {
+        given:
+            FeatureActivationEntity foundEntity = new FeatureActivationEntity(id: 1L, enabled: true)
+            FeatureActivation foundActivation = new FeatureActivation(id: 1L, enabled: true)
+
+        when:
+            CompletableFuture<FeatureActivation> result = sut.getActivation('group-key', 'feature-key', 1)
+
+        then:
+            result.get() == foundActivation
+
+            1 * featurePersistence.getActivation('group-key', 'feature-key', 1) >> Optional.of(foundEntity)
+            1 * featureActivationTransformations.toModel(foundEntity) >> foundActivation
+            0 * _
+    }
+
+    void "Test successful get specific activation for feature that does not exist"() {
+        when:
+            sut.getActivation('group-key', 'feature-key', 1).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.message == "No activation exists with the given keys and id: 1"
+
+            1 * featurePersistence.getActivation('group-key', 'feature-key', 1) >> Optional.empty()
+            0 * _
+    }
+
+    void "Test get specific activation for feature with thrown exception"() {
+        when:
+            sut.getActivation('group-key', 'feature-key', 1).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featurePersistence.getActivation('group-key', 'feature-key', 1) >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
+            0 * _
+    }
+
 }

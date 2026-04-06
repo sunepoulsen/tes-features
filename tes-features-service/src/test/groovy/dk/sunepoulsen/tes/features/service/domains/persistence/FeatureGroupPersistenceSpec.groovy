@@ -563,7 +563,7 @@ class FeatureGroupPersistenceSpec extends Specification {
             ]
 
         and:
-            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.sut.registerFeatureGroup(featureGroup)
             this.featureGroupPersistenceTestService.flushDatabase()
 
         and:
@@ -605,7 +605,7 @@ class FeatureGroupPersistenceSpec extends Specification {
             ]
 
         and:
-            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.sut.registerFeatureGroup(featureGroup)
             this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
@@ -627,4 +627,85 @@ class FeatureGroupPersistenceSpec extends Specification {
             exception.message == "No feature group with key 'non-existing-key' exists"
     }
 
+    void "Tests get specific activation for feature group that exists"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            Optional<FeatureGroupActivationEntity> result = this.sut.getActivation(featureGroup.key, createdFeatureGroup.activations.first.id)
+
+        then:
+            result.isPresent()
+            result.get().enabled == featureGroup.activations.first.enabled
+            result.get().dateTime == featureGroup.activations.first.dateTime
+    }
+
+    void "Tests get specific activation for feature group that does not exist"() {
+        when:
+            this.sut.getActivation('non-existing-key', 1)
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == 'feature_group_key'
+            exception.message == "No feature group with key 'non-existing-key' exists"
+    }
+
+    void "Tests get specific activation that does not exist for feature group"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            Optional<FeatureGroupActivationEntity> result = this.sut.getActivation(featureGroup.key, 999)
+
+        then:
+            result.isEmpty()
+    }
 }

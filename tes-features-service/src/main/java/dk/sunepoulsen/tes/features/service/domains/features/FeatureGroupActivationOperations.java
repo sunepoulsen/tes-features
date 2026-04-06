@@ -120,4 +120,51 @@ public interface FeatureGroupActivationOperations {
     @Validated({Default.class, OnCrudRead.class})
     DeferredResult<EnvelopeFeatureActivation> getActivations(@Valid @PathVariable("feature_group_key") final String key);
 
+    /**
+     * Returns a specific activation for a given feature group.
+     *
+     * @param key          the feature group key
+     * @param activationId the activation id
+     * @return the activation
+     */
+    @Operation(
+        summary = "Returns a specific activation for a given feature group",
+        description = """
+                Returns the found activation.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully returned the activation"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request because of invalid feature group key",
+            content = @Content(
+                schema = @Schema(implementation = ServiceValidationErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No activation exist with the given id",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unable to process this request",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        )
+    })
+    @GetMapping("/{activation_id}")
+    @ResponseStatus(HttpStatus.OK)
+    @Validated({Default.class, OnCrudRead.class})
+    DeferredResult<FeatureActivation> getActivation(
+        @Valid @PathVariable("feature_group_key") final String key,
+        @Valid @PathVariable("activation_id") final Long activationId
+    );
 }

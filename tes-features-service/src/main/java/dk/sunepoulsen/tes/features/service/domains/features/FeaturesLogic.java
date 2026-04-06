@@ -142,4 +142,28 @@ class FeaturesLogic {
         }
     }
 
+    /**
+     * Returns a specific activation for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param activationId    the activation id
+     * @return a {@link CompletableFuture} with the activation
+     */
+    @Async("logicExecutor")
+    CompletableFuture<FeatureActivation> getActivation(final String featureGroupKey, final String featureKey, final Long activationId) {
+        try {
+            Optional<FeatureActivationEntity> entity = featurePersistence.getActivation(featureGroupKey, featureKey, activationId);
+
+            return entity
+                .map(activationEntity ->
+                    CompletableFuture.completedFuture(featureActivationTransformations.toModel(activationEntity))
+                )
+                .orElseGet(() ->
+                    CompletableFuture.failedFuture(new ResourceNotFoundException("No activation exists with the given keys and id: " + activationId))
+                );
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
 }
