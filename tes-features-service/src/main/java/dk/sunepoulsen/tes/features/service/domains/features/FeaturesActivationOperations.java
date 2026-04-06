@@ -1,10 +1,12 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
+import dk.sunepoulsen.tes.features.model.EnvelopeFeatureActivation;
 import dk.sunepoulsen.tes.features.model.FeatureActivation;
 import dk.sunepoulsen.tes.features.service.domains.features.openapi.Features;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudCreate;
+import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,12 +19,23 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
+/**
+ * Operations for feature activations.
+ */
 @Features
 @RequestMapping(FeaturesActivationOperations.ENDPOINT_PATH)
 @Validated
 public interface FeaturesActivationOperations {
     String ENDPOINT_PATH = FeaturesOperations.FEATURE_ENDPOINT_PATH + "/activations";
 
+    /**
+     * Creates a new activation for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param newActivation   the activation to create
+     * @return the created activation
+     */
     @Operation(
         summary = "Creates a new activation for the given feature",
         description = """
@@ -64,5 +77,52 @@ public interface FeaturesActivationOperations {
         @Valid @PathVariable("feature_key") final String featureKey,
         @Valid @RequestBody FeatureActivation newActivation
     );
+
+    /**
+     * Returns a list of all activations for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey the feature key
+     * @return the activations
+     */
+    @Operation(
+        summary = "Returns a list of all activations for the given feature",
+        description = """
+                Returns all found activations.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully returned all found activations"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request because of invalid keys",
+            content = @Content(
+                schema = @Schema(implementation = ServiceValidationErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No feature exist with the given keys",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unable to process this request",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        )
+    })
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    @Validated({Default.class, OnCrudRead.class})
+    DeferredResult<EnvelopeFeatureActivation> getActivations(
+        @Valid @PathVariable("feature_group_key") final String featureGroupKey,
+        @Valid @PathVariable("feature_key") final String featureKey);
 
 }

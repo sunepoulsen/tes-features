@@ -629,4 +629,55 @@ class FeaturePersistenceSpec extends Specification {
             ex.message.contains('NULL not allowed for column "DATETIME";')
     }
 
+    void "Tests get activations for feature that exists"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        and:
+            ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
+            this.sut.createActivation(
+                featureGroupEntity.key,
+                createdFeature.key,
+                new FeatureActivationEntity(
+                    enabled: false,
+                    dateTime: activationDateTime
+                )
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            List<FeatureActivationEntity> result = this.sut.getActivations(featureGroupEntity.key, createdFeature.key)
+
+        then:
+            result.size() == 1
+            result.first().enabled == false
+            result.first().dateTime == activationDateTime
+    }
+
+    void "Tests get activations for feature that does not exist"() {
+        when:
+            this.sut.getActivations('unknown-group', 'unknown-feature')
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == null
+            exception.message == "No feature with feature group 'unknown-group' and feature 'unknown-feature' exists"
+    }
+
 }

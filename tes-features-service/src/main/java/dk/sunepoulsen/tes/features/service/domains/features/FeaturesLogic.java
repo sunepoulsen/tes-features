@@ -1,9 +1,6 @@
 package dk.sunepoulsen.tes.features.service.domains.features;
 
-import dk.sunepoulsen.tes.features.model.EnvelopeFeature;
-import dk.sunepoulsen.tes.features.model.Feature;
-import dk.sunepoulsen.tes.features.model.FeatureActivation;
-import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
+import dk.sunepoulsen.tes.features.model.*;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeaturePersistence;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity;
@@ -19,6 +16,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Logic for features.
+ */
 @Service
 @RequiredArgsConstructor
 class FeaturesLogic {
@@ -98,6 +98,14 @@ class FeaturesLogic {
         }
     }
 
+    /**
+     * Creates a new activation for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param newActivation   the activation to create
+     * @return a {@link CompletableFuture} with the created activation
+     */
     @Async("logicExecutor")
     CompletableFuture<FeatureActivation> createActivation(final String featureGroupKey, final String featureKey, final FeatureActivation newActivation) {
         try {
@@ -105,6 +113,30 @@ class FeaturesLogic {
             activationEntity = featurePersistence.createActivation(featureGroupKey, featureKey, activationEntity);
 
             return CompletableFuture.completedFuture(featureActivationTransformations.toModel(activationEntity));
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
+
+    /**
+     * Returns a list of all activations for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey the feature key
+     * @return a {@link CompletableFuture} with the activations
+     */
+    @Async("logicExecutor")
+    CompletableFuture<EnvelopeFeatureActivation> getActivations(final String featureGroupKey, final String featureKey) {
+        try {
+            List<FeatureActivationEntity> entities = featurePersistence.getActivations(featureGroupKey, featureKey);
+
+            EnvelopeFeatureActivation activations = new EnvelopeFeatureActivation();
+            activations.setResults(entities.stream()
+                .map(featureActivationTransformations::toModel)
+                .toList()
+            );
+
+            return CompletableFuture.completedFuture(activations);
         } catch (Exception ex) {
             return CompletableFuture.failedFuture(ex);
         }

@@ -2,7 +2,7 @@ package dk.sunepoulsen.tes.features.ct
 
 
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
-import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
+import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.EnvelopeFeature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
@@ -14,7 +14,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class GetFeaturesSpec extends Specification implements FeaturesIntegratorProvider, FeaturesTestsIntegratorProvider {
+class GetFeaturesServiceSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingGet()
@@ -33,11 +33,11 @@ class GetFeaturesSpec extends Specification implements FeaturesIntegratorProvide
 
         and:
             featureGroups.each {
-                featuresIntegrator().registerFeatures(it).blockingGet()
+                featuresServiceIntegrator().features().registerFeatures(it).blockingGet()
             }
 
         when: 'GET /groups/{feature_group_key}/features'
-            EnvelopeFeature envelopeFeature = featuresIntegrator().getFeatures(featureGroups[1].key).blockingGet()
+            EnvelopeFeature envelopeFeature = featuresServiceIntegrator().features().getFeatures(featureGroups[1].key).blockingGet()
 
         then: 'Verify response'
             envelopeFeature.results.size() == featureGroups[1].features.size()
@@ -53,7 +53,7 @@ class GetFeaturesSpec extends Specification implements FeaturesIntegratorProvide
             isFeaturesServiceAvailable()
 
         when: 'Call GET /groups/{feature_group_key}/features'
-            featuresIntegrator().getFeatures('wrong;key').blockingGet()
+            featuresServiceIntegrator().features().getFeatures('wrong;key').blockingGet()
 
         then: 'Verify response'
             ClientBadRequestException exception = thrown(ClientBadRequestException)
@@ -66,7 +66,7 @@ class GetFeaturesSpec extends Specification implements FeaturesIntegratorProvide
             isFeaturesServiceAvailable()
 
         when: 'GET /groups/{feature_group_key}/features'
-            featuresIntegrator().getFeatures('group-key').blockingGet()
+            featuresServiceIntegrator().features().getFeatures('group-key').blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

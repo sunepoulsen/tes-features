@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Persistence service for feature groups.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,6 +31,13 @@ public class FeatureGroupPersistence {
 
     private final FeatureGroupActivationRepository featureGroupActivationRepository;
 
+    /**
+     * Registers a feature group.
+     *
+     * @param featureGroup the feature group to register
+     * @return the registered feature group
+     * @throws PersistenceException in case of persistence errors
+     */
     @Transactional
     public FeatureGroupEntity registerFeatureGroup(FeatureGroupEntity featureGroup) throws PersistenceException {
         verifyFeatures(featureGroup);
@@ -50,11 +60,24 @@ public class FeatureGroupPersistence {
         return entity;
     }
 
+    /**
+     * Returns all feature groups.
+     *
+     * @return a list of all feature groups
+     * @throws PersistenceException in case of persistence errors
+     */
     @Transactional
     public List<FeatureGroupEntity> getFeatureGroups() throws PersistenceException {
         return featureGroupRepository.findAll();
     }
 
+    /**
+     * Returns a feature group.
+     *
+     * @param featureGroupKey the feature group key
+     * @return an {@link Optional} with the feature group
+     * @throws PersistenceException in case of persistence errors
+     */
     @Transactional
     public Optional<FeatureGroupEntity> getFeatureGroup(String featureGroupKey) throws PersistenceException {
         return featureGroupRepository.findByKey(featureGroupKey);
@@ -89,6 +112,12 @@ public class FeatureGroupPersistence {
         return featureGroupRepository.findByKey(key);
     }
 
+    /**
+     * Deletes a feature group.
+     *
+     * @param featureGroupKey the feature group key
+     * @throws PersistenceException in case of persistence errors
+     */
     @Transactional
     public void deleteFeatureGroup(final String featureGroupKey) throws PersistenceException {
         final FeatureGroupEntity foundEntity = featureGroupRepository.findByKey(featureGroupKey).orElseThrow(() ->
@@ -98,6 +127,14 @@ public class FeatureGroupPersistence {
         featureGroupRepository.delete(foundEntity);
     }
 
+    /**
+     * Creates a new activation for the given feature group.
+     *
+     * @param featureGroupKey  the feature group key
+     * @param activationEntity the activation to create
+     * @return the created activation
+     * @throws PersistenceException in case of persistence errors
+     */
     @Transactional
     public FeatureGroupActivationEntity createActivation(final String featureGroupKey, final FeatureGroupActivationEntity activationEntity) throws PersistenceException {
         final FeatureGroupEntity foundEntity = featureGroupRepository.findForUpdate(featureGroupKey).orElseThrow(() ->
@@ -106,6 +143,22 @@ public class FeatureGroupPersistence {
 
         activationEntity.setFeatureGroup(foundEntity);
         return featureGroupActivationRepository.save(activationEntity);
+    }
+
+    /**
+     * Returns a list of all activations for the given feature group.
+     *
+     * @param featureGroupKey the feature group key
+     * @return the activations
+     * @throws PersistenceException in case of persistence errors
+     */
+    @Transactional
+    public List<FeatureGroupActivationEntity> getActivations(final String featureGroupKey) throws PersistenceException {
+        final FeatureGroupEntity foundEntity = featureGroupRepository.findByKey(featureGroupKey).orElseThrow(() ->
+            new ResourceNotFoundException(FEATURE_GROUP_KEY_PARAM, String.format(FEATURE_GROUP_NOT_FOUND_MESSAGE, featureGroupKey))
+        );
+
+        return featureGroupActivationRepository.findAllByFeatureGroupId(foundEntity.getId());
     }
 
     private void verifyFeatures(FeatureGroupEntity featureGroup) throws PersistenceException {

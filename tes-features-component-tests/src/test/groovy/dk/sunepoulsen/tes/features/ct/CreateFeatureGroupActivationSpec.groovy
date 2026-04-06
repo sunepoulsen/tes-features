@@ -1,7 +1,7 @@
 package dk.sunepoulsen.tes.features.ct
 
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
-import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
+import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
@@ -16,7 +16,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 @Slf4j
-class CreateFeatureGroupActivationSpec extends Specification implements FeaturesIntegratorProvider, FeaturesTestsIntegratorProvider {
+class CreateFeatureGroupActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingGet()
@@ -30,7 +30,7 @@ class CreateFeatureGroupActivationSpec extends Specification implements Features
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            registeredFeatureGroup = featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
         when: 'has new activation body'
             FeatureActivation newActivation = new FeatureActivation(
@@ -39,7 +39,7 @@ class CreateFeatureGroupActivationSpec extends Specification implements Features
             )
 
         and: 'POST /groups/{feature_group_key}/activations'
-            FeatureActivation result = featuresIntegrator().createFeatureGroupActivation(registeredFeatureGroup.key, newActivation).blockingGet()
+            FeatureActivation result = featuresServiceIntegrator().featureGroups().activations().createFeatureGroupActivation(registeredFeatureGroup.key, newActivation).blockingGet()
 
         then: 'Verify response'
             result.id > 0
@@ -55,7 +55,7 @@ class CreateFeatureGroupActivationSpec extends Specification implements Features
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            registeredFeatureGroup = featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
         when: 'has new activation body'
             FeatureActivation newActivation = new FeatureActivation(
@@ -63,7 +63,7 @@ class CreateFeatureGroupActivationSpec extends Specification implements Features
             )
 
         and: 'POST /groups/{feature_group_key}/activations'
-            featuresIntegrator().createFeatureGroupActivation(registeredFeatureGroup.key, newActivation).blockingGet()
+            featuresServiceIntegrator().featureGroups().activations().createFeatureGroupActivation(registeredFeatureGroup.key, newActivation).blockingGet()
 
         then: 'Verify response'
             ClientBadRequestException exception = thrown(ClientBadRequestException)
@@ -87,7 +87,7 @@ class CreateFeatureGroupActivationSpec extends Specification implements Features
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            featuresIntegrator().registerFeatures(registeredFeatureGroup).blockingGet()
+            featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
         when: 'has new activation body'
             FeatureActivation newActivation = new FeatureActivation(
@@ -96,7 +96,7 @@ class CreateFeatureGroupActivationSpec extends Specification implements Features
             )
 
         and: 'POST /groups/{feature_group_key}/activations'
-            featuresIntegrator().createFeatureGroupActivation('some-key', newActivation).blockingGet()
+            featuresServiceIntegrator().featureGroups().activations().createFeatureGroupActivation('some-key', newActivation).blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

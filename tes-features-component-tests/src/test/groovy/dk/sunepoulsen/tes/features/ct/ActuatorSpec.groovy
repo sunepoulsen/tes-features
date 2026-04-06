@@ -1,17 +1,17 @@
 package dk.sunepoulsen.tes.features.ct
 
-import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
+import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.rest.models.monitoring.*
 import spock.lang.Specification
 
-class ActuatorSpec extends Specification implements FeaturesIntegratorProvider {
+class ActuatorSpec extends Specification implements FeaturesServiceIntegratorProvider {
 
     void "GET /actuator/health returns OK"() {
         given: 'Services is available'
             isFeaturesServiceAvailable()
 
         when: 'Call GET /actuator/health'
-            ServiceHealth result = featuresIntegrator().health().blockingGet()
+            ServiceHealth result = featuresServiceIntegrator().health().blockingGet()
 
         then: 'Verify health body'
             result == new ServiceHealth(
@@ -24,7 +24,7 @@ class ActuatorSpec extends Specification implements FeaturesIntegratorProvider {
             isFeaturesServiceAvailable()
 
         when: 'Call GET /actuator/info'
-            ServiceInfo result = featuresIntegrator().info().blockingGet()
+            ServiceInfo result = featuresServiceIntegrator().info().blockingGet()
 
         then: 'Verify info body'
             result == new ServiceInfo(
@@ -43,7 +43,7 @@ class ActuatorSpec extends Specification implements FeaturesIntegratorProvider {
             isFeaturesServiceAvailable()
 
         when: 'Call GET /actuator/env'
-            Map result = featuresIntegrator().env().blockingGet()
+            Map result = featuresServiceIntegrator().env().blockingGet()
 
         then: 'Verify env body'
             result.activeProfiles.sort() == ['ct', 'tests']

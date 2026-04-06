@@ -3,7 +3,7 @@ package dk.sunepoulsen.tes.features.ct
 
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
-import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
+import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.Feature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
@@ -16,7 +16,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 @Slf4j
-class GetFeatureSpec extends Specification implements FeaturesIntegratorProvider, FeaturesTestsIntegratorProvider {
+class GetFeatureSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingGet()
@@ -35,7 +35,7 @@ class GetFeatureSpec extends Specification implements FeaturesIntegratorProvider
 
         and:
             featureGroups.each {
-                featuresIntegrator().registerFeatures(it).blockingGet()
+                featuresServiceIntegrator().features().registerFeatures(it).blockingGet()
             }
 
         and:
@@ -43,7 +43,7 @@ class GetFeatureSpec extends Specification implements FeaturesIntegratorProvider
             Integer featureIndex = NumberGenerators.integerGenerator(0, featureGroup.features.size()).generate()
 
         when: 'GET /groups/{feature_group_key}/features/{feature_key}'
-            Feature responseFeature = featuresIntegrator().getFeature(featureGroup.key, featureGroup.features[featureIndex].key).blockingGet()
+            Feature responseFeature = featuresServiceIntegrator().features().getFeature(featureGroup.key, featureGroup.features[featureIndex].key).blockingGet()
 
         then: 'Verify response'
             assert responseFeature.key == featureGroup.features[featureIndex].key
@@ -57,7 +57,7 @@ class GetFeatureSpec extends Specification implements FeaturesIntegratorProvider
             isFeaturesServiceAvailable()
 
         when: 'GET /groups/{feature_group_key}/features/{feature_key}'
-            featuresIntegrator().getFeature(_featureGroupKey, _featureKey).blockingGet()
+            featuresServiceIntegrator().features().getFeature(_featureGroupKey, _featureKey).blockingGet()
 
         then: 'Verify response'
             ClientBadRequestException exception = thrown(ClientBadRequestException)
@@ -75,7 +75,7 @@ class GetFeatureSpec extends Specification implements FeaturesIntegratorProvider
             isFeaturesServiceAvailable()
 
         when: 'GET /groups/{feature_group_key}/features/{feature_key}'
-            featuresIntegrator().getFeature('group-key', 'key').blockingGet()
+            featuresServiceIntegrator().features().getFeature('group-key', 'key').blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

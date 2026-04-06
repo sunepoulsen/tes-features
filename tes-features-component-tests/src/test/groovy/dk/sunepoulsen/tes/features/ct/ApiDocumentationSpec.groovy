@@ -1,11 +1,11 @@
 package dk.sunepoulsen.tes.features.ct
 
-import dk.sunepoulsen.tes.features.deployment.FeaturesIntegratorProvider
+import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class ApiDocumentationSpec extends Specification implements FeaturesIntegratorProvider {
+class ApiDocumentationSpec extends Specification implements FeaturesServiceIntegratorProvider {
 
     private static List<String> FEATURE_TAG = ['Features']
     private static List<String> FEATURE_GROUP_TAG = ['Feature Groups']
@@ -15,7 +15,7 @@ class ApiDocumentationSpec extends Specification implements FeaturesIntegratorPr
 
     void setupSpec() {
         isFeaturesServiceAvailable()
-        this.apiDocResult = featuresIntegrator().apiDocumentation().blockingGet()
+        this.apiDocResult = featuresServiceIntegrator().apiDocumentation().blockingGet()
     }
 
     @Unroll
