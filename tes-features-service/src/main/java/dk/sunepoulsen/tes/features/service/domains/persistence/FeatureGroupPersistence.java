@@ -161,6 +161,23 @@ public class FeatureGroupPersistence {
         return featureGroupActivationRepository.findAllByFeatureGroupId(foundEntity.getId());
     }
 
+    /**
+     * Returns a specific activation for the given feature group.
+     *
+     * @param featureGroupKey the feature group key
+     * @param activationId    the activation id
+     * @return the activation
+     * @throws PersistenceException in case of persistence errors
+     */
+    @Transactional
+    public Optional<FeatureGroupActivationEntity> getActivation(final String featureGroupKey, final Long activationId) throws PersistenceException {
+        final FeatureGroupEntity foundEntity = featureGroupRepository.findByKey(featureGroupKey).orElseThrow(() ->
+            new ResourceNotFoundException(FEATURE_GROUP_KEY_PARAM, String.format(FEATURE_GROUP_NOT_FOUND_MESSAGE, featureGroupKey))
+        );
+
+        return featureGroupActivationRepository.findByIdAndFeatureGroupId(activationId, foundEntity.getId());
+    }
+
     private void verifyFeatures(FeatureGroupEntity featureGroup) throws PersistenceException {
         if (featureGroup.getFeatures() == null) {
             throw new PersistenceException("Features of feature group may not be null");

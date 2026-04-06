@@ -129,5 +129,27 @@ class FeatureGroupsLogic {
         }
     }
 
+    /**
+     * Returns a specific activation for the given feature group.
+     *
+     * @param key          the feature group key
+     * @param activationId the activation id
+     * @return a {@link CompletableFuture} with the activation
+     */
+    @Async("logicExecutor")
+    CompletableFuture<FeatureActivation> getActivation(final String key, final Long activationId) {
+        try {
+            Optional<FeatureGroupActivationEntity> entity = featureGroupPersistence.getActivation(key, activationId);
 
+            return entity
+                .map(activationEntity ->
+                    CompletableFuture.completedFuture(featureGroupActivationTransformations.toModel(activationEntity))
+                )
+                .orElseGet(() ->
+                    CompletableFuture.failedFuture(new ApiNotFoundException("activation_id", "No activation exists with id: " + activationId))
+                );
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
 }

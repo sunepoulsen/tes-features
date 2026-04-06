@@ -111,4 +111,40 @@ class FeatureActivationsIntegratorSpec extends Specification {
             }
     }
 
+    void "Get feature activation returns OK"() {
+        when:
+            Single<FeatureActivation> result = sut.getFeatureActivation('group-key', 'feature-key', 27L)
+
+        then:
+            result.blockingGet().id == 27L
+
+            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/features/feature-key/activations/27", FeatureActivation) >> CompletableFuture.supplyAsync {
+                new FeatureActivation(
+                    id: 27L,
+                    enabled: true,
+                    datetime: ZonedDateTime.now()
+                )
+            }
+            0 * _
+    }
+
+    void "Get feature activation returns Internal Server Error"() {
+        when:
+            sut.getFeatureActivation('group-key', 'feature-key', 27L).blockingGet()
+
+        then:
+            ClientInternalServerException ex = thrown(ClientInternalServerException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/features/feature-key/activations/27", FeatureActivation) >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
+    }
+
 }

@@ -295,4 +295,50 @@ class FeatureGroupsLogicSpec extends Specification {
             0 * _
     }
 
+    void "Test successful get specific activation for feature group"() {
+        given:
+            FeatureGroupActivationEntity foundEntity = new FeatureGroupActivationEntity(id: 1L, enabled: true)
+            FeatureActivation foundActivation = new FeatureActivation(id: 1L, enabled: true)
+
+        when:
+            CompletableFuture<FeatureActivation> result = sut.getActivation('key', 1)
+
+        then:
+            result.get() == foundActivation
+
+            1 * featureGroupPersistence.getActivation('key', 1) >> Optional.of(foundEntity)
+            1 * featureGroupActivationTransformations.toModel(foundEntity) >> foundActivation
+            0 * _
+    }
+
+    void "Test successful get specific activation for feature group that does not exist"() {
+        when:
+            sut.getActivation('key', 1).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ApiNotFoundException apiNotFoundException = exception.cause as ApiNotFoundException
+            apiNotFoundException.serviceError.param == 'activation_id'
+            apiNotFoundException.serviceError.message == 'No activation exists with id: 1'
+
+            1 * featureGroupPersistence.getActivation('key', 1) >> Optional.empty()
+            0 * _
+    }
+
+    void "Test get specific activation for feature group with thrown exception"() {
+        when:
+            sut.getActivation('key', 1).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featureGroupPersistence.getActivation('key', 1) >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
+            0 * _
+    }
+
 }
