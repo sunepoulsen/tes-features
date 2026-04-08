@@ -9,7 +9,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-@Schema(name = "Feature", description = "Defines a feature")
+@Schema(name = "RegisterFeature", description = "Defines a feature")
 public class RegisterFeature {
     @Schema(
         description = "Unique key of this feature",

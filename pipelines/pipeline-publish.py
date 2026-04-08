@@ -17,11 +17,11 @@ if __name__ == '__main__':
     tasks = []
     if args.remote:
         tasks = [
-            [":tes-features-model:publish"]
+            ["publish"]
         ]
     else:
         tasks = [
-            [":tes-features-model:publishToMavenLocal"]
+            ["publishToMavenLocal"]
         ]
 
     pipelinemodule.execute_gradle_tasks("Publish artifacts", tasks)

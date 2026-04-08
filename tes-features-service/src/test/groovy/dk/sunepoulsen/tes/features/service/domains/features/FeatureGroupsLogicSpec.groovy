@@ -8,6 +8,7 @@ import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersi
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
 import dk.sunepoulsen.tes.rest.models.EnvelopeModel
+import dk.sunepoulsen.tes.rest.models.NoContent
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
 import spock.lang.Specification
@@ -183,10 +184,10 @@ class FeatureGroupsLogicSpec extends Specification {
 
     void "Test delete of a feature group that exists"() {
         when:
-            String result = sut.deleteFeatureGroup('key').get()
+            NoContent result = sut.deleteFeatureGroup('key').get()
 
         then:
-            result == "{}"
+            result == new NoContent()
 
             1 * featureGroupPersistence.deleteFeatureGroup('key')
             0 * _

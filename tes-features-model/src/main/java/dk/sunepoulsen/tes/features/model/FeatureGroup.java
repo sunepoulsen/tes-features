@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Null;
 import lombok.Data;
 
 @Data
-@Schema(name = "Feature group", description = "Defines the basic information about a feature group")
+@Schema(name = "FeatureGroup", description = "Defines the basic information about a feature group")
 @JsonPropertyOrder({"key", "name", "description"})
 public class FeatureGroup {
     @Schema(

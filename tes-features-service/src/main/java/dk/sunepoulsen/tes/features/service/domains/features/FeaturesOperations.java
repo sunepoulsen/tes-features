@@ -39,7 +39,10 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully created or ignored if the feature already exists"
+            description = "Successfully created or ignored if the feature already exists",
+            content = @Content(
+                schema = @Schema(implementation = RegisterFeatureGroup.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",
@@ -70,7 +73,10 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned all found features groups"
+            description = "Successfully returned all found features groups",
+            content = @Content(
+                schema = @Schema(implementation = EnvelopeFeature.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",
@@ -101,7 +107,10 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned a found feature"
+            description = "Successfully returned a found feature",
+            content = @Content(
+                schema = @Schema(implementation = Feature.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",
@@ -141,7 +150,10 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "The feature has been patched successfully."
+            description = "The feature has been patched successfully.",
+            content = @Content(
+                schema = @Schema(implementation = Feature.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",
@@ -183,7 +195,10 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "204",
-            description = "The feature has been deleted"
+            description = "The feature has been deleted",
+            content = @Content(
+                schema = @Schema(implementation = NoContent.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",
