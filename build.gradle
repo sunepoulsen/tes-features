@@ -63,9 +63,9 @@ subprojects {
         implementation 'org.slf4j:log4j-over-slf4j:2.0.17'
 
         // Spock
-        testImplementation 'org.apache.groovy:groovy-all:5.0.4'
+        testImplementation 'org.apache.groovy:groovy-all:5.0.5'
         testImplementation 'org.spockframework:spock-core:2.4-groovy-5.0'
-        testImplementation 'net.bytebuddy:byte-buddy:1.18.7'
+        testImplementation 'net.bytebuddy:byte-buddy:1.18.8'
         testImplementation 'org.objenesis:objenesis:3.5'
     }
 

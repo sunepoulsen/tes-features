@@ -3,6 +3,7 @@ package dk.sunepoulsen.tes.features.service.domains.features;
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
 import dk.sunepoulsen.tes.features.model.FeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.features.openapi.FeatureGroups;
+import dk.sunepoulsen.tes.rest.models.NoContent;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead;
@@ -34,7 +35,10 @@ public interface FeatureGroupsOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned all found features groups"
+            description = "Successfully returned all found features groups",
+            content = @Content(
+                schema = @Schema(implementation = EnvelopeFeatureGroup.class)
+            )
         ),
         @ApiResponse(
             responseCode = "500",
@@ -58,7 +62,10 @@ public interface FeatureGroupsOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned the found feature group"
+            description = "Successfully returned the found feature group",
+            content = @Content(
+                schema = @Schema(implementation = FeatureGroup.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",
@@ -96,7 +103,10 @@ public interface FeatureGroupsOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "The feature group has been patched successfully."
+            description = "The feature group has been patched successfully.",
+            content = @Content(
+                schema = @Schema(implementation = FeatureGroup.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",
@@ -134,7 +144,10 @@ public interface FeatureGroupsOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "204",
-            description = "The feature group has been deleted"
+            description = "The feature group has been deleted",
+            content = @Content(
+                schema = @Schema(implementation = NoContent.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",
@@ -161,5 +174,5 @@ public interface FeatureGroupsOperations {
     @DeleteMapping("/{feature_group_key}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Validated({Default.class})
-    DeferredResult<String> deleteFeatureGroup(@Valid @PathVariable("feature_group_key") final String key);
+    DeferredResult<NoContent> deleteFeatureGroup(@Valid @PathVariable("feature_group_key") final String key);
 }

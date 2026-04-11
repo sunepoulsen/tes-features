@@ -7,6 +7,7 @@ import dk.sunepoulsen.tes.features.model.FeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
+import dk.sunepoulsen.tes.rest.models.NoContent;
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -78,10 +79,10 @@ class FeatureGroupsLogic {
     }
 
     @Async("logicExecutor")
-    CompletableFuture<String> deleteFeatureGroup(final String key) {
+    CompletableFuture<NoContent> deleteFeatureGroup(final String key) {
         try {
             featureGroupPersistence.deleteFeatureGroup(key);
-            return CompletableFuture.completedFuture("{}");
+            return CompletableFuture.completedFuture(new NoContent());
         } catch (Exception ex) {
             return CompletableFuture.failedFuture(ex);
         }

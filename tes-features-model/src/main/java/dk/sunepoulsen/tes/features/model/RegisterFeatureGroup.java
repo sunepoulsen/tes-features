@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Schema(name = "Feature group", description = "Defines a group of features")
+@Schema(name = "RegisterFeatureGroup", description = "Defines a group of features")
 public class RegisterFeatureGroup extends RegisterFeature {
     @Schema(
         description = "Features in this feature group",

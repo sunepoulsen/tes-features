@@ -11,7 +11,7 @@ import lombok.Data;
 import java.time.ZonedDateTime;
 
 @Data
-@Schema(name = "Feature activation", description = "Defines an activation of a feature group or feature")
+@Schema(name = "FeatureActivation", description = "Defines an activation of a feature group or feature")
 public class FeatureActivation {
     @Schema(
         description = "Unique id of the feature activation",

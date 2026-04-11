@@ -2,7 +2,7 @@ package dk.sunepoulsen.tes.features.service.domains.features;
 
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureActivation;
 import dk.sunepoulsen.tes.features.model.FeatureActivation;
-import dk.sunepoulsen.tes.features.service.domains.features.openapi.Features;
+import dk.sunepoulsen.tes.features.service.domains.features.openapi.FeatureActivations;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudCreate;
@@ -22,7 +22,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 /**
  * Operations for feature activations.
  */
-@Features
+@FeatureActivations
 @RequestMapping(FeaturesActivationOperations.ENDPOINT_PATH)
 @Validated
 public interface FeaturesActivationOperations {
@@ -45,7 +45,10 @@ public interface FeaturesActivationOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "201",
-            description = "Successfully created the new activation"
+            description = "Successfully created the new activation",
+            content = @Content(
+                schema = @Schema(implementation = FeatureActivation.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",
@@ -92,7 +95,10 @@ public interface FeaturesActivationOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned all found activations"
+            description = "Successfully returned all found activations",
+            content = @Content(
+                schema = @Schema(implementation = EnvelopeFeatureActivation.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",
@@ -139,7 +145,10 @@ public interface FeaturesActivationOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Successfully returned the activation"
+            description = "Successfully returned the activation",
+            content = @Content(
+                schema = @Schema(implementation = FeatureActivation.class)
+            )
         ),
         @ApiResponse(
             responseCode = "400",

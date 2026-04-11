@@ -8,5 +8,5 @@ dependencies {
     implementation 'dk.sunepoulsen.tes-foundation:tes-io:3.0.0-SNAPSHOT'
     implementation 'dk.sunepoulsen.tes-foundation:tes-sut-engine:3.0.0-SNAPSHOT'
     implementation 'dk.sunepoulsen.tes-foundation:tes-rest-integrations:3.0.0-SNAPSHOT'
-    implementation 'org.apache.groovy:groovy-all:5.0.4'
+    implementation 'org.apache.groovy:groovy-all:5.0.5'
 }
