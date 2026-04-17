@@ -23,6 +23,7 @@ import java.util.Optional;
 public class FeatureGroupPersistence {
 
     static final String FEATURE_GROUP_NOT_FOUND_MESSAGE = "No feature group with key '%s' exists";
+    private static final String FEATURE_GROUP_ACTIVATION_NOT_FOUND_MESSAGE = "No activation with id '%s' and feature group '%s' exists";
     private static final String FEATURE_GROUP_KEY_PARAM = "feature_group_key";
 
     private final FeatureGroupRepository featureGroupRepository;
@@ -158,7 +159,7 @@ public class FeatureGroupPersistence {
             new ResourceNotFoundException(FEATURE_GROUP_KEY_PARAM, String.format(FEATURE_GROUP_NOT_FOUND_MESSAGE, featureGroupKey))
         );
 
-        return featureGroupActivationRepository.findAllByFeatureGroupId(foundEntity.getId());
+        return featureGroupActivationRepository.findAllByFeatureGroup(foundEntity.getId());
     }
 
     /**
@@ -175,7 +176,32 @@ public class FeatureGroupPersistence {
             new ResourceNotFoundException(FEATURE_GROUP_KEY_PARAM, String.format(FEATURE_GROUP_NOT_FOUND_MESSAGE, featureGroupKey))
         );
 
-        return featureGroupActivationRepository.findByIdAndFeatureGroupId(activationId, foundEntity.getId());
+        return featureGroupActivationRepository.findActivation(foundEntity.getId(), activationId);
+    }
+
+    /**
+     * Patches the information of an activation in a feature group.
+     * <p>
+     * All properties of an activation can be patchedm except {@code id} and {@code featureGroup}.
+     *
+     * @param featureGroupKey Key of the feature group that contains the activation to be patched.
+     * @param activationId    Id of the activation that will be patched.
+     * @param newValues       New property values of the activation to be patched.
+     * @return The {@code FeatureGroupActivationEntity} after it has been patched.
+     * @throws PersistenceException In case of persistence errors.
+     */
+    @Transactional
+    public Optional<FeatureGroupActivationEntity> patchActivation(final String featureGroupKey, final Long activationId, final FeatureGroupActivationEntity newValues) throws PersistenceException {
+        final FeatureGroupActivationEntity foundEntity = featureGroupActivationRepository.findActivationForUpdate(featureGroupKey, activationId).orElseThrow(() ->
+            new ResourceNotFoundException(String.format(FEATURE_GROUP_ACTIVATION_NOT_FOUND_MESSAGE, activationId, featureGroupKey))
+        );
+
+        foundEntity.setEnabled(PatchUtilities.patchValue(foundEntity.getEnabled(), newValues.getEnabled()));
+        foundEntity.setDateTime(PatchUtilities.patchValue(foundEntity.getDateTime(), newValues.getDateTime()));
+
+        featureGroupActivationRepository.save(foundEntity);
+
+        return featureGroupActivationRepository.findActivation(foundEntity.getFeatureGroup().getId(), activationId);
     }
 
     private void verifyFeatures(FeatureGroupEntity featureGroup) throws PersistenceException {

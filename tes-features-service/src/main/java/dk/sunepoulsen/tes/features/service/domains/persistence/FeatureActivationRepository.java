@@ -1,6 +1,8 @@
 package dk.sunepoulsen.tes.features.service.domains.persistence;
 
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -23,7 +25,7 @@ interface FeatureActivationRepository extends ListCrudRepository<FeatureActivati
             FROM FeatureActivationEntity a
             WHERE a.feature.id = :featureId
         """)
-    List<FeatureActivationEntity> findAllByFeatureId(@Param("featureId") Long featureId);
+    List<FeatureActivationEntity> findAllByFeature(@Param("featureId") Long featureId);
 
     /**
      * Returns a specific activation for the given feature.
@@ -35,7 +37,23 @@ interface FeatureActivationRepository extends ListCrudRepository<FeatureActivati
     @Query("""
             SELECT a
             FROM FeatureActivationEntity a
-            WHERE a.id = :id AND a.feature.id = :featureId
+            WHERE a.feature.id = :featureId AND a.id = :id 
         """)
-    Optional<FeatureActivationEntity> findByIdAndFeatureId(@Param("id") Long id, @Param("featureId") Long featureId);
+    Optional<FeatureActivationEntity> findActivation(@Param("featureId") Long featureId, @Param("id") Long id);
+
+    /**
+     * Returns a specific activation for the given feature that is locked for an update.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param id              the activation id
+     * @return the activation if found
+     */
+    @Query("""
+            SELECT a
+            FROM FeatureActivationEntity a
+            WHERE lower(a.feature.featureGroup.key) = lower(:featureGroupKey) AND lower(a.feature.key) = lower(:featureKey) AND a.id = :id
+        """)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<FeatureActivationEntity> findActivationForUpdate(@Param("featureGroupKey") String featureGroupKey, @Param("featureKey") String featureKey, @Param("id") Long id);
 }

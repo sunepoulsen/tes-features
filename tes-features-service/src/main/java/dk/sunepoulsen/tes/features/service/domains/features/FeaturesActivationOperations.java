@@ -7,6 +7,7 @@ import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudCreate;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead;
+import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -178,4 +179,60 @@ public interface FeaturesActivationOperations {
     DeferredResult<FeatureActivation> getActivation(@Valid @PathVariable("feature_group_key") final String featureGroupKey,
                                                     @Valid @PathVariable("feature_key") final String featureKey,
                                                     @Valid @PathVariable("activation_id") final Long activationId);
+
+    /**
+     * Patches a specific activation for a given feature group.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param activationId    the activation id
+     * @param newActivation   the activation to patch
+     * @return the activation after it has been patched.
+     */
+    @Operation(
+        summary = "Patches a specific activation for a given feature",
+        description = """
+                Returns the patched activation.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully patched the activation",
+            content = @Content(
+                schema = @Schema(implementation = FeatureActivation.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request because of invalid feature group key, feature key or invalid body",
+            content = @Content(
+                schema = @Schema(implementation = ServiceValidationErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No activation exist with the given id",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unable to process this request",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        )
+    })
+    @PatchMapping("/{activation_id}")
+    @ResponseStatus(HttpStatus.OK)
+    @Validated({Default.class, OnCrudUpdate.class})
+    DeferredResult<FeatureActivation> patchActivation(
+        @Valid @PathVariable("feature_group_key") final String featureGroupKey,
+        @Valid @PathVariable("feature_key") final String featureKey,
+        @Valid @PathVariable("activation_id") final Long activationId,
+        @Valid @RequestBody FeatureActivation newActivation
+    );
+
 }

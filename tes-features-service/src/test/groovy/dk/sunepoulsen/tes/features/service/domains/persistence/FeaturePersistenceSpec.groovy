@@ -153,7 +153,7 @@ class FeaturePersistenceSpec extends Specification {
             featureRepository.count() == 1
             featureActivationRepository.count() == 1
 
-            List<FeatureActivationEntity> featureActivations = featureActivationRepository.findAllByFeatureId(createdFeature.id)
+            List<FeatureActivationEntity> featureActivations = featureActivationRepository.findAllByFeature(createdFeature.id)
             featureActivations.size() == 1
 
             FeatureActivationEntity featureActivation = featureActivations.first
@@ -223,7 +223,7 @@ class FeaturePersistenceSpec extends Specification {
             featureRepository.count() == 1
             featureActivationRepository.count() == 1
 
-            List<FeatureActivationEntity> featureActivations = featureActivationRepository.findAllByFeatureId(createdFeature.id)
+            List<FeatureActivationEntity> featureActivations = featureActivationRepository.findAllByFeature(createdFeature.id)
             featureActivations.size() == 1
 
             FeatureActivationEntity featureActivation = featureActivations.first
@@ -576,7 +576,7 @@ class FeaturePersistenceSpec extends Specification {
 
             featureActivationRepository.count() == 1
 
-            List<FeatureActivationEntity> featureActivations = featureActivationRepository.findAllByFeatureId(createdFeature.id)
+            List<FeatureActivationEntity> featureActivations = featureActivationRepository.findAllByFeature(createdFeature.id)
             featureActivations.size() == 1
             featureActivations.first.id == result.id
     }
@@ -756,5 +756,135 @@ class FeaturePersistenceSpec extends Specification {
 
         then:
             result.isEmpty()
+    }
+
+    @Unroll
+    void "Tests patch feature activation that exist: #_testcase"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        and:
+            ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
+            FeatureActivationEntity createdActivation = this.sut.createActivation(
+                featureGroupEntity.key,
+                createdFeature.key,
+                new FeatureActivationEntity(
+                    enabled: false,
+                    dateTime: activationDateTime
+                )
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            Optional<FeatureActivationEntity> patchedActivation = this.sut.patchActivation(featureGroupEntity.key, createdFeature.key, createdActivation.id, new FeatureActivationEntity(
+                enabled: false
+            ))
+
+        then:
+            !patchedActivation.empty
+            with(patchedActivation.get()) {
+                assert it.enabled == false
+                assert it.dateTime == createdActivation.dateTime
+            }
+
+        where:
+            _testcase                         | _featureGroupKey  | _featureKey  | _argFeatureGroupKey             | _argFeatureKey
+            'Normal case'                     | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'
+            'Feature group key is lower case' | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'.toLowerCase() | 'featureKey'
+            'Feature group key is upper case' | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'.toUpperCase() | 'featureKey'
+            'Feature key is lower case'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'.toLowerCase()
+            'Feature key is upper case'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'.toUpperCase()
+    }
+
+    @Unroll
+    void "Tests patch of missing feature activation: #_testcase"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(_featureGroupKey)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(_featureKey)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            this.sut.registerFeature(featureEntity)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        and:
+            ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
+            FeatureActivationEntity createdActivation = this.sut.createActivation(
+                featureGroupEntity.key,
+                featureEntity.key,
+                new FeatureActivationEntity(
+                    enabled: false,
+                    dateTime: activationDateTime
+                )
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.patchActivation(_argFeatureGroupKey, _argFeatureKey, createdActivation.id, new FeatureActivationEntity())
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == null
+            exception.message == "No activation with id '${createdActivation.id}' in feature group '${_argFeatureGroupKey}' and feature '${_argFeatureKey}' exists"
+
+        where:
+            _testcase                      | _featureGroupKey  | _featureKey  | _argFeatureGroupKey | _argFeatureKey
+            'Feature group does not exist' | 'featureGroupKey' | 'featureKey' | 'bad-key'           | 'featureKey'
+            'Feature does not exist'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'   | 'bad-key'
+    }
+
+    void "Tests patch of missing feature activation: Wrong activation id"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            this.sut.registerFeature(featureEntity)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.patchActivation(featureGroupEntity.key, featureEntity.key, 999, new FeatureActivationEntity())
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == null
+            exception.message == "No activation with id '999' in feature group '${featureGroupEntity.key}' and feature '${featureEntity.key}' exists"
     }
 }

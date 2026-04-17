@@ -23,4 +23,11 @@ class FeatureActivationTransformations extends ActivationTransformations {
         return entity;
     }
 
+    FeatureActivationEntity toPatchEntity(FeatureActivation featureActivation) {
+        FeatureActivationEntity entity = new FeatureActivationEntity();
+
+        super.assignActivationEntity(entity, featureActivation);
+        return entity;
+    }
+
 }

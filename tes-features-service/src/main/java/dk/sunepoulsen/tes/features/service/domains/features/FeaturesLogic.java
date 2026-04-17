@@ -166,4 +166,28 @@ class FeaturesLogic {
             return CompletableFuture.failedFuture(ex);
         }
     }
+
+    /**
+     * Patches an activation for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param activationId    the activation id
+     * @return a {@link CompletableFuture} with the activation
+     */
+    @Async("logicExecutor")
+    CompletableFuture<FeatureActivation> patchActivation(final String featureGroupKey, final String featureKey, final Long activationId, final FeatureActivation newValues) {
+        try {
+            return featurePersistence.patchActivation(featureGroupKey, featureKey, activationId, featureActivationTransformations.toPatchEntity(newValues))
+                .map(activationEntity ->
+                    CompletableFuture.completedFuture(featureActivationTransformations.toModel(activationEntity))
+                )
+                .orElseGet(() ->
+                    CompletableFuture.failedFuture(new ResourceNotFoundException("activation_id", "No activation exists with id: " + activationId))
+                );
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
+
 }

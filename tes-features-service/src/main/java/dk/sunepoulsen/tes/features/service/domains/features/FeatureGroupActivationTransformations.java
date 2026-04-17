@@ -15,11 +15,16 @@ class FeatureGroupActivationTransformations extends ActivationTransformations {
     }
 
     FeatureGroupActivationEntity toEntity(FeatureActivation featureActivation) {
+        FeatureGroupActivationEntity entity = toPatchEntity(featureActivation);
+        entity.setId(featureActivation.getId());
+
+        return entity;
+    }
+
+    FeatureGroupActivationEntity toPatchEntity(FeatureActivation featureActivation) {
         FeatureGroupActivationEntity entity = new FeatureGroupActivationEntity();
 
         super.assignActivationEntity(entity, featureActivation);
-        entity.setId(featureActivation.getId());
-
         return entity;
     }
 

@@ -50,4 +50,18 @@ public class FeatureGroupActivationsController implements FeatureGroupActivation
             throw ex.mapApiException();
         }
     }
+
+    @Override
+    @PatchMapping("/{activation_id}")
+    public DeferredResult<FeatureActivation> patchActivation(
+        @Valid @PathVariable("feature_group_key") final String key,
+        @Valid @PathVariable("activation_id") final Long activationId,
+        @Valid @RequestBody FeatureActivation newActivation) {
+        try {
+            return DeferredResults.of(featureGroupsLogic.patchActivation(key, activationId, newActivation));
+        } catch (LogicException ex) {
+            throw ex.mapApiException();
+        }
+    }
+
 }
