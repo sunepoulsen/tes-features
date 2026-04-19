@@ -251,4 +251,50 @@ class FeaturesActivationsControllerSpec extends Specification {
             0 * _
     }
 
+    void "Test delete specific activation for a feature: Successfully"() {
+        when:
+            DeferredResult<FeatureActivation> deferredResult = sut.deleteActivation('feature-group-key', 'feature-key', 17)
+            DeferredResults.wait(deferredResult)
+
+        then:
+            deferredResult.hasResult()
+
+            1 * featuresLogic.deleteActivation('feature-group-key', 'feature-key', 17) >> CompletableFuture.completedFuture(null)
+            0 * _
+    }
+
+    void "Test delete specific activation for feature: Logic layer returns LogicException"() {
+        when:
+            DeferredResult<FeatureActivation> deferredResult = sut.deleteActivation('feature-group-key', 'feature-key', 17)
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.deleteActivation('feature-group-key', 'feature-key', 17) >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test delete specific activation for feature: Logic layer throws LogicException"() {
+        when:
+            sut.deleteActivation('feature-group-key', 'feature-key', 17)
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.deleteActivation('feature-group-key', 'feature-key', 17) >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
+    }
+
 }

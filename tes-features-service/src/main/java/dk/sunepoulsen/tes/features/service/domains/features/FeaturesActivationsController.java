@@ -68,4 +68,17 @@ class FeaturesActivationsController implements FeaturesActivationOperations {
         }
     }
 
+    @Override
+    @DeleteMapping("/{activation_id}")
+    public DeferredResult<Void> deleteActivation(
+        @Valid @PathVariable("feature_group_key") final String featureGroupKey,
+        @Valid @PathVariable("feature_key") final String featureKey,
+        @Valid @PathVariable("activation_id") final Long activationId) {
+        try {
+            return DeferredResults.of(featuresLogic.deleteActivation(featureGroupKey, featureKey, activationId));
+        } catch (LogicException ex) {
+            throw ex.mapApiException();
+        }
+    }
+
 }

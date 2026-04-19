@@ -229,10 +229,11 @@ class FeaturesLogicSpec extends Specification {
 
     void "Test successful delete of a feature"() {
         when:
-            CompletableFuture result = sut.deleteFeature('group-key', 'key')
+            CompletableFuture<Void> result = sut.deleteFeature('group-key', 'key')
 
         then:
-            result.get() != null
+            noExceptionThrown()
+            result.get() == null
 
             1 * featurePersistence.deleteFeature('group-key', 'key')
             0 * _
@@ -446,6 +447,33 @@ class FeaturesLogicSpec extends Specification {
 
             1 * featurePersistence.patchActivation('feature-group-key', 'feature-key', 7L, newValuesEntity) >> Optional.empty()
             1 * featureActivationTransformations.toPatchEntity(newValues) >> newValuesEntity
+            0 * _
+    }
+
+    void "Test delete of a feature activation that exists"() {
+        when:
+            CompletableFuture<FeatureActivation> result = sut.deleteActivation('feature-group-key', 'feature-key', 7L)
+
+        then:
+            result.get() == null
+
+            1 * featurePersistence.deleteActivation('feature-group-key', 'feature-key', 7L)
+            0 * _
+    }
+
+    void "Test delete of a feature activation that does not exist"() {
+        when:
+            sut.deleteActivation('feature-group-key', 'feature-key', 7L).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featurePersistence.deleteActivation('feature-group-key', 'feature-key', 7L) >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
             0 * _
     }
 

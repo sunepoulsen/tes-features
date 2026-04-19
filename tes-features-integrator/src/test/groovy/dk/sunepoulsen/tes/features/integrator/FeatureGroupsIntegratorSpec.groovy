@@ -1,16 +1,16 @@
 package dk.sunepoulsen.tes.features.integrator
 
-import dk.sunepoulsen.tes.features.model.*
+
+import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup
+import dk.sunepoulsen.tes.features.model.FeatureGroup
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientInternalServerException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
-import dk.sunepoulsen.tes.rest.models.NoContent
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
 import io.reactivex.rxjava3.core.Single
 import spock.lang.Specification
 
 import java.net.http.HttpResponse
-import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 
@@ -142,20 +142,18 @@ class FeatureGroupsIntegratorSpec extends Specification {
 
     void "Delete feature group with OK"() {
         when:
-            sut.deleteFeatureGroup('group-key').blockingGet()
+            sut.deleteFeatureGroup('group-key').blockingAwait()
 
         then:
             noExceptionThrown()
 
-            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key") >> CompletableFuture.supplyAsync {
-                new NoContent()
-            }
+            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key") >> CompletableFuture.completedFuture(null)
             0 * _
     }
 
     void "Delete feature group with not found"() {
         when:
-            sut.deleteFeatureGroup('group-key').blockingGet()
+            sut.deleteFeatureGroup('group-key').blockingAwait()
 
         then:
             ClientNotFoundException ex = thrown(ClientNotFoundException)

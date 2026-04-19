@@ -13,7 +13,7 @@ import spock.lang.Specification
 class GetFeatureGroupsSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
-        featuresTestsIntegrator().deletePersistence().blockingGet()
+        featuresTestsIntegrator().deletePersistence().blockingAwait()
     }
 
     void "GET /groups returns OK"() {

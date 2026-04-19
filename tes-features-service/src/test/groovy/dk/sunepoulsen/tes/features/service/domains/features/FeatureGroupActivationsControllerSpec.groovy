@@ -251,4 +251,50 @@ class FeatureGroupActivationsControllerSpec extends Specification {
             0 * _
     }
 
+    void "Test delete specific activation for feature group: Successfully"() {
+        when:
+            DeferredResult<FeatureActivation> deferredResult = sut.deleteActivation('key', 17)
+            DeferredResults.wait(deferredResult)
+
+        then:
+            deferredResult.hasResult()
+
+            1 * featureGroupsLogic.deleteActivation('key', 17) >> CompletableFuture.completedFuture(null)
+            0 * _
+    }
+
+    void "Test delete specific activation for feature group: Logic layer returns LogicException"() {
+        when:
+            DeferredResult<Void> deferredResult = sut.deleteActivation('key', 17)
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.deleteActivation('key', 17) >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test delete specific activation for feature group: Logic layer throws LogicException"() {
+        when:
+            sut.deleteActivation('key', 17)
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featureGroupsLogic.deleteActivation('key', 17) >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
+    }
+
 }

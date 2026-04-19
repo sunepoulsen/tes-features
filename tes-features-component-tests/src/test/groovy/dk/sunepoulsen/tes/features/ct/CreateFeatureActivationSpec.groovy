@@ -21,7 +21,7 @@ import java.time.ZonedDateTime
 class CreateFeatureActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
-        featuresTestsIntegrator().deletePersistence().blockingGet()
+        featuresTestsIntegrator().deletePersistence().blockingAwait()
     }
 
     void "POST /groups/{feature_group_key}/features/{feature_key}/activations returns OK"() {

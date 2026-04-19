@@ -21,7 +21,7 @@ import java.time.temporal.ChronoUnit
 class GetFeatureGroupActivationsSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
-        featuresTestsIntegrator().deletePersistence().blockingGet()
+        featuresTestsIntegrator().deletePersistence().blockingAwait()
     }
 
     void "GET /groups/{feature_group_key}/activations returns OK"() {

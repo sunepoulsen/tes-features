@@ -189,4 +189,34 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
             }
     }
 
+    void "Delete feature group activation returns OK"() {
+        when:
+            sut.deleteFeatureGroupActivation('group-key', 27L).blockingAwait()
+
+        then:
+            noExceptionThrown()
+
+            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27") >> CompletableFuture.completedFuture(null)
+            0 * _
+    }
+
+    void "Patch feature group activation returns Internal Server Error"() {
+        when:
+            sut.deleteFeatureGroupActivation('group-key', 27L).blockingAwait()
+
+        then:
+            ClientInternalServerException ex = thrown(ClientInternalServerException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27") >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
+    }
+
 }
