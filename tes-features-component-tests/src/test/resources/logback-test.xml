@@ -11,8 +11,8 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
-    <logger name="dk.sunepoulsen.tes.json" level="TRACE"/>
-    <logger name="dk.sunepoulsen.tes.rest.integrations" level="TRACE"/>
+    <logger name="dk.sunepoulsen.tes.json" level="DEBUG"/>
+    <logger name="dk.sunepoulsen.tes.rest.integrations" level="DEBUG"/>
 
     <logger name="org.apache.velocity" level="INFO"/>
     <logger name="org.testcontainers" level="INFO"/>

@@ -1,6 +1,8 @@
 package dk.sunepoulsen.tes.features.service.domains.persistence;
 
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -23,7 +25,7 @@ interface FeatureGroupActivationRepository extends ListCrudRepository<FeatureGro
             FROM FeatureGroupActivationEntity a
             WHERE a.featureGroup.id = :featureGroupId
         """)
-    List<FeatureGroupActivationEntity> findAllByFeatureGroupId(@Param("featureGroupId") Long featureGroupId);
+    List<FeatureGroupActivationEntity> findAllByFeatureGroup(@Param("featureGroupId") Long featureGroupId);
 
     /**
      * Returns a specific activation for the given feature group.
@@ -35,7 +37,22 @@ interface FeatureGroupActivationRepository extends ListCrudRepository<FeatureGro
     @Query("""
             SELECT a
             FROM FeatureGroupActivationEntity a
-            WHERE a.id = :id AND a.featureGroup.id = :featureGroupId
+            WHERE a.featureGroup.id = :featureGroupId AND a.id = :id
         """)
-    Optional<FeatureGroupActivationEntity> findByIdAndFeatureGroupId(@Param("id") Long id, @Param("featureGroupId") Long featureGroupId);
+    Optional<FeatureGroupActivationEntity> findActivation(@Param("featureGroupId") Long featureGroupId, @Param("id") Long id);
+
+    /**
+     * Returns the activation for the given feature group and locks it for update.
+     *
+     * @param featureGroupKey the feature group key
+     * @param id              the activation id
+     * @return the activation of the feature group if found
+     */
+    @Query("""
+            SELECT a
+            FROM FeatureGroupActivationEntity a
+            WHERE lower(a.featureGroup.key) = lower(:featureGroupKey) AND a.id = :id
+        """)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<FeatureGroupActivationEntity> findActivationForUpdate(@Param("featureGroupKey") String featureGroupKey, @Param("id") Long id);
 }

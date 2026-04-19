@@ -13,6 +13,8 @@ import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
 import spock.lang.Specification
 
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 
@@ -339,6 +341,84 @@ class FeatureGroupsLogicSpec extends Specification {
             1 * featureGroupPersistence.getActivation('key', 1) >> {
                 throw new ResourceNotFoundException('key', 'message')
             }
+            0 * _
+    }
+
+    void "Test patch of a feature group activation that exists"() {
+        given:
+            FeatureActivation newValues = new FeatureActivation(
+                enabled: false
+            )
+            FeatureGroupActivationEntity newValuesEntity = new FeatureGroupActivationEntity(
+                enabled: false
+            )
+
+            FeatureGroupActivationEntity patchedEntity = new FeatureGroupActivationEntity(
+                enabled: false,
+                dateTime: ZonedDateTime.of(2026, 4, 18, 16, 30, 0, 450, ZoneId.of('Z'))
+            )
+            FeatureActivation patchedFeatureActivation = new FeatureActivation(
+                enabled: false,
+                datetime: patchedEntity.dateTime
+            )
+
+        when:
+            CompletableFuture<FeatureActivation> result = sut.patchActivation('key', 7L, newValues)
+
+        then:
+            result.get() == patchedFeatureActivation
+
+            1 * featureGroupPersistence.patchActivation('key', 7L, newValuesEntity) >> Optional.of(patchedEntity)
+            1 * featureGroupActivationTransformations.toPatchEntity(newValues) >> newValuesEntity
+            1 * featureGroupActivationTransformations.toModel(patchedEntity) >> patchedFeatureActivation
+            0 * _
+    }
+
+    void "Test patch of a feature group activation that does not exist"() {
+        given:
+            FeatureActivation newValues = new FeatureActivation(
+                enabled: false
+            )
+            FeatureGroupActivationEntity newValuesEntity = new FeatureGroupActivationEntity(
+                enabled: false
+            )
+
+        when:
+            sut.patchActivation('key', 7L, newValues).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featureGroupPersistence.patchActivation('key', 7L, newValuesEntity) >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
+            1 * featureGroupActivationTransformations.toPatchEntity(newValues) >> newValuesEntity
+            0 * _
+    }
+
+    void "Test patch of a feature group activation that exists, but can not be returned"() {
+        given:
+            FeatureActivation newValues = new FeatureActivation(
+                enabled: false
+            )
+            FeatureGroupActivationEntity newValuesEntity = new FeatureGroupActivationEntity(
+                enabled: false
+            )
+
+        when:
+            sut.patchActivation('key', 7L, newValues).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'activation_id'
+            resourceNotFoundException.message == "No activation exists with id: 7"
+
+            1 * featureGroupPersistence.patchActivation('key', 7L, newValuesEntity) >> Optional.empty()
+            1 * featureGroupActivationTransformations.toPatchEntity(newValues) >> newValuesEntity
             0 * _
     }
 

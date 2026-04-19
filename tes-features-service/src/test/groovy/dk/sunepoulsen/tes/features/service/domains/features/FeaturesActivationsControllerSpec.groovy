@@ -194,4 +194,61 @@ class FeaturesActivationsControllerSpec extends Specification {
             0 * _
     }
 
+    void "Test patch specific activation for a feature: Successfully"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(enabled: false)
+            FeatureActivation returnedActivation = new FeatureActivation(id: 17L, enabled: false)
+
+        when:
+            DeferredResult<FeatureActivation> deferredResult = sut.patchActivation('feature-group-key', 'feature-key', 17, newActivation)
+            DeferredResults.wait(deferredResult)
+
+        then:
+            FeatureActivation endpointResponse = deferredResult.result as FeatureActivation
+            endpointResponse == returnedActivation
+
+            1 * featuresLogic.patchActivation('feature-group-key', 'feature-key', 17, newActivation) >> CompletableFuture.completedFuture(returnedActivation)
+            0 * _
+    }
+
+    void "Test patch specific activation for feature: Logic layer returns LogicException"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(enabled: false)
+
+        when:
+            DeferredResult<FeatureActivation> deferredResult = sut.patchActivation('feature-group-key', 'feature-key', 17, newActivation)
+            DeferredResults.wait(deferredResult)
+            throw deferredResult.getResult() as Throwable
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.patchActivation('feature-group-key', 'feature-key', 17, newActivation) >> CompletableFuture.failedFuture(
+                new ResourceNotFoundException('code', 'param', 'message')
+            )
+            0 * _
+    }
+
+    void "Test patch specific activation for feature: Logic layer throws LogicException"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(enabled: false)
+
+        when:
+            sut.patchActivation('feature-group-key', 'feature-key', 17, newActivation)
+
+        then:
+            ApiNotFoundException ex = thrown(ApiNotFoundException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * featuresLogic.patchActivation('feature-group-key', 'feature-key', 17, newActivation) >> {
+                throw new ResourceNotFoundException('code', 'param', 'message')
+            }
+            0 * _
+    }
+
 }

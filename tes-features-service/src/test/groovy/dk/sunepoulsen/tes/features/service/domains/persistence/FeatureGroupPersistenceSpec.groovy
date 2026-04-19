@@ -708,4 +708,91 @@ class FeatureGroupPersistenceSpec extends Specification {
         then:
             result.isEmpty()
     }
+
+    void "Tests patch activation successfully"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            Optional<FeatureGroupActivationEntity> result = this.sut.patchActivation(createdFeatureGroup.key, createdFeatureGroup.activations.first.id, new FeatureGroupActivationEntity(
+                enabled: false
+            ))
+
+        then:
+            result.isPresent()
+            with(result.get()) {
+                assert !it.enabled
+                assert it.dateTime == createdFeatureGroup.activations.first.dateTime
+            }
+    }
+
+    void "Tests patch activation of feature group that does not exist"() {
+        when:
+            this.sut.patchActivation('key', 27L, new FeatureGroupActivationEntity())
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.message == "No activation with id '27' and feature group 'key' exists"
+    }
+
+    void "Tests patch activation of feature group that exist, but the activation does not"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.patchActivation(createdFeatureGroup.key, createdFeatureGroup.activations.last.id + 1, new FeatureGroupActivationEntity())
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.message == "No activation with id '${createdFeatureGroup.activations.last.id + 1}' and feature group '${createdFeatureGroup.key}' exists"
+    }
+
 }

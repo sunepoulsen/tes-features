@@ -32,16 +32,18 @@ class ApiDocumentationSpec extends Specification implements FeaturesServiceInteg
             'GET'    | '/groups/{feature_group_key}'                                                    | FEATURE_GROUP_TAG
             'PATCH'  | '/groups/{feature_group_key}'                                                    | FEATURE_GROUP_TAG
             'DELETE' | '/groups/{feature_group_key}'                                                    | FEATURE_GROUP_TAG
-            'POST' | '/groups/{feature_group_key}/activations'                                        | FEATURE_GROUP_ACTIVATIONS_TAG
-            'GET'  | '/groups/{feature_group_key}/activations'                                        | FEATURE_GROUP_ACTIVATIONS_TAG
-            'GET'  | '/groups/{feature_group_key}/activations/{activation_id}'                        | FEATURE_GROUP_ACTIVATIONS_TAG
+            'POST'  | '/groups/{feature_group_key}/activations'                                        | FEATURE_GROUP_ACTIVATIONS_TAG
+            'GET'   | '/groups/{feature_group_key}/activations'                                        | FEATURE_GROUP_ACTIVATIONS_TAG
+            'GET'   | '/groups/{feature_group_key}/activations/{activation_id}'                        | FEATURE_GROUP_ACTIVATIONS_TAG
+            'PATCH' | '/groups/{feature_group_key}/activations/{activation_id}'                        | FEATURE_GROUP_ACTIVATIONS_TAG
             'GET'    | '/groups/{feature_group_key}/features'                                           | FEATURE_TAG
             'GET'    | '/groups/{feature_group_key}/features/{feature_key}'                             | FEATURE_TAG
             'PATCH'  | '/groups/{feature_group_key}/features/{feature_key}'                             | FEATURE_TAG
             'DELETE' | '/groups/{feature_group_key}/features/{feature_key}'                             | FEATURE_TAG
-            'POST' | '/groups/{feature_group_key}/features/{feature_key}/activations'                 | FEATURE_ACTIVATIONS_TAG
-            'GET'  | '/groups/{feature_group_key}/features/{feature_key}/activations'                 | FEATURE_ACTIVATIONS_TAG
-            'GET'  | '/groups/{feature_group_key}/features/{feature_key}/activations/{activation_id}' | FEATURE_ACTIVATIONS_TAG
+            'POST'  | '/groups/{feature_group_key}/features/{feature_key}/activations'                 | FEATURE_ACTIVATIONS_TAG
+            'GET'   | '/groups/{feature_group_key}/features/{feature_key}/activations'                 | FEATURE_ACTIVATIONS_TAG
+            'GET'   | '/groups/{feature_group_key}/features/{feature_key}/activations/{activation_id}' | FEATURE_ACTIVATIONS_TAG
+            'PATCH' | '/groups/{feature_group_key}/features/{feature_key}/activations/{activation_id}' | FEATURE_ACTIVATIONS_TAG
     }
 
 }

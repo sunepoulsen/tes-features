@@ -147,4 +147,46 @@ class FeatureActivationsIntegratorSpec extends Specification {
             }
     }
 
+    void "Patch feature activation returns OK"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(enabled: false)
+
+        when:
+            Single<FeatureActivation> result = sut.patchFeatureActivation('group-key', 'feature-key', 27L, newActivation)
+
+        then:
+            result.blockingGet().id == 27L
+
+            1 * httpClient.patch("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/features/feature-key/activations/27", newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
+                new FeatureActivation(
+                    id: 27L,
+                    enabled: false,
+                    datetime: ZonedDateTime.now()
+                )
+            }
+            0 * _
+    }
+
+    void "Patch feature activation returns Internal Server Error"() {
+        given:
+            FeatureActivation newActivation = new FeatureActivation(enabled: false)
+
+        when:
+            sut.patchFeatureActivation('group-key', 'feature-key', 27L, newActivation).blockingGet()
+
+        then:
+            ClientInternalServerException ex = thrown(ClientInternalServerException)
+            ex.serviceError.code == 'code'
+            ex.serviceError.param == 'param'
+            ex.serviceError.message == 'message'
+
+            1 * httpClient.patch("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/features/feature-key/activations/27", newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
+                throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
+                    code: 'code',
+                    param: 'param',
+                    message: 'message'
+                )))
+            }
+    }
+
 }

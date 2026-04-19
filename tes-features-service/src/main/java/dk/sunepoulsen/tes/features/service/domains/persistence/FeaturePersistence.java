@@ -23,6 +23,7 @@ import java.util.Optional;
 public class FeaturePersistence {
 
     private static final String FEATURE_NOT_FOUND_MESSAGE = "No feature with feature group '%s' and feature '%s' exists";
+    private static final String FEATURE_GROUP_ACTIVATION_NOT_FOUND_MESSAGE = "No activation with id '%s' in feature group '%s' and feature '%s' exists";
 
     private final FeatureGroupRepository featureGroupRepository;
     private final FeatureRepository featureRepository;
@@ -143,7 +144,7 @@ public class FeaturePersistence {
             new ResourceNotFoundException(String.format(FEATURE_NOT_FOUND_MESSAGE, featureGroupKey, featureKey))
         );
 
-        return featureActivationRepository.findAllByFeatureId(foundEntity.getId());
+        return featureActivationRepository.findAllByFeature(foundEntity.getId());
     }
 
     /**
@@ -180,7 +181,28 @@ public class FeaturePersistence {
             new ResourceNotFoundException(String.format(FEATURE_NOT_FOUND_MESSAGE, featureGroupKey, featureKey))
         );
 
-        return featureActivationRepository.findByIdAndFeatureId(activationId, foundEntity.getId());
+        return featureActivationRepository.findActivation(foundEntity.getId(), activationId);
+    }
+
+    /**
+     * Patches a specific activation for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param activationId    the activation id
+     * @return the activation after it has been patched.
+     * @throws PersistenceException in case of persistence errors
+     */
+    @Transactional
+    public Optional<FeatureActivationEntity> patchActivation(final String featureGroupKey, final String featureKey, final Long activationId, final FeatureActivationEntity newActivation) throws PersistenceException {
+        final FeatureActivationEntity foundEntity = featureActivationRepository.findActivationForUpdate(featureGroupKey, featureKey, activationId).orElseThrow(() ->
+            new ResourceNotFoundException(String.format(FEATURE_GROUP_ACTIVATION_NOT_FOUND_MESSAGE, activationId, featureGroupKey, featureKey))
+        );
+
+        foundEntity.setEnabled(PatchUtilities.patchValue(foundEntity.getEnabled(), newActivation.getEnabled()));
+        foundEntity.setDateTime(PatchUtilities.patchValue(foundEntity.getDateTime(), newActivation.getDateTime()));
+
+        return featureActivationRepository.findById(foundEntity.getId());
     }
 
 }
