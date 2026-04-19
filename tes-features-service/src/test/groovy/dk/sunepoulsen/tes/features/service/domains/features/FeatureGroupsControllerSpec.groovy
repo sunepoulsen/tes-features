@@ -202,7 +202,7 @@ class FeatureGroupsControllerSpec extends Specification {
             DeferredResults.wait(deferredResult)
 
         then:
-            deferredResult.result
+            deferredResult.hasResult()
 
             1 * featureGroupsLogic.deleteFeatureGroup('key') >> CompletableFuture.completedFuture(null)
             0 * _

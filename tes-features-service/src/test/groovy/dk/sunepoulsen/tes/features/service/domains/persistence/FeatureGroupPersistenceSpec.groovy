@@ -31,7 +31,13 @@ class FeatureGroupPersistenceSpec extends Specification {
     private FeatureGroupRepository featureGroupRepository
 
     @Autowired
+    private FeatureGroupActivationRepository featureGroupActivationRepository
+
+    @Autowired
     private FeatureRepository featureRepository
+
+    @Autowired
+    private FeatureActivationRepository featureActivationRepository
 
     @Autowired
     private FeatureGroupPersistenceTestService featureGroupPersistenceTestService
@@ -789,6 +795,86 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         when:
             this.sut.patchActivation(createdFeatureGroup.key, createdFeatureGroup.activations.last.id + 1, new FeatureGroupActivationEntity())
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.message == "No activation with id '${createdFeatureGroup.activations.last.id + 1}' and feature group '${createdFeatureGroup.key}' exists"
+    }
+
+    void "Tests delete activation successfully"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.deleteActivation(createdFeatureGroup.key, createdFeatureGroup.activations.first.id)
+
+        then:
+            !this.featureGroupActivationRepository.existsById(createdFeatureGroup.activations.first.id)
+    }
+
+    void "Tests delete activation of feature group that does not exist"() {
+        when:
+            this.sut.deleteActivation('key', 27L)
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.message == "No activation with id '27' and feature group 'key' exists"
+    }
+
+    void "Tests delete activation of feature group that exist, but the activation does not"() {
+        given:
+            FeatureGroupEntity featureGroup = FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+            featureGroup.setActivations([
+                new FeatureGroupActivationEntity(
+                    featureGroup: featureGroup,
+                    enabled: true,
+                    dateTime: ZonedDateTime.of(LocalDateTime.of(2025, 2, 8, 12, 30), ZoneId.of('UTC'))
+                )
+            ])
+
+            featureGroup.features = [FeatureEntity.builder()
+                                         .featureGroup(featureGroup)
+                                         .key(textGenerator.generate())
+                                         .name(textGenerator.generate())
+                                         .description(textGenerator.generate())
+                                         .build()
+            ]
+
+        and:
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.deleteActivation(createdFeatureGroup.key, createdFeatureGroup.activations.last.id + 1)
 
         then:
             ResourceNotFoundException exception = thrown(ResourceNotFoundException)

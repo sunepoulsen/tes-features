@@ -19,7 +19,7 @@ import spock.lang.Specification
 class PatchFeatureActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
-        featuresTestsIntegrator().deletePersistence().blockingGet()
+        featuresTestsIntegrator().deletePersistence().blockingAwait()
     }
 
     void "PATCH /groups/{feature_group_key}/features/{feature_key}/activations/{activation_id} returns OK"() {

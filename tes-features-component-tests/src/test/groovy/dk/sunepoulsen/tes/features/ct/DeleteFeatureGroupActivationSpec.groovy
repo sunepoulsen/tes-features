@@ -1,5 +1,6 @@
 package dk.sunepoulsen.tes.features.ct
 
+import dk.sunepoulsen.tes.data.generators.NumberGenerators
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
@@ -12,18 +13,14 @@ import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
-
 @Slf4j
-class GetFeatureGroupActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class DeleteFeatureGroupActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
     }
 
-    void "GET /groups/{feature_group_key}/activations/{activation_id} returns OK"() {
+    void "DELETE /groups/{feature_group_key}/activations/{activation_id} returns OK"() {
         given: 'Services is available'
             isFeaturesServiceAvailable()
 
@@ -31,28 +28,23 @@ class GetFeatureGroupActivationSpec extends Specification implements FeaturesSer
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
             registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
-        and: 'add an extra activation'
-            FeatureActivation newActivation = new FeatureActivation(
-                enabled: false,
-                datetime: ZonedDateTime.now(ZoneId.of('Z')).plusDays(1).truncatedTo(ChronoUnit.MICROS)
-            )
-            FeatureActivation createdActivation = featuresServiceIntegrator().featureGroups().activations().createFeatureGroupActivation(registeredFeatureGroup.key, newActivation).blockingGet()
+        and: 'select an feature group activation to patch'
+            Integer activationIndex = NumberGenerators.integerGenerator(0, registeredFeatureGroup.activations.size()).generate()
+            FeatureActivation featureActivation = registeredFeatureGroup.activations[activationIndex]
 
-        when: 'GET /groups/{feature_group_key}/activations/{activation_id}'
-            FeatureActivation result = featuresServiceIntegrator().featureGroups().activations().getFeatureGroupActivation(registeredFeatureGroup.key, createdActivation.id).blockingGet()
+        when: 'DELETE /groups/{feature_group_key}/activations/{activation_id}'
+            Void result = featuresServiceIntegrator().featureGroups().activations().deleteFeatureGroupActivation(registeredFeatureGroup.key, featureActivation.id).blockingAwait()
 
         then: 'Verify response'
-            result.id == createdActivation.id
-            result.enabled == newActivation.enabled
-            result.datetime == newActivation.datetime
+            result == null
     }
 
-    void "GET /groups/{feature_group_key}/activations/{activation_id} returns Bad Request"() {
+    void "DELETE /groups/{feature_group_key}/activations/{activation_id} returns Bad request: Invalid feature group key"() {
         given: 'Services is available'
             isFeaturesServiceAvailable()
 
-        when: 'Call GET /groups/{feature_group_key}/activations/{activation_id}'
-            featuresServiceIntegrator().featureGroups().activations().getFeatureGroupActivation('wrong;key', 999).blockingGet()
+        when: 'DELETE /groups/{feature_group_key}/activations/{activation_id}'
+            featuresServiceIntegrator().featureGroups().activations().deleteFeatureGroupActivation('wrong;key', Long.MAX_VALUE).blockingAwait()
 
         then: 'Verify response'
             ClientBadRequestException exception = thrown(ClientBadRequestException)
@@ -60,7 +52,7 @@ class GetFeatureGroupActivationSpec extends Specification implements FeaturesSer
             exception.serviceError == new ServiceValidationErrorModel()
     }
 
-    void "GET /groups/{feature_group_key}/activations/{activation_id} returns not found"() {
+    void "DELETE /groups/{feature_group_key}/activations/{activation_id} returns not found"() {
         given: 'Services is available'
             isFeaturesServiceAvailable()
 
@@ -68,15 +60,14 @@ class GetFeatureGroupActivationSpec extends Specification implements FeaturesSer
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
             registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
 
-        when: 'GET /groups/{feature_group_key}/activations/{activation_id} with non-existing activation id'
-            featuresServiceIntegrator().featureGroups().activations().getFeatureGroupActivation(registeredFeatureGroup.key, 999).blockingGet()
+        when: 'DELETE /groups/{feature_group_key}/activations/{activation_id}'
+            featuresServiceIntegrator().featureGroups().activations().deleteFeatureGroupActivation(registeredFeatureGroup.key, 999).blockingAwait()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)
             exception.response.statusCode() == 404
             exception.serviceError == new ServiceErrorModel(
-                param: 'activation_id',
-                message: 'No activation exists with id: 999'
+                message: "No activation with id '999' and feature group '${registeredFeatureGroup.key}' exists"
             )
     }
 

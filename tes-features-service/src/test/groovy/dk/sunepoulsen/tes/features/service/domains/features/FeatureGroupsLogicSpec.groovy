@@ -8,7 +8,6 @@ import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersi
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity
 import dk.sunepoulsen.tes.rest.models.EnvelopeModel
-import dk.sunepoulsen.tes.rest.models.NoContent
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException
 import spock.lang.Specification
@@ -186,10 +185,11 @@ class FeatureGroupsLogicSpec extends Specification {
 
     void "Test delete of a feature group that exists"() {
         when:
-            NoContent result = sut.deleteFeatureGroup('key').get()
+            CompletableFuture<Void> result = sut.deleteFeatureGroup('key')
 
         then:
-            result == new NoContent()
+            noExceptionThrown()
+            result.get() == null
 
             1 * featureGroupPersistence.deleteFeatureGroup('key')
             0 * _
@@ -419,6 +419,33 @@ class FeatureGroupsLogicSpec extends Specification {
 
             1 * featureGroupPersistence.patchActivation('key', 7L, newValuesEntity) >> Optional.empty()
             1 * featureGroupActivationTransformations.toPatchEntity(newValues) >> newValuesEntity
+            0 * _
+    }
+
+    void "Test delete of a feature group activation that exists"() {
+        when:
+            CompletableFuture<Void> result = sut.deleteActivation('key', 7L)
+
+        then:
+            result.get() == null
+
+            1 * featureGroupPersistence.deleteActivation('key', 7L)
+            0 * _
+    }
+
+    void "Test delete of a feature group activation that does not exist"() {
+        when:
+            sut.deleteActivation('key', 7L).get()
+
+        then:
+            ExecutionException exception = thrown(ExecutionException)
+            ResourceNotFoundException resourceNotFoundException = exception.cause as ResourceNotFoundException
+            resourceNotFoundException.param == 'key'
+            resourceNotFoundException.message == 'message'
+
+            1 * featureGroupPersistence.deleteActivation('key', 7L) >> {
+                throw new ResourceNotFoundException('key', 'message')
+            }
             0 * _
     }
 

@@ -4,7 +4,6 @@ import dk.sunepoulsen.tes.features.model.EnvelopeFeature;
 import dk.sunepoulsen.tes.features.model.Feature;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.features.openapi.Features;
-import dk.sunepoulsen.tes.rest.models.NoContent;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudCreate;
@@ -195,10 +194,7 @@ public interface FeaturesOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "204",
-            description = "The feature has been deleted",
-            content = @Content(
-                schema = @Schema(implementation = NoContent.class)
-            )
+            description = "The feature has been deleted"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -225,7 +221,7 @@ public interface FeaturesOperations {
     @DeleteMapping(FEATURE_ENDPOINT_PATH)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Validated({Default.class})
-    DeferredResult<NoContent> deleteFeature(
+    DeferredResult<Void> deleteFeature(
         @Valid @PathVariable("feature_group_key") final String featureGroupKey,
         @Valid @PathVariable("feature_key") final String featureKey);
 

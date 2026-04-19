@@ -6,6 +6,7 @@ import dk.sunepoulsen.tes.features.service.domains.features.openapi.FeatureGroup
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudCreate;
+import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudDelete;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudUpdate;
 import io.swagger.v3.oas.annotations.Operation;
@@ -229,6 +230,53 @@ public interface FeatureGroupActivationOperations {
         @Valid @PathVariable("feature_group_key") final String key,
         @Valid @PathVariable("activation_id") final Long activationId,
         @Valid @RequestBody FeatureActivation newActivation
+    );
+
+    /**
+     * Delete a specific activation for a given feature group.
+     *
+     * @param key          the feature group key
+     * @param activationId the activation id
+     */
+    @Operation(
+        summary = "Delete a specific activation for a given feature group",
+        description = """
+                Deletes the activation and returns nothing. 
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "Successfully deleted the activation"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request because of invalid feature group key",
+            content = @Content(
+                schema = @Schema(implementation = ServiceValidationErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No activation exist with the given id",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unable to process this request",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        )
+    })
+    @DeleteMapping("/{activation_id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Validated({Default.class, OnCrudDelete.class})
+    DeferredResult<Void> deleteActivation(
+        @Valid @PathVariable("feature_group_key") final String key,
+        @Valid @PathVariable("activation_id") final Long activationId
     );
 
 }

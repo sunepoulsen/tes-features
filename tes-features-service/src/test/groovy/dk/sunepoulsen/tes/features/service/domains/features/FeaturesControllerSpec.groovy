@@ -3,7 +3,6 @@ package dk.sunepoulsen.tes.features.service.domains.features
 import dk.sunepoulsen.tes.features.model.EnvelopeFeature
 import dk.sunepoulsen.tes.features.model.Feature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
-import dk.sunepoulsen.tes.rest.models.NoContent
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiConflictException
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException
 import dk.sunepoulsen.tes.springboot.rest.logic.async.DeferredResults
@@ -235,19 +234,19 @@ class FeaturesControllerSpec extends Specification {
 
     void "Test delete feature from a feature group successfully"() {
         when:
-            DeferredResult<NoContent> deferredResult = sut.deleteFeature('group-key', 'key')
+            DeferredResult<Void> deferredResult = sut.deleteFeature('group-key', 'key')
             DeferredResults.wait(deferredResult)
 
         then:
-            deferredResult.result == new NoContent()
+            deferredResult.hasResult()
 
-            1 * featuresLogic.deleteFeature('group-key', 'key') >> CompletableFuture.completedFuture(new NoContent())
+            1 * featuresLogic.deleteFeature('group-key', 'key') >> CompletableFuture.completedFuture(null)
             0 * _
     }
 
     void "Test delete feature from a feature group that does not exist"() {
         when:
-            DeferredResult<NoContent> deferredResult = sut.deleteFeature('group-key', 'key')
+            DeferredResult<Void> deferredResult = sut.deleteFeature('group-key', 'key')
             DeferredResults.wait(deferredResult)
             throw deferredResult.getResult() as Throwable
 

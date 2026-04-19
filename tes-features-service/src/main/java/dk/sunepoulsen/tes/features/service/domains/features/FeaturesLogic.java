@@ -6,7 +6,6 @@ import dk.sunepoulsen.tes.features.service.domains.persistence.FeaturePersistenc
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureActivationEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
-import dk.sunepoulsen.tes.rest.models.NoContent;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -89,10 +88,10 @@ class FeaturesLogic {
     }
 
     @Async("logicExecutor")
-    CompletableFuture<NoContent> deleteFeature(final String featureGroupKey, final String featureKey) {
+    CompletableFuture<Void> deleteFeature(final String featureGroupKey, final String featureKey) {
         try {
             featurePersistence.deleteFeature(featureGroupKey, featureKey);
-            return CompletableFuture.completedFuture(new NoContent());
+            return CompletableFuture.completedFuture(null);
         } catch (Exception ex) {
             return CompletableFuture.failedFuture(ex);
         }
@@ -173,6 +172,7 @@ class FeaturesLogic {
      * @param featureGroupKey the feature group key
      * @param featureKey      the feature key
      * @param activationId    the activation id
+     * @param newValues       new values of the activation
      * @return a {@link CompletableFuture} with the activation
      */
     @Async("logicExecutor")
@@ -185,6 +185,24 @@ class FeaturesLogic {
                 .orElseGet(() ->
                     CompletableFuture.failedFuture(new ResourceNotFoundException("activation_id", "No activation exists with id: " + activationId))
                 );
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
+
+    /**
+     * Delete an activation for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param activationId    the activation id
+     * @return a {@link CompletableFuture} with the activation
+     */
+    @Async("logicExecutor")
+    CompletableFuture<Void> deleteActivation(final String featureGroupKey, final String featureKey, final Long activationId) {
+        try {
+            featurePersistence.deleteActivation(featureGroupKey, featureKey, activationId);
+            return CompletableFuture.completedFuture(null);
         } catch (Exception ex) {
             return CompletableFuture.failedFuture(ex);
         }

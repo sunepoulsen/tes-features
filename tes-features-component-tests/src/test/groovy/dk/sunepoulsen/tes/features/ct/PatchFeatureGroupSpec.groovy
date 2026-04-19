@@ -17,7 +17,7 @@ import spock.lang.Specification
 class PatchFeatureGroupSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
-        featuresTestsIntegrator().deletePersistence().blockingGet()
+        featuresTestsIntegrator().deletePersistence().blockingAwait()
     }
 
     void "PATCH /groups/{feature_group_key} returns OK"() {

@@ -205,4 +205,21 @@ public class FeaturePersistence {
         return featureActivationRepository.findById(foundEntity.getId());
     }
 
+    /**
+     * Delete a specific activation for the given feature.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param activationId    the activation id
+     * @throws PersistenceException in case of persistence errors
+     */
+    @Transactional
+    public void deleteActivation(final String featureGroupKey, final String featureKey, final Long activationId) throws PersistenceException {
+        final FeatureActivationEntity foundEntity = featureActivationRepository.findActivationForUpdate(featureGroupKey, featureKey, activationId).orElseThrow(() ->
+            new ResourceNotFoundException(String.format(FEATURE_GROUP_ACTIVATION_NOT_FOUND_MESSAGE, activationId, featureGroupKey, featureKey))
+        );
+
+        featureActivationRepository.deleteById(foundEntity.getId());
+    }
+
 }

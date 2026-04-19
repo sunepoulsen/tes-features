@@ -204,6 +204,22 @@ public class FeatureGroupPersistence {
         return featureGroupActivationRepository.findActivation(foundEntity.getFeatureGroup().getId(), activationId);
     }
 
+    /**
+     * Delete a specific activation for the given feature group.
+     *
+     * @param featureGroupKey the feature group key
+     * @param activationId    the activation id
+     * @throws PersistenceException in case of persistence errors
+     */
+    @Transactional
+    public void deleteActivation(final String featureGroupKey, final Long activationId) throws PersistenceException {
+        final FeatureGroupActivationEntity foundEntity = featureGroupActivationRepository.findActivationForUpdate(featureGroupKey, activationId).orElseThrow(() ->
+            new ResourceNotFoundException(String.format(FEATURE_GROUP_ACTIVATION_NOT_FOUND_MESSAGE, activationId, featureGroupKey))
+        );
+
+        featureGroupActivationRepository.deleteById(foundEntity.getId());
+    }
+
     private void verifyFeatures(FeatureGroupEntity featureGroup) throws PersistenceException {
         if (featureGroup.getFeatures() == null) {
             throw new PersistenceException("Features of feature group may not be null");
@@ -218,4 +234,5 @@ public class FeatureGroupPersistence {
             }
         });
     }
+
 }

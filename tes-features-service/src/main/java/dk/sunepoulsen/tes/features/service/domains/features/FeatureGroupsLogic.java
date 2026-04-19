@@ -7,7 +7,6 @@ import dk.sunepoulsen.tes.features.model.FeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.persistence.FeatureGroupPersistence;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupActivationEntity;
 import dk.sunepoulsen.tes.features.service.domains.persistence.model.FeatureGroupEntity;
-import dk.sunepoulsen.tes.rest.models.NoContent;
 import dk.sunepoulsen.tes.springboot.rest.exceptions.ApiNotFoundException;
 import dk.sunepoulsen.tes.springboot.rest.logic.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -79,10 +78,10 @@ class FeatureGroupsLogic {
     }
 
     @Async("logicExecutor")
-    CompletableFuture<NoContent> deleteFeatureGroup(final String key) {
+    CompletableFuture<Void> deleteFeatureGroup(final String key) {
         try {
             featureGroupPersistence.deleteFeatureGroup(key);
-            return CompletableFuture.completedFuture(new NoContent());
+            return CompletableFuture.completedFuture(null);
         } catch (Exception ex) {
             return CompletableFuture.failedFuture(ex);
         }
@@ -176,4 +175,22 @@ class FeatureGroupsLogic {
             return CompletableFuture.failedFuture(ex);
         }
     }
+
+    /**
+     * Delete an activation for the given feature group.
+     *
+     * @param key          Key of the feature group
+     * @param activationId Id of the activation to be patched
+     * @return The {@code FeatureActivation} after it has been patched.
+     */
+    @Async("logicExecutor")
+    CompletableFuture<Void> deleteActivation(final String key, final Long activationId) {
+        try {
+            featureGroupPersistence.deleteActivation(key, activationId);
+            return CompletableFuture.completedFuture(null);
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+    }
+
 }

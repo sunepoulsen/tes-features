@@ -16,7 +16,7 @@ import spock.lang.Specification
 class RegisterFeaturesServiceSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
-        featuresTestsIntegrator().deletePersistence().blockingGet()
+        featuresTestsIntegrator().deletePersistence().blockingAwait()
     }
 
     void "PUT /features returns OK"() {

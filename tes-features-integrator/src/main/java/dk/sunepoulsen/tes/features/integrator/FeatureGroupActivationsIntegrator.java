@@ -4,6 +4,7 @@ import dk.sunepoulsen.tes.features.model.EnvelopeFeatureActivation;
 import dk.sunepoulsen.tes.features.model.FeatureActivation;
 import dk.sunepoulsen.tes.rest.integrations.AbstractIntegrator;
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 
 import java.net.URLEncoder;
@@ -75,6 +76,22 @@ public class FeatureGroupActivationsIntegrator extends AbstractIntegrator {
 
         return Single.fromFuture(this.httpClient.patch(url, newActivation, FeatureActivation.class))
             .onErrorResumeNext(this::mapClientExceptions);
+    }
+
+    /**
+     * Delete a specific activation for a given feature group.
+     *
+     * @param featureGroupKey the feature group key
+     * @param activationId    the activation id
+     * @return A {@code Completable} for the async operation.
+     */
+    public Completable deleteFeatureGroupActivation(final String featureGroupKey, final Long activationId) {
+        String url = String.format(FEATURE_GROUP_ACTIVATIONS_ENDPOINT_PATH + "/%s",
+            URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
+            URLEncoder.encode(activationId.toString(), StandardCharsets.UTF_8));
+
+        return Completable.fromCompletionStage(this.httpClient.delete(url))
+            .onErrorResumeNext(this::mapClientExceptionsAsCompletable);
     }
 
 }

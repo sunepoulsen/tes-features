@@ -3,7 +3,6 @@ package dk.sunepoulsen.tes.features.service.domains.features;
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup;
 import dk.sunepoulsen.tes.features.model.FeatureGroup;
 import dk.sunepoulsen.tes.features.service.domains.features.openapi.FeatureGroups;
-import dk.sunepoulsen.tes.rest.models.NoContent;
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel;
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel;
 import dk.sunepoulsen.tes.rest.models.validation.annotations.OnCrudRead;
@@ -144,10 +143,7 @@ public interface FeatureGroupsOperations {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "204",
-            description = "The feature group has been deleted",
-            content = @Content(
-                schema = @Schema(implementation = NoContent.class)
-            )
+            description = "The feature group has been deleted"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -174,5 +170,5 @@ public interface FeatureGroupsOperations {
     @DeleteMapping("/{feature_group_key}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Validated({Default.class})
-    DeferredResult<NoContent> deleteFeatureGroup(@Valid @PathVariable("feature_group_key") final String key);
+    DeferredResult<Void> deleteFeatureGroup(@Valid @PathVariable("feature_group_key") final String key);
 }

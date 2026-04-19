@@ -17,7 +17,7 @@ import spock.lang.Specification
 class GetFeatureGroupSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
-        featuresTestsIntegrator().deletePersistence().blockingGet()
+        featuresTestsIntegrator().deletePersistence().blockingAwait()
     }
 
     void "GET /groups/{feature_group_key} returns OK"() {

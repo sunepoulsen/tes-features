@@ -8,7 +8,6 @@ import dk.sunepoulsen.tes.features.model.RegisterFeature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientBadRequestException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
-import dk.sunepoulsen.tes.rest.models.NoContent
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
 import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel
 import groovy.util.logging.Slf4j
@@ -19,7 +18,7 @@ import spock.lang.Unroll
 class DeleteFeatureSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
 
     void setup() {
-        featuresTestsIntegrator().deletePersistence().blockingGet()
+        featuresTestsIntegrator().deletePersistence().blockingAwait()
     }
 
     void "DELETE /groups/{feature_group_key}/features/{feature_key} returns OK"() {
@@ -37,10 +36,10 @@ class DeleteFeatureSpec extends Specification implements FeaturesServiceIntegrat
             RegisterFeature registeredFeature = registeredFeatureGroup.features[featureIndex]
 
         when: 'DELETE /groups/{feature_group_key}/features/{feature_key}'
-            NoContent result = featuresServiceIntegrator().features().deleteFeature(registeredFeatureGroup.key, registeredFeature.key).blockingGet()
+            Void result = featuresServiceIntegrator().features().deleteFeature(registeredFeatureGroup.key, registeredFeature.key).blockingAwait()
 
         then: 'Verify response'
-            result != null
+            result == null
     }
 
     @Unroll
@@ -49,7 +48,7 @@ class DeleteFeatureSpec extends Specification implements FeaturesServiceIntegrat
             isFeaturesServiceAvailable()
 
         when: 'DELETE /groups/{feature_group_key}/features/{feature_key}'
-            featuresServiceIntegrator().features().deleteFeature(_featureGroupKey, _featureKey).blockingGet()
+            featuresServiceIntegrator().features().deleteFeature(_featureGroupKey, _featureKey).blockingAwait()
 
         then: 'Verify response'
             ClientBadRequestException exception = thrown(ClientBadRequestException)
@@ -67,7 +66,7 @@ class DeleteFeatureSpec extends Specification implements FeaturesServiceIntegrat
             isFeaturesServiceAvailable()
 
         when: 'DELETE /groups/{feature_group_key}/features/{feature_key}'
-            featuresServiceIntegrator().features().deleteFeature('some-key', 'some-feature-key').blockingGet()
+            featuresServiceIntegrator().features().deleteFeature('some-key', 'some-feature-key').blockingAwait()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

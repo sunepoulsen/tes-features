@@ -887,4 +887,129 @@ class FeaturePersistenceSpec extends Specification {
             exception.param == null
             exception.message == "No activation with id '999' in feature group '${featureGroupEntity.key}' and feature '${featureEntity.key}' exists"
     }
+
+    @Unroll
+    void "Tests delete feature activation that exist: #_testcase"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        and:
+            ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
+            FeatureActivationEntity createdActivation = this.sut.createActivation(
+                featureGroupEntity.key,
+                createdFeature.key,
+                new FeatureActivationEntity(
+                    enabled: false,
+                    dateTime: activationDateTime
+                )
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.deleteActivation(featureGroupEntity.key, createdFeature.key, createdActivation.id)
+
+        then:
+            !featureActivationRepository.existsById(createdActivation.id)
+
+        where:
+            _testcase                         | _featureGroupKey  | _featureKey  | _argFeatureGroupKey             | _argFeatureKey
+            'Normal case'                     | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'
+            'Feature group key is lower case' | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'.toLowerCase() | 'featureKey'
+            'Feature group key is upper case' | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'.toUpperCase() | 'featureKey'
+            'Feature key is lower case'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'.toLowerCase()
+            'Feature key is upper case'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'               | 'featureKey'.toUpperCase()
+    }
+
+    @Unroll
+    void "Tests delete of missing feature activation: #_testcase"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(_featureGroupKey)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(_featureKey)
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            this.sut.registerFeature(featureEntity)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        and:
+            ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
+            FeatureActivationEntity createdActivation = this.sut.createActivation(
+                featureGroupEntity.key,
+                featureEntity.key,
+                new FeatureActivationEntity(
+                    enabled: false,
+                    dateTime: activationDateTime
+                )
+            )
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.deleteActivation(_argFeatureGroupKey, _argFeatureKey, createdActivation.id)
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == null
+            exception.message == "No activation with id '${createdActivation.id}' in feature group '${_argFeatureGroupKey}' and feature '${_argFeatureKey}' exists"
+
+        where:
+            _testcase                      | _featureGroupKey  | _featureKey  | _argFeatureGroupKey | _argFeatureKey
+            'Feature group does not exist' | 'featureGroupKey' | 'featureKey' | 'bad-key'           | 'featureKey'
+            'Feature does not exist'       | 'featureGroupKey' | 'featureKey' | 'featureGroupKey'   | 'bad-key'
+    }
+
+    void "Tests delete of missing feature activation: Wrong activation id"() {
+        given:
+            FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+            )
+
+            FeatureEntity featureEntity = FeatureEntity.builder()
+                .featureGroup(featureGroupEntity)
+                .key(textGenerator.generate())
+                .name(textGenerator.generate())
+                .description(textGenerator.generate())
+                .build()
+
+        and:
+            this.sut.registerFeature(featureEntity)
+            this.featureGroupPersistenceTestService.flushDatabase()
+
+        when:
+            this.sut.deleteActivation(featureGroupEntity.key, featureEntity.key, 999)
+
+        then:
+            ResourceNotFoundException exception = thrown(ResourceNotFoundException)
+            exception.param == null
+            exception.message == "No activation with id '999' in feature group '${featureGroupEntity.key}' and feature '${featureEntity.key}' exists"
+    }
+
 }

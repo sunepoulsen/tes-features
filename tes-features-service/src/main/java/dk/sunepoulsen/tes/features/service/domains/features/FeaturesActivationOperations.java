@@ -235,4 +235,54 @@ public interface FeaturesActivationOperations {
         @Valid @RequestBody FeatureActivation newActivation
     );
 
+    /**
+     * Delete a specific activation for a given feature group.
+     *
+     * @param featureGroupKey the feature group key
+     * @param featureKey      the feature key
+     * @param activationId    the activation id
+     * @return the activation after it has been patched.
+     */
+    @Operation(
+        summary = "Delete a specific activation for a given feature",
+        description = """
+                Delete the activation and returns nothing.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "Successfully deleted the activation"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request because of invalid feature group key or feature key",
+            content = @Content(
+                schema = @Schema(implementation = ServiceValidationErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No activation exist with the given id",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unable to process this request",
+            content = @Content(
+                schema = @Schema(implementation = ServiceErrorModel.class)
+            )
+        )
+    })
+    @DeleteMapping("/{activation_id}")
+    @ResponseStatus(HttpStatus.OK)
+    @Validated({Default.class, OnCrudUpdate.class})
+    DeferredResult<Void> deleteActivation(
+        @Valid @PathVariable("feature_group_key") final String featureGroupKey,
+        @Valid @PathVariable("feature_key") final String featureKey,
+        @Valid @PathVariable("activation_id") final Long activationId
+    );
+
 }

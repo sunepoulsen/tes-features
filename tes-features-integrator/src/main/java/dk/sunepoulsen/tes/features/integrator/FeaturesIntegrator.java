@@ -5,7 +5,7 @@ import dk.sunepoulsen.tes.features.model.Feature;
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup;
 import dk.sunepoulsen.tes.rest.integrations.AbstractIntegrator;
 import dk.sunepoulsen.tes.rest.integrations.TechEasySolutionsClient;
-import dk.sunepoulsen.tes.rest.models.NoContent;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 
 import java.net.URLEncoder;
@@ -93,14 +93,14 @@ public class FeaturesIntegrator extends AbstractIntegrator {
      * @param featureKey the feature key
      * @return a {@link Single} with no content
      */
-    public Single<NoContent> deleteFeature(final String featureGroupKey, final String featureKey) {
+    public Completable deleteFeature(final String featureGroupKey, final String featureKey) {
         String url = String.format(FEATURE_ENDPOINT_PATH,
             URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
             URLEncoder.encode(featureKey, StandardCharsets.UTF_8)
         );
 
-        return Single.fromFuture(this.httpClient.delete(url))
-            .onErrorResumeNext(this::mapClientExceptions);
+        return Completable.fromCompletionStage(this.httpClient.delete(url))
+            .onErrorResumeNext(this::mapClientExceptionsAsCompletable);
     }
 
 }
