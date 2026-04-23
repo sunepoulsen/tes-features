@@ -12,6 +12,8 @@ import dk.sunepoulsen.tes.sut.engine.steps.SutStartTesServiceStep;
 import dk.sunepoulsen.tes.sut.engine.steps.factories.ContainerStepResult;
 import dk.sunepoulsen.tes.sut.engine.steps.factories.PostgresContainerStepsFactory;
 import dk.sunepoulsen.tes.sut.engine.system.SystemUnderTestDeployment;
+import dk.sunepoulsen.tes.wiremock.deployment.steps.SutStartWiremockStep;
+import dk.sunepoulsen.tes.wiremock.deployment.steps.factories.WiremockContainerStepsFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.FileSystems;
@@ -37,6 +39,9 @@ public class DeploymentSpockExtension extends AbstractSystemUnderTestExtension {
             FeaturesDeployment featuresDeployment = new FeaturesDeployment(List.of("ct", "tests"));
             featuresDeployment.setConfigTemplateName("templates/application-ct.yml");
 
+            WiremockContainerStepsFactory wiremockContainerStepsFactory = new WiremockContainerStepsFactory(systemUnderTestDeployment, networkStep, logDirectory);
+            ContainerStepResult<SutStartWiremockStep> wiremockContainerSteps = wiremockContainerStepsFactory.createSteps();
+
             PostgresConfigureStepsDatabaseResult featuresConfigureDatabaseSteps = featuresDeployment.configureDatabaseSteps(deployDirectory);
 
             PostgresContainerStepsFactory postgresContainerStepsFactory = new PostgresContainerStepsFactory(systemUnderTestDeployment, networkStep, logDirectory);
@@ -47,6 +52,7 @@ public class DeploymentSpockExtension extends AbstractSystemUnderTestExtension {
 
             log.info("Returning configured deployment steps");
             List<FlowStep> steps = new ArrayList<>();
+            steps.addAll(wiremockContainerSteps.steps());
             steps.addAll(featuresConfigureDatabaseSteps.steps());
             steps.addAll(postgresContainerSteps.steps());
             steps.addAll(featuresConfigSteps.steps());

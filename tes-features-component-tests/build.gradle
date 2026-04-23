@@ -5,10 +5,15 @@ dependencies {
     implementation 'dk.sunepoulsen.tes-foundation:tes-flows:3.0.0-SNAPSHOT'
     implementation 'dk.sunepoulsen.tes-foundation:tes-io:3.0.0-SNAPSHOT'
     implementation 'dk.sunepoulsen.tes-foundation:tes-sut-engine:3.0.0-SNAPSHOT'
+    implementation 'dk.sunepoulsen.tes-foundation:tes-wiremock-deployment:1.0.0-SNAPSHOT'
 
     testImplementation project(':tes-features-data-generators')
     testImplementation 'dk.sunepoulsen.tes-foundation:tes-data-generators:3.0.0-SNAPSHOT'
     testImplementation 'dk.sunepoulsen.tes-foundation:tes-rest-integrations:3.0.0-SNAPSHOT'
+
+    // Test containers
+    implementation platform('org.testcontainers:testcontainers-bom:2.0.4')
+    implementation 'org.testcontainers:testcontainers'
 }
 
 test {
