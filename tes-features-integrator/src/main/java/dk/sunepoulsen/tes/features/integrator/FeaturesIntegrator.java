@@ -31,8 +31,8 @@ public class FeaturesIntegrator extends AbstractIntegrator {
      * @param featureGroup the feature group to register
      * @return a {@link Single} with the registered feature group
      */
-    public Single<RegisterFeatureGroup> registerFeatures(RegisterFeatureGroup featureGroup) {
-        return Single.fromFuture(this.httpClient.put(REGISTER_FEATURES_ENDPOINT_PATH, featureGroup, RegisterFeatureGroup.class))
+    public Single<RegisterFeatureGroup> registerFeatures(final String authorizationToken, final RegisterFeatureGroup featureGroup) {
+        return Single.fromFuture(this.httpClient.put(REGISTER_FEATURES_ENDPOINT_PATH, authorizationToken, featureGroup, RegisterFeatureGroup.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -42,12 +42,12 @@ public class FeaturesIntegrator extends AbstractIntegrator {
      * @param featureGroupKey the feature group key
      * @return a {@link Single} with the features
      */
-    public Single<EnvelopeFeature> getFeatures(final String featureGroupKey) {
+    public Single<EnvelopeFeature> getFeatures(final String authorizationToken, final String featureGroupKey) {
         String url = String.format(FEATURES_ENDPOINT_PATH,
             URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8)
         );
 
-        return Single.fromFuture(this.httpClient.get(url, EnvelopeFeature.class))
+        return Single.fromFuture(this.httpClient.get(url, authorizationToken, EnvelopeFeature.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -58,13 +58,13 @@ public class FeaturesIntegrator extends AbstractIntegrator {
      * @param featureKey the feature key
      * @return a {@link Single} with the feature
      */
-    public Single<Feature> getFeature(final String featureGroupKey, final String featureKey) {
+    public Single<Feature> getFeature(final String authorizationToken, final String featureGroupKey, final String featureKey) {
         String url = String.format(FEATURE_ENDPOINT_PATH,
             URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
             URLEncoder.encode(featureKey, StandardCharsets.UTF_8)
         );
 
-        return Single.fromFuture(this.httpClient.get(url, Feature.class))
+        return Single.fromFuture(this.httpClient.get(url, authorizationToken, Feature.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -76,13 +76,13 @@ public class FeaturesIntegrator extends AbstractIntegrator {
      * @param feature the feature values to patch
      * @return a {@link Single} with the patched feature
      */
-    public Single<Feature> patchFeature(final String featureGroupKey, final String featureKey, final Feature feature) {
+    public Single<Feature> patchFeature(final String authorizationToken, final String featureGroupKey, final String featureKey, final Feature feature) {
         String url = String.format(FEATURE_ENDPOINT_PATH,
             URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
             URLEncoder.encode(featureKey, StandardCharsets.UTF_8)
         );
 
-        return Single.fromFuture(this.httpClient.patch(url, feature, Feature.class))
+        return Single.fromFuture(this.httpClient.patch(url, authorizationToken, feature, Feature.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -93,13 +93,13 @@ public class FeaturesIntegrator extends AbstractIntegrator {
      * @param featureKey the feature key
      * @return a {@link Single} with no content
      */
-    public Completable deleteFeature(final String featureGroupKey, final String featureKey) {
+    public Completable deleteFeature(final String authorizationToken, final String featureGroupKey, final String featureKey) {
         String url = String.format(FEATURE_ENDPOINT_PATH,
             URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
             URLEncoder.encode(featureKey, StandardCharsets.UTF_8)
         );
 
-        return Completable.fromCompletionStage(this.httpClient.delete(url))
+        return Completable.fromCompletionStage(this.httpClient.delete(url, authorizationToken))
             .onErrorResumeNext(this::mapClientExceptionsAsCompletable);
     }
 

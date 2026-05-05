@@ -2,6 +2,7 @@ package dk.sunepoulsen.tes.features.ct
 
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.deployment.FeaturesMockUsers
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.Feature
@@ -15,7 +16,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class PatchFeatureSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class PatchFeatureSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider, FeaturesMockUsers {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
@@ -29,7 +30,7 @@ class PatchFeatureSpec extends Specification implements FeaturesServiceIntegrato
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and: 'register feature group and all its features'
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         and: 'select a feature to patch'
             Integer featureIndex = NumberGenerators.integerGenerator(0, registeredFeatureGroup.features.size()).generate()
@@ -41,7 +42,7 @@ class PatchFeatureSpec extends Specification implements FeaturesServiceIntegrato
             )
 
         and: 'PATCH /groups/{feature_group_key}/{feature_key}'
-            Feature result = featuresServiceIntegrator().features().patchFeature(registeredFeatureGroup.key, registeredFeature.key, newValues).blockingGet()
+            Feature result = featuresServiceIntegrator().features().patchFeature(featuresDefaultUser(), registeredFeatureGroup.key, registeredFeature.key, newValues).blockingGet()
 
         then: 'Verify response'
             with(result) {
@@ -59,7 +60,7 @@ class PatchFeatureSpec extends Specification implements FeaturesServiceIntegrato
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         and: 'select a feature to patch'
             Integer featureIndex = NumberGenerators.integerGenerator(0, registeredFeatureGroup.features.size()).generate()
@@ -71,7 +72,7 @@ class PatchFeatureSpec extends Specification implements FeaturesServiceIntegrato
             )
 
         and: 'PATCH /groups/{feature_group_key}'
-            featuresServiceIntegrator().features().patchFeature(registeredFeatureGroup.key, registeredFeature.key, newValues).blockingGet()
+            featuresServiceIntegrator().features().patchFeature(featuresDefaultUser(), registeredFeatureGroup.key, registeredFeature.key, newValues).blockingGet()
 
         then: 'Verify response'
             ClientBadRequestException exception = thrown(ClientBadRequestException)
@@ -95,7 +96,7 @@ class PatchFeatureSpec extends Specification implements FeaturesServiceIntegrato
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         when: 'has valid patch body'
             Feature newValues = new Feature(
@@ -103,7 +104,7 @@ class PatchFeatureSpec extends Specification implements FeaturesServiceIntegrato
             )
 
         and: 'PATCH /groups/{feature_group_key}/{feature_key}'
-            featuresServiceIntegrator().features().patchFeature('some-key', 'some-other-key', newValues).blockingGet()
+            featuresServiceIntegrator().features().patchFeature(featuresDefaultUser(), 'some-key', 'some-other-key', newValues).blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

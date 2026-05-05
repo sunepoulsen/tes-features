@@ -2,15 +2,16 @@ package dk.sunepoulsen.tes.features.ct
 
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.deployment.FeaturesMockUsers
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureActivation
 import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.RegisterFeature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
-import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientBadRequestException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
-import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel
+import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientUnauthorizedException
+import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -20,7 +21,7 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 @Slf4j
-class GetFeatureActivationsSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class GetFeatureActivationsSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider, FeaturesMockUsers {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
@@ -32,7 +33,7 @@ class GetFeatureActivationsSpec extends Specification implements FeaturesService
 
         and: 'valid feature group'
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         and: 'select a feature'
             Integer featureIndex = NumberGenerators.integerGenerator(0, registeredFeatureGroup.features.size()).generate()
@@ -43,10 +44,10 @@ class GetFeatureActivationsSpec extends Specification implements FeaturesService
                 enabled: false,
                 datetime: ZonedDateTime.now(ZoneId.of('Z')).plusDays(1).truncatedTo(ChronoUnit.MICROS)
             )
-            featuresServiceIntegrator().features().activations().createFeatureActivation(registeredFeatureGroup.key, registeredFeature.key, newActivation).blockingGet()
+            featuresServiceIntegrator().features().activations().createFeatureActivation(featuresDefaultUser(), registeredFeatureGroup.key, registeredFeature.key, newActivation).blockingGet()
 
         when: 'GET /groups/{feature_group_key}/features/{feature_key}/activations'
-            EnvelopeFeatureActivation result = featuresServiceIntegrator().features().activations().getFeatureActivations(registeredFeatureGroup.key, registeredFeature.key).blockingGet()
+            EnvelopeFeatureActivation result = featuresServiceIntegrator().features().activations().getFeatureActivations(featuresDefaultUser(), registeredFeatureGroup.key, registeredFeature.key).blockingGet()
 
         then: 'Verify response'
             result.results.size() == registeredFeature.activations.size() + 1
@@ -60,12 +61,14 @@ class GetFeatureActivationsSpec extends Specification implements FeaturesService
             isFeaturesServiceAvailable()
 
         when: 'GET /groups/{feature_group_key}/features/{feature_key}/activations'
-            featuresServiceIntegrator().features().activations().getFeatureActivations(_featureGroupKey, _featureKey).blockingGet()
+            featuresServiceIntegrator().features().activations().getFeatureActivations(featuresDefaultUser(), _featureGroupKey, _featureKey).blockingGet()
 
         then: 'Verify response'
-            ClientBadRequestException exception = thrown(ClientBadRequestException)
-            exception.response.statusCode() == 400
-            exception.serviceError == new ServiceValidationErrorModel()
+            ClientUnauthorizedException exception = thrown(ClientUnauthorizedException)
+            exception.response.statusCode() == 401
+            exception.serviceError == new ServiceErrorModel(
+                message: 'Service returned response with status 401'
+            )
 
         where:
             _testcase                   | _featureGroupKey | _featureKey
@@ -78,7 +81,7 @@ class GetFeatureActivationsSpec extends Specification implements FeaturesService
             isFeaturesServiceAvailable()
 
         when: 'GET /groups/{feature_group_key}/features/{feature_key}/activations with non-existing feature group key'
-            featuresServiceIntegrator().features().activations().getFeatureActivations('non-existing-key', 'some-feature').blockingGet()
+            featuresServiceIntegrator().features().activations().getFeatureActivations(featuresDefaultUser(), 'non-existing-key', 'some-feature').blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

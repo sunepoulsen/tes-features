@@ -2,6 +2,7 @@ package dk.sunepoulsen.tes.features.ct
 
 
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.deployment.FeaturesMockUsers
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.FeatureGroup
@@ -14,7 +15,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class PatchFeatureGroupSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class PatchFeatureGroupSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider, FeaturesMockUsers {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
@@ -28,7 +29,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesServiceInte
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         when: 'has valid patch body'
             FeatureGroup featureGroup = new FeatureGroup(
@@ -36,7 +37,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesServiceInte
             )
 
         and: 'PATCH /groups/{feature_group_key}'
-            FeatureGroup result = featuresServiceIntegrator().featureGroups().patchFeatureGroup(registeredFeatureGroup.key, featureGroup).blockingGet()
+            FeatureGroup result = featuresServiceIntegrator().featureGroups().patchFeatureGroup(featuresDefaultUser(), registeredFeatureGroup.key, featureGroup).blockingGet()
 
         then: 'Verify response'
             with(result) {
@@ -54,7 +55,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesServiceInte
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         when: 'has invalid patch body'
             FeatureGroup featureGroup = new FeatureGroup(
@@ -62,7 +63,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesServiceInte
             )
 
         and: 'PATCH /groups/{feature_group_key}'
-            featuresServiceIntegrator().featureGroups().patchFeatureGroup(registeredFeatureGroup.key, featureGroup).blockingGet()
+            featuresServiceIntegrator().featureGroups().patchFeatureGroup(featuresDefaultUser(), registeredFeatureGroup.key, featureGroup).blockingGet()
 
         then: 'Verify response'
             ClientBadRequestException exception = thrown(ClientBadRequestException)
@@ -86,7 +87,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesServiceInte
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         when: 'has valid patch body'
             FeatureGroup featureGroup = new FeatureGroup(
@@ -94,7 +95,7 @@ class PatchFeatureGroupSpec extends Specification implements FeaturesServiceInte
             )
 
         and: 'PATCH /groups/{feature_group_key}'
-            featuresServiceIntegrator().featureGroups().patchFeatureGroup('some-key', featureGroup).blockingGet()
+            featuresServiceIntegrator().featureGroups().patchFeatureGroup(featuresDefaultUser(), 'some-key', featureGroup).blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

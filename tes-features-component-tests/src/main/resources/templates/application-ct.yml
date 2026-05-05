@@ -5,6 +5,7 @@
 logging:
   level:
     dk.sunepoulsen.tes: DEBUG
+    org.springframework.security: DEBUG
   file:
     name: $serviceLogFile
 
@@ -53,3 +54,13 @@ spring:
     username: $databaseApplicationUser.username
     password: '$databaseApplicationUser.password'
     driver-class-name: org.postgresql.Driver
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://wiremock:8080/keycloak/realms/tes-foundation
+
+oauth2:
+  security:
+    keycloak:
+      client-id: 'tes-foundation'

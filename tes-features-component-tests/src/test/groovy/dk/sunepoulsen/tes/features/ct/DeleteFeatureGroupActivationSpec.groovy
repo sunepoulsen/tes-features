@@ -2,19 +2,19 @@ package dk.sunepoulsen.tes.features.ct
 
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.deployment.FeaturesMockUsers
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
-import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientBadRequestException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
+import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientUnauthorizedException
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
-import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class DeleteFeatureGroupActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class DeleteFeatureGroupActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider, FeaturesMockUsers {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
@@ -26,14 +26,14 @@ class DeleteFeatureGroupActivationSpec extends Specification implements Features
 
         and: 'valid feature group'
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         and: 'select an feature group activation to patch'
             Integer activationIndex = NumberGenerators.integerGenerator(0, registeredFeatureGroup.activations.size()).generate()
             FeatureActivation featureActivation = registeredFeatureGroup.activations[activationIndex]
 
         when: 'DELETE /groups/{feature_group_key}/activations/{activation_id}'
-            Void result = featuresServiceIntegrator().featureGroups().activations().deleteFeatureGroupActivation(registeredFeatureGroup.key, featureActivation.id).blockingAwait()
+            Void result = featuresServiceIntegrator().featureGroups().activations().deleteFeatureGroupActivation(featuresDefaultUser(), registeredFeatureGroup.key, featureActivation.id).blockingAwait()
 
         then: 'Verify response'
             result == null
@@ -44,12 +44,14 @@ class DeleteFeatureGroupActivationSpec extends Specification implements Features
             isFeaturesServiceAvailable()
 
         when: 'DELETE /groups/{feature_group_key}/activations/{activation_id}'
-            featuresServiceIntegrator().featureGroups().activations().deleteFeatureGroupActivation('wrong;key', Long.MAX_VALUE).blockingAwait()
+            featuresServiceIntegrator().featureGroups().activations().deleteFeatureGroupActivation(featuresDefaultUser(), 'wrong;key', Long.MAX_VALUE).blockingAwait()
 
         then: 'Verify response'
-            ClientBadRequestException exception = thrown(ClientBadRequestException)
-            exception.response.statusCode() == 400
-            exception.serviceError == new ServiceValidationErrorModel()
+            ClientUnauthorizedException exception = thrown(ClientUnauthorizedException)
+            exception.response.statusCode() == 401
+            exception.serviceError == new ServiceErrorModel(
+                message: 'Service returned response with status 401'
+            )
     }
 
     void "DELETE /groups/{feature_group_key}/activations/{activation_id} returns not found"() {
@@ -58,10 +60,10 @@ class DeleteFeatureGroupActivationSpec extends Specification implements Features
 
         and: 'valid feature group'
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         when: 'DELETE /groups/{feature_group_key}/activations/{activation_id}'
-            featuresServiceIntegrator().featureGroups().activations().deleteFeatureGroupActivation(registeredFeatureGroup.key, 999).blockingAwait()
+            featuresServiceIntegrator().featureGroups().activations().deleteFeatureGroupActivation(featuresDefaultUser(), registeredFeatureGroup.key, 999).blockingAwait()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)
