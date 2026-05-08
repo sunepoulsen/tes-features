@@ -1,20 +1,19 @@
 package dk.sunepoulsen.tes.features.ct
 
-
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.deployment.FeaturesMockUsers
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.EnvelopeFeature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
-import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientBadRequestException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
+import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientUnauthorizedException
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
-import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class GetFeaturesServiceSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class GetFeaturesServiceSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider, FeaturesMockUsers {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
@@ -33,11 +32,11 @@ class GetFeaturesServiceSpec extends Specification implements FeaturesServiceInt
 
         and:
             featureGroups.each {
-                featuresServiceIntegrator().features().registerFeatures(it).blockingGet()
+                featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), it).blockingGet()
             }
 
         when: 'GET /groups/{feature_group_key}/features'
-            EnvelopeFeature envelopeFeature = featuresServiceIntegrator().features().getFeatures(featureGroups[1].key).blockingGet()
+            EnvelopeFeature envelopeFeature = featuresServiceIntegrator().features().getFeatures(featuresDefaultUser(), featureGroups[1].key).blockingGet()
 
         then: 'Verify response'
             envelopeFeature.results.size() == featureGroups[1].features.size()
@@ -53,12 +52,14 @@ class GetFeaturesServiceSpec extends Specification implements FeaturesServiceInt
             isFeaturesServiceAvailable()
 
         when: 'Call GET /groups/{feature_group_key}/features'
-            featuresServiceIntegrator().features().getFeatures('wrong;key').blockingGet()
+            featuresServiceIntegrator().features().getFeatures(featuresDefaultUser(), 'wrong;key').blockingGet()
 
         then: 'Verify response'
-            ClientBadRequestException exception = thrown(ClientBadRequestException)
-            exception.response.statusCode() == 400
-            exception.serviceError == new ServiceValidationErrorModel()
+            ClientUnauthorizedException exception = thrown(ClientUnauthorizedException)
+            exception.response.statusCode() == 401
+            exception.serviceError == new ServiceErrorModel(
+                message: 'Service returned response with status 401'
+            )
     }
 
     void "GET /groups/{feature_group_key}/features returns not found"() {
@@ -66,7 +67,7 @@ class GetFeaturesServiceSpec extends Specification implements FeaturesServiceInt
             isFeaturesServiceAvailable()
 
         when: 'GET /groups/{feature_group_key}/features'
-            featuresServiceIntegrator().features().getFeatures('group-key').blockingGet()
+            featuresServiceIntegrator().features().getFeatures(featuresDefaultUser(), 'group-key').blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

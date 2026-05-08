@@ -78,3 +78,13 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+
+# ===================================================================
+#                   OAuth2 Security Configuration
+# ===================================================================
+
+oauth2:
+  security:
+    roles:
+      register-role: 'register-features'
+      admin-role: 'admin-features'

@@ -1,22 +1,21 @@
 package dk.sunepoulsen.tes.features.ct
 
-
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.deployment.FeaturesMockUsers
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.Feature
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
-import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientBadRequestException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
+import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientUnauthorizedException
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
-import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
 import spock.lang.Unroll
 
 @Slf4j
-class GetFeatureSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class GetFeatureSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider, FeaturesMockUsers {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
@@ -35,7 +34,7 @@ class GetFeatureSpec extends Specification implements FeaturesServiceIntegratorP
 
         and:
             featureGroups.each {
-                featuresServiceIntegrator().features().registerFeatures(it).blockingGet()
+                featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), it).blockingGet()
             }
 
         and:
@@ -43,7 +42,7 @@ class GetFeatureSpec extends Specification implements FeaturesServiceIntegratorP
             Integer featureIndex = NumberGenerators.integerGenerator(0, featureGroup.features.size()).generate()
 
         when: 'GET /groups/{feature_group_key}/features/{feature_key}'
-            Feature responseFeature = featuresServiceIntegrator().features().getFeature(featureGroup.key, featureGroup.features[featureIndex].key).blockingGet()
+            Feature responseFeature = featuresServiceIntegrator().features().getFeature(featuresDefaultUser(), featureGroup.key, featureGroup.features[featureIndex].key).blockingGet()
 
         then: 'Verify response'
             assert responseFeature.key == featureGroup.features[featureIndex].key
@@ -57,12 +56,14 @@ class GetFeatureSpec extends Specification implements FeaturesServiceIntegratorP
             isFeaturesServiceAvailable()
 
         when: 'GET /groups/{feature_group_key}/features/{feature_key}'
-            featuresServiceIntegrator().features().getFeature(_featureGroupKey, _featureKey).blockingGet()
+            featuresServiceIntegrator().features().getFeature(featuresDefaultUser(), _featureGroupKey, _featureKey).blockingGet()
 
         then: 'Verify response'
-            ClientBadRequestException exception = thrown(ClientBadRequestException)
-            exception.response.statusCode() == 400
-            exception.serviceError == new ServiceValidationErrorModel()
+            ClientUnauthorizedException exception = thrown(ClientUnauthorizedException)
+            exception.response.statusCode() == 401
+            exception.serviceError == new ServiceErrorModel(
+                message: 'Service returned response with status 401'
+            )
 
         where:
             _testcase                   | _featureGroupKey | _featureKey
@@ -75,7 +76,7 @@ class GetFeatureSpec extends Specification implements FeaturesServiceIntegratorP
             isFeaturesServiceAvailable()
 
         when: 'GET /groups/{feature_group_key}/features/{feature_key}'
-            featuresServiceIntegrator().features().getFeature('group-key', 'key').blockingGet()
+            featuresServiceIntegrator().features().getFeature(featuresDefaultUser(), 'group-key', 'key').blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

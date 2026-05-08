@@ -14,7 +14,7 @@ dependencies {
     implementation 'dk.sunepoulsen.tes-foundation:tes-rest-models:3.0.0-SNAPSHOT'
     implementation 'dk.sunepoulsen.tes-foundation:tes-spring-boot-backend-logging:3.0.0-SNAPSHOT'
     implementation 'dk.sunepoulsen.tes-foundation:tes-spring-boot-rest-logic:3.0.0-SNAPSHOT'
-    implementation 'dk.sunepoulsen.tes-foundation:tes-spring-boot-security:3.0.0-SNAPSHOT'
+    implementation 'dk.sunepoulsen.tes-foundation:tes-spring-boot-keycloak:1.0.0-SNAPSHOT'
 
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -22,7 +22,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-liquibase'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.2'

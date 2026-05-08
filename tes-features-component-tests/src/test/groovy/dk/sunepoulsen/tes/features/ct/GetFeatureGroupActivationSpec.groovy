@@ -1,14 +1,14 @@
 package dk.sunepoulsen.tes.features.ct
 
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.deployment.FeaturesMockUsers
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.FeatureActivation
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
-import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientBadRequestException
 import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientNotFoundException
+import dk.sunepoulsen.tes.rest.integrations.exceptions.ClientUnauthorizedException
 import dk.sunepoulsen.tes.rest.models.ServiceErrorModel
-import dk.sunepoulsen.tes.rest.models.ServiceValidationErrorModel
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
@@ -17,7 +17,7 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 @Slf4j
-class GetFeatureGroupActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class GetFeatureGroupActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider, FeaturesMockUsers {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
@@ -29,17 +29,17 @@ class GetFeatureGroupActivationSpec extends Specification implements FeaturesSer
 
         and: 'valid feature group'
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         and: 'add an extra activation'
             FeatureActivation newActivation = new FeatureActivation(
                 enabled: false,
                 datetime: ZonedDateTime.now(ZoneId.of('Z')).plusDays(1).truncatedTo(ChronoUnit.MICROS)
             )
-            FeatureActivation createdActivation = featuresServiceIntegrator().featureGroups().activations().createFeatureGroupActivation(registeredFeatureGroup.key, newActivation).blockingGet()
+            FeatureActivation createdActivation = featuresServiceIntegrator().featureGroups().activations().createFeatureGroupActivation(featuresDefaultUser(), registeredFeatureGroup.key, newActivation).blockingGet()
 
         when: 'GET /groups/{feature_group_key}/activations/{activation_id}'
-            FeatureActivation result = featuresServiceIntegrator().featureGroups().activations().getFeatureGroupActivation(registeredFeatureGroup.key, createdActivation.id).blockingGet()
+            FeatureActivation result = featuresServiceIntegrator().featureGroups().activations().getFeatureGroupActivation(featuresDefaultUser(), registeredFeatureGroup.key, createdActivation.id).blockingGet()
 
         then: 'Verify response'
             result.id == createdActivation.id
@@ -52,12 +52,14 @@ class GetFeatureGroupActivationSpec extends Specification implements FeaturesSer
             isFeaturesServiceAvailable()
 
         when: 'Call GET /groups/{feature_group_key}/activations/{activation_id}'
-            featuresServiceIntegrator().featureGroups().activations().getFeatureGroupActivation('wrong;key', 999).blockingGet()
+            featuresServiceIntegrator().featureGroups().activations().getFeatureGroupActivation(featuresDefaultUser(), 'wrong;key', 999).blockingGet()
 
         then: 'Verify response'
-            ClientBadRequestException exception = thrown(ClientBadRequestException)
-            exception.response.statusCode() == 400
-            exception.serviceError == new ServiceValidationErrorModel()
+            ClientUnauthorizedException exception = thrown(ClientUnauthorizedException)
+            exception.response.statusCode() == 401
+            exception.serviceError == new ServiceErrorModel(
+                message: 'Service returned response with status 401'
+            )
     }
 
     void "GET /groups/{feature_group_key}/activations/{activation_id} returns not found"() {
@@ -66,10 +68,10 @@ class GetFeatureGroupActivationSpec extends Specification implements FeaturesSer
 
         and: 'valid feature group'
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         when: 'GET /groups/{feature_group_key}/activations/{activation_id} with non-existing activation id'
-            featuresServiceIntegrator().featureGroups().activations().getFeatureGroupActivation(registeredFeatureGroup.key, 999).blockingGet()
+            featuresServiceIntegrator().featureGroups().activations().getFeatureGroupActivation(featuresDefaultUser(), registeredFeatureGroup.key, 999).blockingGet()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

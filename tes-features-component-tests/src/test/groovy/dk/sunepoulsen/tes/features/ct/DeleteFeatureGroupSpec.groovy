@@ -1,6 +1,7 @@
 package dk.sunepoulsen.tes.features.ct
 
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.deployment.FeaturesMockUsers
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.RegisterFeatureGroup
@@ -9,7 +10,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class DeleteFeatureGroupSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class DeleteFeatureGroupSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider, FeaturesMockUsers {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
@@ -23,10 +24,10 @@ class DeleteFeatureGroupSpec extends Specification implements FeaturesServiceInt
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
 
         and:
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         when: 'DELETE /groups/{feature_group_key}'
-            Void result = featuresServiceIntegrator().featureGroups().deleteFeatureGroup(registeredFeatureGroup.key).blockingAwait()
+            Void result = featuresServiceIntegrator().featureGroups().deleteFeatureGroup(featuresDefaultUser(), registeredFeatureGroup.key).blockingAwait()
 
         then: 'Verify response'
             result == null
@@ -37,7 +38,7 @@ class DeleteFeatureGroupSpec extends Specification implements FeaturesServiceInt
             isFeaturesServiceAvailable()
 
         when: 'DELETE /groups/{feature_group_key}'
-            featuresServiceIntegrator().featureGroups().deleteFeatureGroup('some-key').blockingAwait()
+            featuresServiceIntegrator().featureGroups().deleteFeatureGroup(featuresDefaultUser(), 'some-key').blockingAwait()
 
         then: 'Verify response'
             ClientNotFoundException exception = thrown(ClientNotFoundException)

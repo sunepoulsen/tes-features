@@ -28,3 +28,13 @@ spring:
     username: sa
     password: sa
     driver-class-name: org.h2.Driver
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://wiremock:8080/keycloak/realms/tes-foundation
+
+oauth2:
+  security:
+    keycloak:
+      client-id: 'tes-foundation'

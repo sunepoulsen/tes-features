@@ -26,12 +26,12 @@ class FeatureGroupsIntegratorSpec extends Specification {
 
     void "Get feature groups with OK"() {
         when:
-            Single<EnvelopeFeatureGroup> result = sut.getFeatureGroups()
+            Single<EnvelopeFeatureGroup> result = sut.getFeatureGroups('token')
 
         then:
             result.blockingGet().results.first.key == 'group-key'
 
-            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}", EnvelopeFeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}", 'token', EnvelopeFeatureGroup) >> CompletableFuture.supplyAsync {
                 new EnvelopeFeatureGroup(
                     results: [
                         new FeatureGroup(
@@ -45,7 +45,7 @@ class FeatureGroupsIntegratorSpec extends Specification {
 
     void "Get feature groups returns Internal Server Error"() {
         when:
-            sut.getFeatureGroups().blockingGet()
+            sut.getFeatureGroups('token').blockingGet()
 
         then:
             ClientInternalServerException ex = thrown(ClientInternalServerException)
@@ -53,7 +53,7 @@ class FeatureGroupsIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}", EnvelopeFeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}", 'token', EnvelopeFeatureGroup) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',
@@ -64,12 +64,12 @@ class FeatureGroupsIntegratorSpec extends Specification {
 
     void "Get feature group with OK"() {
         when:
-            Single<FeatureGroup> result = sut.getFeatureGroup('group-key')
+            Single<FeatureGroup> result = sut.getFeatureGroup('token', 'group-key')
 
         then:
             result.blockingGet().key == 'group-key'
 
-            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", FeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", 'token', FeatureGroup) >> CompletableFuture.supplyAsync {
                 new FeatureGroup(
                     key: 'group-key'
                 )
@@ -79,7 +79,7 @@ class FeatureGroupsIntegratorSpec extends Specification {
 
     void "Get feature group Internal Server Error"() {
         when:
-            sut.getFeatureGroup('group-key').blockingGet()
+            sut.getFeatureGroup('token', 'group-key').blockingGet()
 
         then:
             ClientInternalServerException ex = thrown(ClientInternalServerException)
@@ -87,7 +87,7 @@ class FeatureGroupsIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", FeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", 'token', FeatureGroup) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',
@@ -103,12 +103,12 @@ class FeatureGroupsIntegratorSpec extends Specification {
             )
 
         when:
-            Single<FeatureGroup> result = sut.patchFeatureGroup('group-key', newValues)
+            Single<FeatureGroup> result = sut.patchFeatureGroup('token', 'group-key', newValues)
 
         then:
             result.blockingGet().key == 'group-key'
 
-            1 * httpClient.patch("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", newValues, FeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.patch("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", 'token', newValues, FeatureGroup) >> CompletableFuture.supplyAsync {
                 new FeatureGroup(
                     key: 'group-key'
                 )
@@ -123,7 +123,7 @@ class FeatureGroupsIntegratorSpec extends Specification {
             )
 
         when:
-            sut.patchFeatureGroup('group-key', newValues).blockingGet()
+            sut.patchFeatureGroup('token', 'group-key', newValues).blockingGet()
 
         then:
             ClientInternalServerException ex = thrown(ClientInternalServerException)
@@ -131,7 +131,7 @@ class FeatureGroupsIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.patch("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", newValues, FeatureGroup) >> CompletableFuture.supplyAsync {
+            1 * httpClient.patch("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", 'token', newValues, FeatureGroup) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',
@@ -142,18 +142,18 @@ class FeatureGroupsIntegratorSpec extends Specification {
 
     void "Delete feature group with OK"() {
         when:
-            sut.deleteFeatureGroup('group-key').blockingAwait()
+            sut.deleteFeatureGroup('token', 'group-key').blockingAwait()
 
         then:
             noExceptionThrown()
 
-            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key") >> CompletableFuture.completedFuture(null)
+            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", 'token') >> CompletableFuture.completedFuture(null)
             0 * _
     }
 
     void "Delete feature group with not found"() {
         when:
-            sut.deleteFeatureGroup('group-key').blockingAwait()
+            sut.deleteFeatureGroup('token', 'group-key').blockingAwait()
 
         then:
             ClientNotFoundException ex = thrown(ClientNotFoundException)
@@ -161,7 +161,7 @@ class FeatureGroupsIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key") >> CompletableFuture.supplyAsync {
+            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key", 'token') >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientNotFoundException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',

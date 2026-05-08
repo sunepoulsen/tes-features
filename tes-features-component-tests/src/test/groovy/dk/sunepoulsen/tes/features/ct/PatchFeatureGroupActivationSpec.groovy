@@ -2,6 +2,7 @@ package dk.sunepoulsen.tes.features.ct
 
 import dk.sunepoulsen.tes.data.generators.NumberGenerators
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.deployment.FeaturesMockUsers
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.FeatureActivation
@@ -15,7 +16,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class PatchFeatureGroupActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class PatchFeatureGroupActivationSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider, FeaturesMockUsers {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
@@ -27,14 +28,14 @@ class PatchFeatureGroupActivationSpec extends Specification implements FeaturesS
 
         and: 'valid feature group'
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         and: 'select an feature group activation to patch'
             Integer activationIndex = NumberGenerators.integerGenerator(0, registeredFeatureGroup.activations.size()).generate()
             FeatureActivation featureActivation = registeredFeatureGroup.activations[activationIndex]
 
         when: 'PATCH /groups/{feature_group_key}/activations/{activation_id}'
-            FeatureActivation result = featuresServiceIntegrator().featureGroups().activations().patchFeatureGroupActivation(registeredFeatureGroup.key, featureActivation.id, new FeatureActivation(
+            FeatureActivation result = featuresServiceIntegrator().featureGroups().activations().patchFeatureGroupActivation(featuresDefaultUser(), registeredFeatureGroup.key, featureActivation.id, new FeatureActivation(
                 enabled: !featureActivation.enabled
             )).blockingGet()
 
@@ -49,7 +50,7 @@ class PatchFeatureGroupActivationSpec extends Specification implements FeaturesS
             isFeaturesServiceAvailable()
 
         when: 'PATCH /groups/{feature_group_key}/activations/{activation_id}'
-            featuresServiceIntegrator().featureGroups().activations().patchFeatureGroupActivation('feature-group-key', 999, new FeatureActivation(
+            featuresServiceIntegrator().featureGroups().activations().patchFeatureGroupActivation(featuresDefaultUser(), 'feature-group-key', 999, new FeatureActivation(
                 id: 37L
             )).blockingGet()
 
@@ -73,10 +74,10 @@ class PatchFeatureGroupActivationSpec extends Specification implements FeaturesS
 
         and: 'valid feature group'
             RegisterFeatureGroup registeredFeatureGroup = new RegisterFeatureGroupDataGenerator().generate()
-            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(registeredFeatureGroup).blockingGet()
+            registeredFeatureGroup = featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), registeredFeatureGroup).blockingGet()
 
         when: 'PATCH /groups/{feature_group_key}/activations/{activation_id}'
-            FeatureActivation result = featuresServiceIntegrator().featureGroups().activations().patchFeatureGroupActivation(registeredFeatureGroup.key, 999, new FeatureActivation(
+            FeatureActivation result = featuresServiceIntegrator().featureGroups().activations().patchFeatureGroupActivation(featuresDefaultUser(), registeredFeatureGroup.key, 999, new FeatureActivation(
                 enabled: false
             )).blockingGet()
 

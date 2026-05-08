@@ -2,6 +2,7 @@ package dk.sunepoulsen.tes.features.ct
 
 
 import dk.sunepoulsen.tes.features.data.generators.RegisterFeatureGroupDataGenerator
+import dk.sunepoulsen.tes.features.deployment.FeaturesMockUsers
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
 import dk.sunepoulsen.tes.features.deployment.FeaturesTestsIntegratorProvider
 import dk.sunepoulsen.tes.features.model.EnvelopeFeatureGroup
@@ -10,7 +11,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class GetFeatureGroupsSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider {
+class GetFeatureGroupsSpec extends Specification implements FeaturesServiceIntegratorProvider, FeaturesTestsIntegratorProvider, FeaturesMockUsers {
 
     void setup() {
         featuresTestsIntegrator().deletePersistence().blockingAwait()
@@ -29,11 +30,11 @@ class GetFeatureGroupsSpec extends Specification implements FeaturesServiceInteg
 
         and:
             featureGroups.each {
-                featuresServiceIntegrator().features().registerFeatures(it).blockingGet()
+                featuresServiceIntegrator().features().registerFeatures(featuresDefaultUser(), it).blockingGet()
             }
 
         when: 'GET /groups'
-            EnvelopeFeatureGroup result = featuresServiceIntegrator().featureGroups().getFeatureGroups().blockingGet()
+            EnvelopeFeatureGroup result = featuresServiceIntegrator().featureGroups().getFeatureGroups(featuresDefaultUser()).blockingGet()
 
         then: 'Verify response'
             with(result) {

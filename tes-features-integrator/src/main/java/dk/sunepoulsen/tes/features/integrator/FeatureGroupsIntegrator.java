@@ -28,8 +28,8 @@ public class FeatureGroupsIntegrator extends AbstractIntegrator {
      *
      * @return a {@link Single} with all feature groups
      */
-    public Single<EnvelopeFeatureGroup> getFeatureGroups() {
-        return Single.fromFuture(this.httpClient.get(FEATURE_GROUPS_ENDPOINT_PATH, EnvelopeFeatureGroup.class))
+    public Single<EnvelopeFeatureGroup> getFeatureGroups(final String authorizationToken) {
+        return Single.fromFuture(this.httpClient.get(FEATURE_GROUPS_ENDPOINT_PATH, authorizationToken, EnvelopeFeatureGroup.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -39,13 +39,13 @@ public class FeatureGroupsIntegrator extends AbstractIntegrator {
      * @param key the feature group key
      * @return a {@link Single} with the feature group
      */
-    public Single<FeatureGroup> getFeatureGroup(final String key) {
+    public Single<FeatureGroup> getFeatureGroup(final String authorizationToken, final String key) {
         String url = String.format(URI_PATH_WITH_ID_FORMAT,
             FEATURE_GROUPS_ENDPOINT_PATH,
             URLEncoder.encode(key, StandardCharsets.UTF_8)
         );
 
-        return Single.fromFuture(this.httpClient.get(url, FeatureGroup.class))
+        return Single.fromFuture(this.httpClient.get(url, authorizationToken, FeatureGroup.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -56,13 +56,13 @@ public class FeatureGroupsIntegrator extends AbstractIntegrator {
      * @param featureGroup the feature group values to patch
      * @return a {@link Single} with the patched feature group
      */
-    public Single<FeatureGroup> patchFeatureGroup(final String key, final FeatureGroup featureGroup) {
+    public Single<FeatureGroup> patchFeatureGroup(final String authorizationToken, final String key, final FeatureGroup featureGroup) {
         String url = String.format(URI_PATH_WITH_ID_FORMAT,
             FEATURE_GROUPS_ENDPOINT_PATH,
             URLEncoder.encode(key, StandardCharsets.UTF_8)
         );
 
-        return Single.fromFuture(this.httpClient.patch(url, featureGroup, FeatureGroup.class))
+        return Single.fromFuture(this.httpClient.patch(url, authorizationToken, featureGroup, FeatureGroup.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -72,13 +72,13 @@ public class FeatureGroupsIntegrator extends AbstractIntegrator {
      * @param key the feature group key
      * @return a {@link Single} with no content
      */
-    public Completable deleteFeatureGroup(final String key) {
+    public Completable deleteFeatureGroup(final String authorizationToken, final String key) {
         String url = String.format(URI_PATH_WITH_ID_FORMAT,
             FEATURE_GROUPS_ENDPOINT_PATH,
             URLEncoder.encode(key, StandardCharsets.UTF_8)
         );
 
-        return Completable.fromCompletionStage(this.httpClient.delete(url))
+        return Completable.fromCompletionStage(this.httpClient.delete(url, authorizationToken))
             .onErrorResumeNext(this::mapClientExceptionsAsCompletable);
     }
 

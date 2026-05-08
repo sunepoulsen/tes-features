@@ -31,12 +31,12 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
             )
 
         when:
-            Single<FeatureActivation> result = sut.createFeatureGroupActivation('group-key', newActivation)
+            Single<FeatureActivation> result = sut.createFeatureGroupActivation('token', 'group-key', newActivation)
 
         then:
             result.blockingGet().id == 27L
 
-            1 * httpClient.post("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations", newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
+            1 * httpClient.post("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations", 'token', newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
                 new FeatureActivation(
                     id: 27L,
                     enabled: true,
@@ -54,7 +54,7 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
             )
 
         when:
-            sut.createFeatureGroupActivation('group-key', newActivation).blockingGet()
+            sut.createFeatureGroupActivation('token', 'group-key', newActivation).blockingGet()
 
         then:
             ClientInternalServerException ex = thrown(ClientInternalServerException)
@@ -62,7 +62,7 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.post("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations", newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
+            1 * httpClient.post("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations", 'token', newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',
@@ -73,12 +73,12 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
 
     void "Get feature group activations returns OK"() {
         when:
-            Single<EnvelopeFeatureActivation> result = sut.getFeatureGroupActivations('group-key')
+            Single<EnvelopeFeatureActivation> result = sut.getFeatureGroupActivations('token', 'group-key')
 
         then:
             result.blockingGet().results.first.id == 27L
 
-            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations", EnvelopeFeatureActivation) >> CompletableFuture.supplyAsync {
+            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations", 'token', EnvelopeFeatureActivation) >> CompletableFuture.supplyAsync {
                 new EnvelopeFeatureActivation(
                     results: [
                         new FeatureActivation(
@@ -94,7 +94,7 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
 
     void "Get feature group activations returns Internal Server Error"() {
         when:
-            sut.getFeatureGroupActivations('group-key').blockingGet()
+            sut.getFeatureGroupActivations('token', 'group-key').blockingGet()
 
         then:
             ClientInternalServerException ex = thrown(ClientInternalServerException)
@@ -102,7 +102,7 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations", EnvelopeFeatureActivation) >> CompletableFuture.supplyAsync {
+            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations", 'token', EnvelopeFeatureActivation) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',
@@ -113,12 +113,12 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
 
     void "Get feature group activation returns OK"() {
         when:
-            Single<FeatureActivation> result = sut.getFeatureGroupActivation('group-key', 27L)
+            Single<FeatureActivation> result = sut.getFeatureGroupActivation('token', 'group-key', 27L)
 
         then:
             result.blockingGet().id == 27L
 
-            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27", FeatureActivation) >> CompletableFuture.supplyAsync {
+            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27", 'token', FeatureActivation) >> CompletableFuture.supplyAsync {
                 new FeatureActivation(
                     id: 27L,
                     enabled: true,
@@ -130,7 +130,7 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
 
     void "Get feature group activation returns Internal Server Error"() {
         when:
-            sut.getFeatureGroupActivation('group-key', 27L).blockingGet()
+            sut.getFeatureGroupActivation('token', 'group-key', 27L).blockingGet()
 
         then:
             ClientInternalServerException ex = thrown(ClientInternalServerException)
@@ -138,7 +138,7 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27", FeatureActivation) >> CompletableFuture.supplyAsync {
+            1 * httpClient.get("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27", 'token', FeatureActivation) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',
@@ -152,12 +152,12 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
             FeatureActivation newActivation = new FeatureActivation(enabled: false)
 
         when:
-            Single<FeatureActivation> result = sut.patchFeatureGroupActivation('group-key', 27L, newActivation)
+            Single<FeatureActivation> result = sut.patchFeatureGroupActivation('token', 'group-key', 27L, newActivation)
 
         then:
             result.blockingGet().id == 27L
 
-            1 * httpClient.patch("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27", newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
+            1 * httpClient.patch("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27", 'token', newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
                 new FeatureActivation(
                     id: 27L,
                     enabled: false,
@@ -172,7 +172,7 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
             FeatureActivation newActivation = new FeatureActivation(enabled: false)
 
         when:
-            sut.patchFeatureGroupActivation('group-key', 27L, newActivation).blockingGet()
+            sut.patchFeatureGroupActivation('token', 'group-key', 27L, newActivation).blockingGet()
 
         then:
             ClientInternalServerException ex = thrown(ClientInternalServerException)
@@ -180,7 +180,7 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.patch("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27", newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
+            1 * httpClient.patch("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27", 'token', newActivation, FeatureActivation) >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',
@@ -191,18 +191,18 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
 
     void "Delete feature group activation returns OK"() {
         when:
-            sut.deleteFeatureGroupActivation('group-key', 27L).blockingAwait()
+            sut.deleteFeatureGroupActivation('token', 'group-key', 27L).blockingAwait()
 
         then:
             noExceptionThrown()
 
-            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27") >> CompletableFuture.completedFuture(null)
+            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27", 'token') >> CompletableFuture.completedFuture(null)
             0 * _
     }
 
     void "Patch feature group activation returns Internal Server Error"() {
         when:
-            sut.deleteFeatureGroupActivation('group-key', 27L).blockingAwait()
+            sut.deleteFeatureGroupActivation('token', 'group-key', 27L).blockingAwait()
 
         then:
             ClientInternalServerException ex = thrown(ClientInternalServerException)
@@ -210,7 +210,7 @@ class FeatureGroupActivationsIntegratorSpec extends Specification {
             ex.serviceError.param == 'param'
             ex.serviceError.message == 'message'
 
-            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27") >> CompletableFuture.supplyAsync {
+            1 * httpClient.delete("${FeatureGroupsIntegrator.FEATURE_GROUPS_ENDPOINT_PATH}/group-key/activations/27", 'token') >> CompletableFuture.supplyAsync {
                 throw new ExecutionException("message", new ClientInternalServerException(Mock(HttpResponse), new ServiceErrorModel(
                     code: 'code',
                     param: 'param',

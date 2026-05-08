@@ -25,10 +25,10 @@ public class FeatureGroupActivationsIntegrator extends AbstractIntegrator {
      * @param featureActivation the activation to create
      * @return a {@link Single} with the created activation
      */
-    public Single<FeatureActivation> createFeatureGroupActivation(final String featureGroupKey, final FeatureActivation featureActivation) {
+    public Single<FeatureActivation> createFeatureGroupActivation(final String authorizationToken, final String featureGroupKey, final FeatureActivation featureActivation) {
         String url = String.format(FEATURE_GROUP_ACTIVATIONS_ENDPOINT_PATH, URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8));
 
-        return Single.fromFuture(this.httpClient.post(url, featureActivation, FeatureActivation.class))
+        return Single.fromFuture(this.httpClient.post(url, authorizationToken, featureActivation, FeatureActivation.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -38,10 +38,10 @@ public class FeatureGroupActivationsIntegrator extends AbstractIntegrator {
      * @param featureGroupKey the feature group key
      * @return a {@link Single} with the activations
      */
-    public Single<EnvelopeFeatureActivation> getFeatureGroupActivations(final String featureGroupKey) {
+    public Single<EnvelopeFeatureActivation> getFeatureGroupActivations(final String authorizationToken, final String featureGroupKey) {
         String url = String.format(FEATURE_GROUP_ACTIVATIONS_ENDPOINT_PATH, URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8));
 
-        return Single.fromFuture(this.httpClient.get(url, EnvelopeFeatureActivation.class))
+        return Single.fromFuture(this.httpClient.get(url, authorizationToken, EnvelopeFeatureActivation.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -52,12 +52,12 @@ public class FeatureGroupActivationsIntegrator extends AbstractIntegrator {
      * @param activationId    the activation id
      * @return a {@link Single} with the activation
      */
-    public Single<FeatureActivation> getFeatureGroupActivation(final String featureGroupKey, final Long activationId) {
+    public Single<FeatureActivation> getFeatureGroupActivation(final String authorizationToken, final String featureGroupKey, final Long activationId) {
         String url = String.format(FEATURE_GROUP_ACTIVATIONS_ENDPOINT_PATH + "/%s",
             URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
             URLEncoder.encode(activationId.toString(), StandardCharsets.UTF_8));
 
-        return Single.fromFuture(this.httpClient.get(url, FeatureActivation.class))
+        return Single.fromFuture(this.httpClient.get(url, authorizationToken, FeatureActivation.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -69,12 +69,12 @@ public class FeatureGroupActivationsIntegrator extends AbstractIntegrator {
      * @param newActivation   the activation to patch
      * @return the activation
      */
-    public Single<FeatureActivation> patchFeatureGroupActivation(final String featureGroupKey, final Long activationId, final FeatureActivation newActivation) {
+    public Single<FeatureActivation> patchFeatureGroupActivation(final String authorizationToken, final String featureGroupKey, final Long activationId, final FeatureActivation newActivation) {
         String url = String.format(FEATURE_GROUP_ACTIVATIONS_ENDPOINT_PATH + "/%s",
             URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
             URLEncoder.encode(activationId.toString(), StandardCharsets.UTF_8));
 
-        return Single.fromFuture(this.httpClient.patch(url, newActivation, FeatureActivation.class))
+        return Single.fromFuture(this.httpClient.patch(url, authorizationToken, newActivation, FeatureActivation.class))
             .onErrorResumeNext(this::mapClientExceptions);
     }
 
@@ -85,12 +85,12 @@ public class FeatureGroupActivationsIntegrator extends AbstractIntegrator {
      * @param activationId    the activation id
      * @return A {@code Completable} for the async operation.
      */
-    public Completable deleteFeatureGroupActivation(final String featureGroupKey, final Long activationId) {
+    public Completable deleteFeatureGroupActivation(final String authorizationToken, final String featureGroupKey, final Long activationId) {
         String url = String.format(FEATURE_GROUP_ACTIVATIONS_ENDPOINT_PATH + "/%s",
             URLEncoder.encode(featureGroupKey, StandardCharsets.UTF_8),
             URLEncoder.encode(activationId.toString(), StandardCharsets.UTF_8));
 
-        return Completable.fromCompletionStage(this.httpClient.delete(url))
+        return Completable.fromCompletionStage(this.httpClient.delete(url, authorizationToken))
             .onErrorResumeNext(this::mapClientExceptionsAsCompletable);
     }
 
