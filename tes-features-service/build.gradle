@@ -45,6 +45,23 @@ dependencies {
     // Tech Easy Solutions
     testImplementation 'dk.sunepoulsen.tes-foundation:tes-data-generators:3.0.0-SNAPSHOT'
     testImplementation project(':tes-features-data-generators')
+
+    // Local Execution
+    testImplementation 'org.springframework.boot:spring-boot-devtools'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+
+    testImplementation 'dk.sunepoulsen.tes-foundation:tes-wiremock-deployment:1.0.0-SNAPSHOT'
+    testImplementation 'dk.sunepoulsen.tes-foundation:tes-keycloak-wiremocks:1.0.0-SNAPSHOT'
+}
+
+tasks.register("localDev", org.springframework.boot.gradle.tasks.run.BootRun) {
+    group = "application"
+    description = "Runs LocalDevApplication with test runtime classpath"
+    mainClass = "dk.sunepoulsen.tes.features.service.LocalDevApplication"
+    classpath = sourceSets.test.runtimeClasspath
+    args = ["--spring.profiles.active=local,tests"]
 }
 
 jib {
