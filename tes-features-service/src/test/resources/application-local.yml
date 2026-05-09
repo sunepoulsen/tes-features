@@ -4,6 +4,14 @@
 
 logging:
   level:
+    org.springframework: INFO
+    org.springframework.boot: INFO
+    org.springframework.security: INFO
+    org.testcontainers: INFO
+    com.zaxxer.hikari: INFO
+    org.apache.velocity: INFO
+    com.github.dockerjava.zerodep: INFO
+    org.hibernate: WARN
     dk.sunepoulsen.tes: DEBUG
   file:
     name: @projectBuildDir@/logs/@projectName@.log

@@ -1,6 +1,7 @@
 package dk.sunepoulsen.tes.features.deployment
 
 import dk.sunepoulsen.tes.keycloak.wiremock.KeycloakJwtUser
+import dk.sunepoulsen.tes.keycloak.wiremock.KeycloakMocksProvider
 import dk.sunepoulsen.tes.keycloak.wiremock.KeycloakWiremock
 import dk.sunepoulsen.tes.wiremock.deployment.WiremockServerProperties
 

@@ -19,11 +19,15 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
     "dk.sunepoulsen.tes"
 })
 public class Application {
+
+    private Application() {
+    }
+
     /**
      * Main function.
      * @param args No used, but passed to <code>SpringApplication.run()</code>
      */
-    public static void main( String[] args ) {
+    static void main(String[] args) {
         SpringApplication.run( Application.class, args );
     }
 }
