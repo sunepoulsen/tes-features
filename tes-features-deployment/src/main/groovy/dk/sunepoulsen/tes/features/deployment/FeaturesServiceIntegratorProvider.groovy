@@ -19,17 +19,20 @@ trait FeaturesServiceIntegratorProvider implements SystemUnderTestProvider {
         ).container().isHostAccessible()
     }
 
+    SutHttpService featuresService() {
+        PropertiesResource propertiesResource = new PropertiesResource(FeaturesDeployment.class.getResourceAsStream("/features-deployment.properties"))
+
+        return sut().findService(propertiesResource.getProperty('features.service.key'), SutHttpService).orElseThrow(() ->
+            new IllegalStateException("Service '${propertiesResource.getProperty('features.service.key')}' is not deployed")
+        )
+    }
+
     FeaturesServiceIntegrator featuresServiceIntegrator() {
         if (featuresIntegratorInstance != null) {
             return featuresIntegratorInstance
         }
 
-        PropertiesResource propertiesResource = new PropertiesResource(FeaturesDeployment.class.getResourceAsStream("/features-deployment.properties"))
-
-        SutHttpService featuresService = sut().findService(propertiesResource.getProperty('features.service.key'), SutHttpService).orElseThrow(() ->
-            new IllegalStateException("Service '${propertiesResource.getProperty('features.service.key')}' is not deployed")
-        )
-        TechEasySolutionsClient client = new TechEasySolutionsClient(featuresService.baseUrl(8080), clientConfig())
+        TechEasySolutionsClient client = new TechEasySolutionsClient(featuresService().baseUrl(8080), clientConfig())
 
         featuresIntegratorInstance = new FeaturesServiceIntegrator(client)
         return featuresIntegratorInstance

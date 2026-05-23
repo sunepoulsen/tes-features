@@ -22,6 +22,10 @@ server:
 
 spring:
   jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
     show-sql: true
   datasource:
     url: jdbc:h2:mem:test-db;INIT=CREATE SCHEMA IF NOT EXISTS features;DB_CLOSE_DELAY=-1

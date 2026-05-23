@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -24,7 +23,6 @@ import java.time.ZonedDateTime
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import([FeatureGroupPersistenceTestService])
 @ActiveProfiles(['ut'])
-@Transactional
 class FeaturePersistenceSpec extends Specification {
 
     @Autowired
@@ -59,7 +57,6 @@ class FeaturePersistenceSpec extends Specification {
                 .description(textGenerator.generate())
                 .build()
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             IllegalArgumentException ex = thrown(IllegalArgumentException)
@@ -79,7 +76,6 @@ class FeaturePersistenceSpec extends Specification {
                 .description(textGenerator.generate())
                 .build()
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             IllegalArgumentException ex = thrown(IllegalArgumentException)
@@ -103,7 +99,6 @@ class FeaturePersistenceSpec extends Specification {
                 .description(textGenerator.generate())
                 .build()
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             ResourceNotFoundException ex = thrown(ResourceNotFoundException)
@@ -140,7 +135,6 @@ class FeaturePersistenceSpec extends Specification {
 
         when:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(feature).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             createdFeature.id > 0
@@ -160,7 +154,7 @@ class FeaturePersistenceSpec extends Specification {
             featureActivation.id > 0
             featureActivation.feature.id == createdFeature.id
             featureActivation.enabled == feature.activations.first.enabled
-            featureActivation.dateTime == feature.activations.first.dateTime
+            featureActivation.dateTime.toInstant() == feature.activations.first.dateTime.toInstant()
     }
 
     void "Tests register of feature successfully with feature that does exist"() {
@@ -214,7 +208,6 @@ class FeaturePersistenceSpec extends Specification {
 
         when:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(newFeature).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             createdFeature == existingFeature
@@ -257,7 +250,6 @@ class FeaturePersistenceSpec extends Specification {
 
         when:
             this.sut.registerFeature(feature)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             DataIntegrityViolationException ex = thrown(DataIntegrityViolationException)
@@ -336,7 +328,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeature(feature)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureEntity> result = sut.getFeature(featureGroupEntity.key, 'wrong-key')
@@ -364,7 +355,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureEntity> result = sut.getFeature(_argFeatureGroupKey, _argFeatureKey)
@@ -402,7 +392,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureEntity> patchedFeature = this.sut.patchFeature(_argFeatureGroupKey, _argFeatureKey, new FeatureEntity(
@@ -446,7 +435,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeature(featureEntity)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             this.sut.patchFeature(_argFeatureGroupKey, _argFeatureKey, new FeatureEntity())
@@ -480,15 +468,13 @@ class FeaturePersistenceSpec extends Specification {
                 .build()
 
         and:
-            featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
+            FeatureEntity createFeatureEntity = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
 
         when:
             this.sut.deleteFeature(_argFeatureGroupKey, _argFeatureKey)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
-            featureRepository.count() == 0
+            featureRepository.existsById(createFeatureEntity.id)
 
         where:
             _testcase                         | _featureGroupKey  | _featureKey  | _argFeatureGroupKey             | _argFeatureKey
@@ -518,7 +504,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeature(featureEntity)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             this.sut.deleteFeature(_argFeatureGroupKey, _argFeatureKey)
@@ -552,7 +537,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         and:
             ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
@@ -566,7 +550,6 @@ class FeaturePersistenceSpec extends Specification {
                     dateTime: activationDateTime
                 )
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             result.id > 0
@@ -612,7 +595,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             this.sut.createActivation(
@@ -622,7 +604,6 @@ class FeaturePersistenceSpec extends Specification {
                     enabled: true
                 )
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             DataIntegrityViolationException ex = thrown(DataIntegrityViolationException)
@@ -647,7 +628,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         and:
             ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
@@ -659,7 +639,6 @@ class FeaturePersistenceSpec extends Specification {
                     dateTime: activationDateTime
                 )
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             List<FeatureActivationEntity> result = this.sut.getActivations(featureGroupEntity.key, createdFeature.key)
@@ -667,7 +646,7 @@ class FeaturePersistenceSpec extends Specification {
         then:
             result.size() == 1
             result.first().enabled == false
-            result.first().dateTime == activationDateTime
+            result.first().dateTime.toInstant() == activationDateTime.toInstant()
     }
 
     void "Tests get activations for feature that does not exist"() {
@@ -698,7 +677,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         and:
             ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
@@ -710,7 +688,6 @@ class FeaturePersistenceSpec extends Specification {
                     dateTime: activationDateTime
                 )
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureActivationEntity> result = this.sut.getActivation(featureGroupEntity.key, createdFeature.key, activation.id)
@@ -718,7 +695,7 @@ class FeaturePersistenceSpec extends Specification {
         then:
             result.isPresent()
             result.get().enabled == false
-            result.get().dateTime == activationDateTime
+            result.get().dateTime.toInstant() == activationDateTime.toInstant()
     }
 
     void "Tests get specific activation for feature that does not exist"() {
@@ -749,7 +726,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureActivationEntity> result = this.sut.getActivation(featureGroupEntity.key, createdFeature.key, 999)
@@ -777,7 +753,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         and:
             ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
@@ -789,7 +764,6 @@ class FeaturePersistenceSpec extends Specification {
                     dateTime: activationDateTime
                 )
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureActivationEntity> patchedActivation = this.sut.patchActivation(featureGroupEntity.key, createdFeature.key, createdActivation.id, new FeatureActivationEntity(
@@ -800,7 +774,7 @@ class FeaturePersistenceSpec extends Specification {
             !patchedActivation.empty
             with(patchedActivation.get()) {
                 assert it.enabled == false
-                assert it.dateTime == createdActivation.dateTime
+                assert it.dateTime.toInstant() == createdActivation.dateTime.toInstant()
             }
 
         where:
@@ -831,7 +805,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeature(featureEntity)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         and:
             ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
@@ -843,7 +816,6 @@ class FeaturePersistenceSpec extends Specification {
                     dateTime: activationDateTime
                 )
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             this.sut.patchActivation(_argFeatureGroupKey, _argFeatureKey, createdActivation.id, new FeatureActivationEntity())
@@ -877,7 +849,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeature(featureEntity)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             this.sut.patchActivation(featureGroupEntity.key, featureEntity.key, 999, new FeatureActivationEntity())
@@ -892,7 +863,7 @@ class FeaturePersistenceSpec extends Specification {
     void "Tests delete feature activation that exist: #_testcase"() {
         given:
             FeatureGroupEntity featureGroupEntity = featureGroupRepository.save(FeatureGroupEntity.builder()
-                .key(textGenerator.generate())
+                .key(_featureGroupKey)
                 .name(textGenerator.generate())
                 .description(textGenerator.generate())
                 .build()
@@ -900,14 +871,13 @@ class FeaturePersistenceSpec extends Specification {
 
             FeatureEntity featureEntity = FeatureEntity.builder()
                 .featureGroup(featureGroupEntity)
-                .key(textGenerator.generate())
+                .key(_featureKey)
                 .name(textGenerator.generate())
                 .description(textGenerator.generate())
                 .build()
 
         and:
             FeatureEntity createdFeature = featureRepository.findById(this.sut.registerFeature(featureEntity).id).get()
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         and:
             ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
@@ -919,13 +889,12 @@ class FeaturePersistenceSpec extends Specification {
                     dateTime: activationDateTime
                 )
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
-            this.sut.deleteActivation(featureGroupEntity.key, createdFeature.key, createdActivation.id)
+            this.sut.deleteActivation(_argFeatureGroupKey, _argFeatureKey, createdActivation.id)
 
         then:
-            !featureActivationRepository.existsById(createdActivation.id)
+            featureActivationRepository.findById(createdActivation.id).empty
 
         where:
             _testcase                         | _featureGroupKey  | _featureKey  | _argFeatureGroupKey             | _argFeatureKey
@@ -955,7 +924,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeature(featureEntity)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         and:
             ZonedDateTime activationDateTime = ZonedDateTime.of(LocalDateTime.of(2025, 3, 15, 10, 45), ZoneId.of('UTC'))
@@ -967,7 +935,6 @@ class FeaturePersistenceSpec extends Specification {
                     dateTime: activationDateTime
                 )
             )
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             this.sut.deleteActivation(_argFeatureGroupKey, _argFeatureKey, createdActivation.id)
@@ -1001,7 +968,6 @@ class FeaturePersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeature(featureEntity)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             this.sut.deleteActivation(featureGroupEntity.key, featureEntity.key, 999)

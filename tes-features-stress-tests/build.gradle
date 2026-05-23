@@ -1,0 +1,32 @@
+plugins {
+    id 'io.gatling.gradle'
+}
+
+dependencies {
+    implementation project(':tes-features-component-tests')
+
+    testImplementation 'dk.sunepoulsen.tes-foundation:tes-lang:3.0.0-SNAPSHOT'
+    testImplementation 'dk.sunepoulsen.tes-foundation:tes-utils:3.0.0-SNAPSHOT'
+
+    gatlingImplementation 'dk.sunepoulsen.tes-foundation:tes-gatling:3.0.0-SNAPSHOT'
+    gatlingImplementation 'dk.sunepoulsen.tes-foundation:tes-lang:3.0.0-SNAPSHOT'
+    gatlingImplementation 'dk.sunepoulsen.tes-foundation:tes-wiremock-deployment:1.0.0-SNAPSHOT'
+    gatlingImplementation 'dk.sunepoulsen.tes-foundation:tes-keycloak-wiremocks:1.0.0-SNAPSHOT'
+
+    gatlingImplementation project(':tes-features-model')
+    gatlingImplementation project(':tes-features-data-generators')
+}
+
+test {
+    useJUnitPlatform()
+
+    onlyIf {
+        project.hasProperty('stress-tests')
+    }
+}
+
+gatling {
+    gatlingVersion = '3.14.9'
+    includeMainOutput = true
+    includeTestOutput = true
+}

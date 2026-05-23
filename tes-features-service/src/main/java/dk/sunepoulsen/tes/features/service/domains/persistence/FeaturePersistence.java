@@ -219,6 +219,10 @@ public class FeaturePersistence {
             new ResourceNotFoundException(String.format(FEATURE_GROUP_ACTIVATION_NOT_FOUND_MESSAGE, activationId, featureGroupKey, featureKey))
         );
 
+        if (foundEntity.getFeature().getActivations() != null) {
+            foundEntity.getFeature().getActivations().removeIf(activation -> activationId.equals(activation.getId()));
+        }
+
         featureActivationRepository.deleteById(foundEntity.getId());
     }
 

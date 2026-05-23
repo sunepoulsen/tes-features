@@ -277,7 +277,7 @@ public interface FeaturesActivationOperations {
         )
     })
     @DeleteMapping("/{activation_id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Validated({Default.class, OnCrudUpdate.class})
     DeferredResult<Void> deleteActivation(
         @Valid @PathVariable("feature_group_key") final String featureGroupKey,

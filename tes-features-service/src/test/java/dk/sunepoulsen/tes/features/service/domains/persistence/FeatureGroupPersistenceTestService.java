@@ -41,14 +41,4 @@ public class FeatureGroupPersistenceTestService {
         }
     }
 
-    void flushDatabase() {
-        log.debug("Flushing all changes to the database");
-
-        try {
-            this.repositories.forEach(CrudRepository::count);
-        } catch (Exception ex) {
-            log.debug("Error flushing all changes to the database", ex);
-            throw ex;
-        }
-    }
 }
