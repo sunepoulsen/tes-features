@@ -24,7 +24,7 @@ public class FeatureActivationEntity extends ActivationEntity {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "feature_id", nullable = false)
     private FeatureEntity feature;
 

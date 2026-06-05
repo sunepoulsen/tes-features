@@ -61,9 +61,9 @@ server:
 logic:
   processing:
     executor:
-      core-pool-size: 10
-      max-pool-size: 200
-      query-capacity: 10000
+      core-pool-size: -1
+      max-pool-size: -1
+      query-capacity: -1
 
 # ===================================================================
 #                   Spring JPA Configuration

@@ -1,7 +1,6 @@
 package dk.sunepoulsen.tes.features.service;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.nimbusds.jose.JOSEException;
 import dk.sunepoulsen.tes.keycloak.wiremock.KeycloakJwtUser;
 import dk.sunepoulsen.tes.keycloak.wiremock.KeycloakWiremock;
 import dk.sunepoulsen.tes.wiremock.deployment.WiremockServerProperties;
@@ -40,12 +39,14 @@ public class LocalContainersConfig {
     }
 
     @Bean
-    DynamicPropertyRegistrar configureWiremockContainer(GenericContainer<?> wiremockContainer) throws JOSEException {
+    DynamicPropertyRegistrar configureWiremockContainer(GenericContainer<?> wiremockContainer) {
         WiremockServerProperties wiremockServerProperties = WiremockServerProperties.builder()
-            .host(wiremockContainer.getHost())
-            .port(wiremockContainer.getMappedPort(8080))
+            .internalHost(wiremockContainer.getHost())
+            .internalPort(wiremockContainer.getMappedPort(8080))
+            .externalHost("localhost")
+            .externalPort(wiremockContainer.getMappedPort(8080))
             .build();
-        WireMock.configureFor(wiremockServerProperties.getHost(), wiremockServerProperties.getPort());
+        WireMock.configureFor(wiremockServerProperties.getExternalHost(), wiremockServerProperties.getExternalPort());
 
         KeycloakWiremock keycloakWiremock = new KeycloakWiremock(wiremockServerProperties, "keycloak", "tes-foundation", "tes-foundation-kid");
         keycloakWiremock.createStubs();
@@ -64,8 +65,8 @@ public class LocalContainersConfig {
             registry.add(
                 "spring.security.oauth2.resourceserver.jwt.issuer-uri",
                 () -> "http://%s:%s/keycloak/realms/tes-foundation".formatted(
-                    wiremockServerProperties.getHost(),
-                    wiremockServerProperties.getPort()
+                    wiremockServerProperties.getInternalHost(),
+                    wiremockServerProperties.getInternalPort()
                 )
             );
 

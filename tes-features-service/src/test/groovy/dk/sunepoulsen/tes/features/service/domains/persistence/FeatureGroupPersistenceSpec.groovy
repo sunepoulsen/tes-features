@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -24,7 +23,6 @@ import java.time.ZonedDateTime
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import([FeatureGroupPersistenceTestService])
 @ActiveProfiles(['ut'])
-@Transactional
 class FeatureGroupPersistenceSpec extends Specification {
 
     @Autowired
@@ -112,7 +110,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         when:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             createdFeatureGroup.id > 0
@@ -162,13 +159,13 @@ class FeatureGroupPersistenceSpec extends Specification {
 
             featureGroup.setActivations([
                 new FeatureGroupActivationEntity(
-                    featureGroup: existingFeatureGroup,
+                    featureGroup: featureGroup,
                     enabled: true,
                     dateTime: ZonedDateTime.of(LocalDateTime.of(2023, 2, 8, 12, 30), ZoneId.of('UTC'))
                 )
             ])
             featureGroup.features = [FeatureEntity.builder()
-                                         .featureGroup(existingFeatureGroup)
+                                         .featureGroup(featureGroup)
                                          .key(existingFeatureGroup.features.first.key)
                                          .name(textGenerator.generate())
                                          .description(textGenerator.generate())
@@ -177,8 +174,7 @@ class FeatureGroupPersistenceSpec extends Specification {
 
 
         when:
-            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(existingFeatureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
+            FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
 
         then:
             createdFeatureGroup.id == existingFeatureGroup.id
@@ -188,7 +184,7 @@ class FeatureGroupPersistenceSpec extends Specification {
 
             createdFeatureGroup.activations.size() == 1
             createdFeatureGroup.activations.first.enabled == existingFeatureGroup.activations.first.enabled
-            createdFeatureGroup.activations.first.dateTime == existingFeatureGroup.activations.first.dateTime
+            createdFeatureGroup.activations.first.dateTime.toInstant() == existingFeatureGroup.activations.first.dateTime.toInstant()
 
             createdFeatureGroup.features.size() == 1
             createdFeatureGroup.features.first.key == existingFeatureGroup.features.first.key
@@ -252,7 +248,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         when:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             createdFeatureGroup.id == existingFeatureGroup.id
@@ -262,7 +257,7 @@ class FeatureGroupPersistenceSpec extends Specification {
 
             createdFeatureGroup.activations.size() == 1
             createdFeatureGroup.activations.first.enabled == existingFeatureGroup.activations.first.enabled
-            createdFeatureGroup.activations.first.dateTime == existingFeatureGroup.activations.first.dateTime
+            createdFeatureGroup.activations.first.dateTime.toInstant() == existingFeatureGroup.activations.first.dateTime.toInstant()
 
             createdFeatureGroup.features.size() == 2
             createdFeatureGroup.features[0].key == existingFeatureGroup.features[0].key
@@ -300,7 +295,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             List<FeatureGroupEntity> result = this.sut.getFeatureGroups()
@@ -336,7 +330,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureGroupEntity> foundFeatureGroup = this.sut.getFeatureGroup(featureGroup.getKey())
@@ -372,7 +365,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureGroupEntity> foundFeatureGroup = this.sut.getFeatureGroup(featureGroup.getKey() + "-wrong-key")
@@ -407,7 +399,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureGroupEntity> patchedFeatureGroup = this.sut.patchFeatureGroup(featureGroup.key, new FeatureGroupEntity(
@@ -463,11 +454,9 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             this.sut.deleteFeatureGroup(featureGroup.getKey())
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             !this.featureGroupRepository.existsById(createdFeatureGroup.id)
@@ -509,7 +498,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         and:
             FeatureGroupActivationEntity newActivation = new FeatureGroupActivationEntity(
@@ -519,7 +507,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         when:
             FeatureGroupActivationEntity createdActivation = this.sut.createActivation(featureGroup.key, newActivation)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             createdActivation.id > 0
@@ -570,7 +557,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         and:
             FeatureGroupActivationEntity newActivation = new FeatureGroupActivationEntity(
@@ -579,7 +565,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         when:
             this.sut.createActivation(featureGroup.key, newActivation)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         then:
             DataIntegrityViolationException ex = thrown(DataIntegrityViolationException)
@@ -612,7 +597,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             List<FeatureGroupActivationEntity> result = this.sut.getActivations(featureGroup.key)
@@ -620,7 +604,7 @@ class FeatureGroupPersistenceSpec extends Specification {
         then:
             result.size() == 1
             result.first.enabled == featureGroup.activations.first.enabled
-            result.first.dateTime == featureGroup.activations.first.dateTime
+            result.first.dateTime.toInstant() == featureGroup.activations.first.dateTime.toInstant()
     }
 
     void "Tests get activations for feature group that does not exist"() {
@@ -659,7 +643,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureGroupActivationEntity> result = this.sut.getActivation(featureGroup.key, createdFeatureGroup.activations.first.id)
@@ -667,7 +650,7 @@ class FeatureGroupPersistenceSpec extends Specification {
         then:
             result.isPresent()
             result.get().enabled == featureGroup.activations.first.enabled
-            result.get().dateTime == featureGroup.activations.first.dateTime
+            result.get().dateTime.toInstant() == featureGroup.activations.first.dateTime.toInstant()
     }
 
     void "Tests get specific activation for feature group that does not exist"() {
@@ -706,7 +689,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureGroupActivationEntity> result = this.sut.getActivation(featureGroup.key, 999)
@@ -741,7 +723,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             Optional<FeatureGroupActivationEntity> result = this.sut.patchActivation(createdFeatureGroup.key, createdFeatureGroup.activations.first.id, new FeatureGroupActivationEntity(
@@ -752,7 +733,7 @@ class FeatureGroupPersistenceSpec extends Specification {
             result.isPresent()
             with(result.get()) {
                 assert !it.enabled
-                assert it.dateTime == createdFeatureGroup.activations.first.dateTime
+                assert it.dateTime.toInstant() == createdFeatureGroup.activations.first.dateTime.toInstant()
             }
     }
 
@@ -791,7 +772,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             this.sut.patchActivation(createdFeatureGroup.key, createdFeatureGroup.activations.last.id + 1, new FeatureGroupActivationEntity())
@@ -827,13 +807,14 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
+            Long activationId = createdFeatureGroup.activations.first.id
 
         when:
-            this.sut.deleteActivation(createdFeatureGroup.key, createdFeatureGroup.activations.first.id)
+            this.sut.deleteActivation(createdFeatureGroup.key, activationId)
 
         then:
-            !this.featureGroupActivationRepository.existsById(createdFeatureGroup.activations.first.id)
+            this.featureGroupActivationRepository.findById(activationId).empty
+            featureGroupRepository.findById(createdFeatureGroup.id).present
     }
 
     void "Tests delete activation of feature group that does not exist"() {
@@ -871,7 +852,6 @@ class FeatureGroupPersistenceSpec extends Specification {
 
         and:
             FeatureGroupEntity createdFeatureGroup = this.sut.registerFeatureGroup(featureGroup)
-            this.featureGroupPersistenceTestService.flushDatabase()
 
         when:
             this.sut.deleteActivation(createdFeatureGroup.key, createdFeatureGroup.activations.last.id + 1)

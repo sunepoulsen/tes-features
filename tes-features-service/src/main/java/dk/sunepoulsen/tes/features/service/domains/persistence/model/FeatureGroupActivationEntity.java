@@ -24,7 +24,7 @@ public class FeatureGroupActivationEntity extends ActivationEntity {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feature_group_id", nullable = false)
     private FeatureGroupEntity featureGroup;
 

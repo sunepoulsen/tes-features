@@ -19,6 +19,7 @@ if __name__ == '__main__':
         ["./pipeline-clean.py"],
         ["./pipeline-build.py"],
         ["./pipeline-component-tests.py"],
+        ["./pipeline-stress-tests.py"],
         ["./pipeline-publish.py"],
         ["./pipeline-analyze.py"],
     ]

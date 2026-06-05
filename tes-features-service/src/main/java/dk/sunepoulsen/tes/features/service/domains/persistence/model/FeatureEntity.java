@@ -28,7 +28,7 @@ public class FeatureEntity extends TimestampEntity {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "feature_group_id", nullable = false)
     private FeatureGroupEntity featureGroup;
 
