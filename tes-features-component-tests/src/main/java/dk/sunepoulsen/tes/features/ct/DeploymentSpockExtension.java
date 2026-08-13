@@ -1,17 +1,17 @@
 package dk.sunepoulsen.tes.features.ct;
 
 import dk.sunepoulsen.tes.deployment.core.steps.factories.ConfigurationFileStepsResult;
-import dk.sunepoulsen.tes.deployment.core.steps.factories.PostgresConfigureStepsDatabaseResult;
-import dk.sunepoulsen.tes.deployment.core.steps.factories.PostgresConfigureStepsDatabasesResult;
 import dk.sunepoulsen.tes.features.deployment.FeaturesDeployment;
 import dk.sunepoulsen.tes.flows.FlowStep;
+import dk.sunepoulsen.tes.postgres.steps.factories.PostgresConfigureStepsDatabaseResult;
+import dk.sunepoulsen.tes.postgres.steps.factories.PostgresConfigureStepsDatabasesResult;
 import dk.sunepoulsen.tes.sut.engine.exceptions.DeploymentException;
 import dk.sunepoulsen.tes.sut.engine.extensions.AbstractSystemUnderTestExtension;
-import dk.sunepoulsen.tes.sut.engine.steps.SutStartPostgresStep;
 import dk.sunepoulsen.tes.sut.engine.steps.SutStartTesServiceStep;
 import dk.sunepoulsen.tes.sut.engine.steps.factories.ContainerStepResult;
-import dk.sunepoulsen.tes.sut.engine.steps.factories.PostgresContainerStepsFactory;
 import dk.sunepoulsen.tes.sut.engine.system.SystemUnderTestDeployment;
+import dk.sunepoulsen.tes.sut.postgres.steps.SutStartPostgresStep;
+import dk.sunepoulsen.tes.sut.postgres.steps.factories.PostgresContainerStepsFactory;
 import dk.sunepoulsen.tes.wiremock.deployment.steps.SutStartWiremockStep;
 import dk.sunepoulsen.tes.wiremock.deployment.steps.factories.WiremockContainerStepsFactory;
 import lombok.extern.slf4j.Slf4j;
