@@ -1,9 +1,14 @@
 package dk.sunepoulsen.tes.features.deployment;
 
 import dk.sunepoulsen.tes.deployment.core.function.AtomicDataSupplier;
-import dk.sunepoulsen.tes.deployment.core.steps.factories.*;
+import dk.sunepoulsen.tes.deployment.core.steps.factories.CertificateStepsResult;
+import dk.sunepoulsen.tes.deployment.core.steps.factories.ConfigurationFileStepsFactory;
+import dk.sunepoulsen.tes.deployment.core.steps.factories.ConfigurationFileStepsResult;
 import dk.sunepoulsen.tes.io.resources.PropertiesResource;
 import dk.sunepoulsen.tes.io.resources.ResourceException;
+import dk.sunepoulsen.tes.postgres.steps.factories.PostgresConfigureStepsDatabaseResult;
+import dk.sunepoulsen.tes.postgres.steps.factories.PostgresConfigureStepsFactory;
+import dk.sunepoulsen.tes.postgres.steps.factories.PostgresVelocityContextFactory;
 import dk.sunepoulsen.tes.sut.engine.steps.SutCreateTestContainerNetworkStep;
 import dk.sunepoulsen.tes.sut.engine.steps.SutStartTesServiceStep;
 import dk.sunepoulsen.tes.sut.engine.steps.factories.ContainerStepResult;
@@ -44,7 +49,7 @@ public class FeaturesDeployment {
         ConfigurationFileStepsFactory configurationFileStepsFactory = new ConfigurationFileStepsFactory(configTemplateName, storeDirectory, "application-" + profiles.get(0) + ".yml");
         configurationFileStepsFactory.addDefaultTesServiceContext();
         configurationFileStepsFactory.addCertificateContext(certificateStepsResult);
-        configurationFileStepsFactory.addDatabaseContext(databaseHost, featuresDatabaseSteps);
+        PostgresVelocityContextFactory.addDatabaseContext(configurationFileStepsFactory.getContextSupplier(), databaseHost, featuresDatabaseSteps);
 
         return configurationFileStepsFactory.createSteps("featuresConfig");
     }

@@ -9,6 +9,7 @@ dependencies {
     implementation 'dk.sunepoulsen.tes-foundation:tes-flows:3.0.0-SNAPSHOT'
     implementation 'dk.sunepoulsen.tes-foundation:tes-io:3.0.0-SNAPSHOT'
     api 'dk.sunepoulsen.tes-foundation:tes-sut-engine:3.0.0-SNAPSHOT'
+    api 'dk.sunepoulsen.tes-foundation:tes-sut-postgres:1.0.0-SNAPSHOT'
     api 'dk.sunepoulsen.tes-foundation:tes-wiremock-deployment:1.0.0-SNAPSHOT'
     api 'dk.sunepoulsen.tes-foundation:tes-keycloak-wiremocks:1.0.0-SNAPSHOT'
     api 'dk.sunepoulsen.tes-foundation:tes-rest-integrations:3.0.0-SNAPSHOT'
