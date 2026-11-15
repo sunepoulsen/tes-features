@@ -17,7 +17,7 @@ def execute_gradle_tasks(message, tasks):
     print(message)
 
     for task in tasks:
-        cmd = ["./gradlew", "--console=plain"] + task
+        cmd = ["./gradlew", "--console=plain", "--no-build-cache"] + task
         if subprocess.run(cmd, cwd=find_project_root_directory()).returncode != 0:
             print(f"Gradle task '{task}' failed and execution has been stopped.")
             sys.exit(-1)
