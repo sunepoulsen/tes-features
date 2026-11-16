@@ -1,6 +1,8 @@
 package dk.sunepoulsen.tes.features.ct
 
 import dk.sunepoulsen.tes.features.deployment.FeaturesServiceIntegratorProvider
+import dk.sunepoulsen.tes.rest.models.HashMapModel
+import groovy.json.JsonOutput
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -13,11 +15,19 @@ class ApiDocumentationSpec extends Specification implements FeaturesServiceInteg
     private static List<String> FEATURE_ACTIVATIONS_TAG = ['Feature Activations']
 
     @Shared
-    private apiDocResult
+    private HashMapModel apiDocResult
 
     void setupSpec() {
         isFeaturesServiceAvailable()
         this.apiDocResult = featuresServiceIntegrator().apiDocumentation().blockingGet()
+    }
+
+    void "Verify that api documentation does not contain ##default values"() {
+        when:
+            String json = JsonOutput.toJson(apiDocResult)
+
+        then:
+            !json.contains('##default')
     }
 
     @Unroll
