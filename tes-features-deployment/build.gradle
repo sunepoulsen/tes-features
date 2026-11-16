@@ -11,5 +11,5 @@ dependencies {
     implementation 'dk.sunepoulsen.tes-foundation:tes-postgres-steps:1.0.0-SNAPSHOT'
     implementation 'dk.sunepoulsen.tes-foundation:tes-wiremock-deployment:1.0.0-SNAPSHOT'
     implementation 'dk.sunepoulsen.tes-foundation:tes-keycloak-wiremocks:1.0.0-SNAPSHOT'
-    implementation 'org.apache.groovy:groovy-all:5.0.5'
+    implementation 'org.apache.groovy:groovy-all:5.1.3'
 }

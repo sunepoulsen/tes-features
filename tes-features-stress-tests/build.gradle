@@ -26,7 +26,7 @@ test {
 }
 
 gatling {
-    gatlingVersion = '3.14.9'
+    gatlingVersion = '3.16.1'
     includeMainOutput = true
     includeTestOutput = true
 }

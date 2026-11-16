@@ -18,7 +18,7 @@ dependencies {
     testImplementation 'dk.sunepoulsen.tes-foundation:tes-data-generators:3.0.0-SNAPSHOT'
 
     // Test containers
-    api platform('org.testcontainers:testcontainers-bom:2.0.4')
+    api platform('org.testcontainers:testcontainers-bom:2.0.5')
     api 'org.testcontainers:testcontainers'
 }
 
